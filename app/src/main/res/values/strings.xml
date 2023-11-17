@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name" translatable="false">HyLi Connect</string>
+    <string name="xposed_description">Prevent app from launching ouside of the window</string>
+</resources>
