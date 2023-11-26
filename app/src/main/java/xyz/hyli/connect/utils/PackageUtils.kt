@@ -43,7 +43,7 @@ object PackageUtils {
         launcherIconPackageList = launcherIconPackageList.filter { it.packageName != "xyz.hyli.connect" }.toMutableList()
 //        launcherIconPackageList = launcherIconPackageList.sortedWith { o1, o2 -> Collator.getInstance(Locale.CHINESE).compare(o1.appName, o2.appName) }.toMutableList()
         launcherIconPackageList = launcherIconPackageList.sortedBy { getPinYin(it.appName) }.toMutableList()
-        Log.i("GetAppList", launcherIconPackageList.toString())
+//        Log.i("GetAppList", launcherIconPackageList.toString())
         return launcherIconPackageList
     }
     private fun getPinYin(content: String): String {

@@ -1,3 +1,5 @@
+package xyz.hyli.connect;
+
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -16,6 +18,7 @@ import androidx.annotation.Nullable;
 
 import java.util.List;
 
+import xyz.hyli.connect.R;
 import xyz.hyli.connect.utils.PackageUtils;
 
 public class AppListAdapter extends ArrayAdapter<String> {
@@ -32,7 +35,7 @@ public class AppListAdapter extends ArrayAdapter<String> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_1, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.applist_item, parent, false);
         }
 
         PackageManager packageManager = context.getPackageManager();
@@ -43,7 +46,7 @@ public class AppListAdapter extends ArrayAdapter<String> {
         String appName = appInfo.getAppName();
         String packageName = appInfo.getPackageName();
         String mainActivityName = appInfo.getMainActivityName();
-        Log.i("AppListAdapter", "packageName: " + packageName);
+//        Log.i("xyz.hyli.connect.AppListAdapter", "packageName: " + packageName);
 
         // 显示应用的图标和名称
         if (appIcon == null) {
@@ -52,9 +55,9 @@ public class AppListAdapter extends ArrayAdapter<String> {
         if (appName == null) {
             appName = packageName;
         }
-        ImageView iconView = convertView.findViewById(android.R.id.icon);
-        TextView nameView = convertView.findViewById(android.R.id.text1);
-//        iconView.setImageDrawable(appIcon);
+        ImageView iconView = convertView.findViewById(R.id.appIcon);
+        TextView nameView = convertView.findViewById(R.id.appName);
+        iconView.setImageDrawable(appIcon);
         nameView.setText(appName);
 
 
