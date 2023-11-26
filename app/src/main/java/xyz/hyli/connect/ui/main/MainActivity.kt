@@ -1,39 +1,28 @@
 package xyz.hyli.connect.ui.main
 
-import AppListAdapter
-import android.content.ComponentName
+import xyz.hyli.connect.AppListAdapter
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.ListView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
 import xyz.hyli.connect.utils.PackageUtils
+import xyz.hyli.connect.utils.ShellUtils
+import xyz.hyli.connect.utils.VirtualDisplayUtils
+import java.util.concurrent.CompletableFuture
 
 
 class MainActivity : ComponentActivity() {
-    private val binding: MainActivityBinding? = null
-    private val BINDER_RECEIVED_LISTENER = Shizuku.OnBinderReceivedListener {
-        if (Shizuku.isPreV11()) {
-            binding.text1.setText("Shizuku pre-v11 is not supported")
-        } else {
-            binding.text1.setText("Binder received")
-        }
-    }
-    private val BINDER_DEAD_LISTENER = OnBinderDeadListener {
-        binding.text1.setText(
-            "Binder dead"
-        )
-    }
-    private val REQUEST_PERMISSION_RESULT_LISTENER: OnRequestPermissionResultListener = this::onRequestPermissionsResult
-
+    private val SHIZUKU_CODE = 0xCA07A
+    private var shizukuPermissionFuture = CompletableFuture<Boolean>()
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
         var listView = findViewById<ListView>(R.id.app_list)
         val appList: MutableList<PackageUtils.AppInfo> = PackageUtils.GetAppList(packageManager)
@@ -43,32 +32,46 @@ class MainActivity : ComponentActivity() {
             val appInfo = appList[position]
             val packageName = appInfo.packageName
             val mainActivityName = appInfo.mainActivityName
-            val intent = Intent()
-            intent.component = ComponentName(packageName, mainActivityName)
+            val displayID = VirtualDisplayUtils(this).createDisplay(packageName, 720, 1440, this.resources.displayMetrics.densityDpi)
+            ShellUtils.execCommand("am start --display $displayID -n $packageName/$mainActivityName", "Root")
+            val intent = Intent(this, DisplayActivity::class.java)
+            intent.putExtra("displayID", displayID)
             startActivity(intent)
-
+        }
+        Shizuku.addRequestPermissionResultListener { requestCode, grantResult ->
+            if (requestCode == SHIZUKU_CODE) {
+                val granted = grantResult == PackageManager.PERMISSION_GRANTED
+                shizukuPermissionFuture.complete(granted)
+            }
         }
 
+    }
 
-//        setContent {
-//            HyliConnectTheme() {
-//                // A surface container using the 'background' color from the theme
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//                    Greeting(1)
-//                }
-//            }
-//        }
+    private fun checkShizukuPermission(): Boolean {
+        val b = if (!Shizuku.pingBinder()) {
+            Toast.makeText(this, "Shizuku is not available", Toast.LENGTH_LONG).show()
+            false
+        } else if (Shizuku.isPreV11()) {
+            Toast.makeText(this, "Shizuku < 11 is not supported!", Toast.LENGTH_LONG).show()
+            false
+        } else if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+            true
+        } else if (Shizuku.shouldShowRequestPermissionRationale()) {
+            Toast.makeText(
+                this,
+                "You denied the permission for Shizuku. Please enable it in app.",
+                Toast.LENGTH_LONG
+            ).show()
+            false
+        } else {
+            Shizuku.requestPermission(SHIZUKU_CODE)
+
+            val result = shizukuPermissionFuture.get()
+            shizukuPermissionFuture = CompletableFuture<Boolean>()
+
+            result
+        }
+
+        return b
     }
 }
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "$name",
-        modifier = modifier
-    )
-}
-

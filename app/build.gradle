@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "xyz.hyli.connect"
-        minSdk 24
+        minSdk 26
         targetSdk 33
         versionCode 10000
         versionName "1.0.0"
