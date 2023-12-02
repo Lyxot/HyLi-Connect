@@ -1,9 +1,10 @@
 package xyz.hyli.connect.ui.main
 
-import xyz.hyli.connect.AppListAdapter
+import xyz.hyli.connect.ui.applist.AppListAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Button
 import android.widget.ListView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -24,18 +25,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
-        var listView = findViewById<ListView>(R.id.app_list)
-        val appList: MutableList<PackageUtils.AppInfo> = PackageUtils.GetAppList(packageManager)
-        val adapter = AppListAdapter(this, appList)
-        listView.adapter = adapter
-        listView.setOnItemClickListener { parent, view, position, id ->
-            val appInfo = appList[position]
-            val packageName = appInfo.packageName
-            val mainActivityName = appInfo.mainActivityName
-            val displayID = VirtualDisplayUtils(this).createDisplay(packageName, 720, 1440, this.resources.displayMetrics.densityDpi)
-            ShellUtils.execCommand("am start --display $displayID -n $packageName/$mainActivityName", "Root")
-            val intent = Intent(this, DisplayActivity::class.java)
-            intent.putExtra("displayID", displayID)
+        val applist_button = findViewById<Button>(R.id.applist_button)
+        applist_button.setOnClickListener {
+            val intent = Intent(this, AppListActivity::class.java)
             startActivity(intent)
         }
         Shizuku.addRequestPermissionResultListener { requestCode, grantResult ->
@@ -44,7 +36,6 @@ class MainActivity : ComponentActivity() {
                 shizukuPermissionFuture.complete(granted)
             }
         }
-
     }
 
     private fun checkShizukuPermission(): Boolean {

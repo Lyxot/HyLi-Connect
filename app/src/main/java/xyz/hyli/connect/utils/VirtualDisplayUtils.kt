@@ -14,29 +14,21 @@ class VirtualDisplayUtils(
 ) {
     private val windowManager: WindowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private val displayManager: DisplayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-    private var displayMap: MutableMap<Int, VirtualDisplay> = mutableMapOf()
     companion object {
-        var imageMap: MutableMap<Int, ImageReader> = mutableMapOf()
+        var displayMap: MutableMap<Int, VirtualDisplay> = mutableMapOf()
     }
 
 
     fun createDisplay(packageName:String, width:Int, height:Int, dpi:Int): Int? {
         val virtualDisplay: VirtualDisplay
-        val imageReader: ImageReader
         val windowsLayoutParams = WindowManager.LayoutParams()
         try {
-            imageReader = ImageReader.newInstance(
-                width,
-                height,
-                ImageFormat.YUV_420_888,
-                2
-            )
             virtualDisplay = displayManager.createVirtualDisplay(
                 "HyLiConnect@$packageName",
                 width,
                 height,
                 dpi,
-                imageReader.surface,
+                null,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC or DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY or DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION
             )
         } catch (e: Exception) {
@@ -46,7 +38,6 @@ class VirtualDisplayUtils(
 
         val displayID = virtualDisplay.display.displayId
         displayMap.put(virtualDisplay.display.displayId, virtualDisplay)
-        imageMap.put(virtualDisplay.display.displayId, imageReader)
         return displayID
     }
     fun resizeDisplay(displayID:Int, width:Int, height:Int, dpi:Int): VirtualDisplay? {
@@ -68,8 +59,5 @@ class VirtualDisplayUtils(
             it.value.surface.release()
             it.value.release()
         }
-    }
-    fun getImageReader(displayID: Int): ImageReader? {
-        return imageMap[displayID]
     }
 }

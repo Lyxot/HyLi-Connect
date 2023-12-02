@@ -1,4 +1,4 @@
-package xyz.hyli.connect;
+package xyz.hyli.connect.ui.applist;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -46,7 +46,7 @@ public class AppListAdapter extends ArrayAdapter<String> {
         String appName = appInfo.getAppName();
         String packageName = appInfo.getPackageName();
         String mainActivityName = appInfo.getMainActivityName();
-//        Log.i("xyz.hyli.connect.AppListAdapter", "packageName: " + packageName);
+//        Log.i("xyz.hyli.connect.ui.applist.AppListAdapter", "packageName: " + packageName);
 
         // 显示应用的图标和名称
         if (appIcon == null) {
