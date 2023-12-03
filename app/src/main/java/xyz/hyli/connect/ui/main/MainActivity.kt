@@ -1,35 +1,48 @@
 package xyz.hyli.connect.ui.main
 
-import xyz.hyli.connect.ui.applist.AppListAdapter
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Button
-import android.widget.ListView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.core.view.WindowCompat
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
 import xyz.hyli.connect.utils.PackageUtils
-import xyz.hyli.connect.utils.ShellUtils
-import xyz.hyli.connect.utils.VirtualDisplayUtils
 import java.util.concurrent.CompletableFuture
 
 
 class MainActivity : ComponentActivity() {
     private val SHIZUKU_CODE = 0xCA07A
     private var shizukuPermissionFuture = CompletableFuture<Boolean>()
+    private var appList: Deferred<List<String>>? = null
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
         val applist_button = findViewById<Button>(R.id.applist_button)
-        applist_button.setOnClickListener {
-            val intent = Intent(this, AppListActivity::class.java)
-            startActivity(intent)
+        GlobalScope.launch(Dispatchers.IO) {
+            appList = async { PackageUtils.GetAppList(packageManager) }
         }
+        applist_button.setOnClickListener {
+            GlobalScope.launch(Dispatchers.Main) {
+                val intent = Intent(this@MainActivity, AppListActivity::class.java)
+                intent.putExtra("appList", appList?.await()?.toTypedArray())
+                startActivity(intent)
+            }
+        }
+
         Shizuku.addRequestPermissionResultListener { requestCode, grantResult ->
             if (requestCode == SHIZUKU_CODE) {
                 val granted = grantResult == PackageManager.PERMISSION_GRANTED

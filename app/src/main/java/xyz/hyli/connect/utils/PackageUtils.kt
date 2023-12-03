@@ -10,41 +10,35 @@ import android.os.UserHandle
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.github.promeg.pinyinhelper.Pinyin
+import xyz.hyli.connect.BuildConfig
 
 
 object PackageUtils {
-    data class AppInfo(
-        val packageName: String,
-        val appName: String,
-        val mainActivityName: String,
-        val appIcon: Drawable
-    )
+    var packageList: List<String> = listOf()
+    var appNameMap: MutableMap<String, String> = mutableMapOf()
+    var appIconMap: MutableMap<String, Drawable> = mutableMapOf()
     //获取应用列表
-    fun GetAppList(packageManager: PackageManager): MutableList<AppInfo> {
+    fun GetAppList(packageManager: PackageManager): List<String> {
         val intent = Intent()
         intent.action = Intent.ACTION_MAIN
         intent.addCategory(Intent.CATEGORY_LAUNCHER)
 
         val resolveInfos: List<ResolveInfo> = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-        var launcherIconPackageList = mutableListOf<AppInfo>()
 
         for (info in resolveInfos) {
-            if ( hasInstallThisPackage(info.activityInfo.packageName, packageManager) ) {
-                launcherIconPackageList.add(
-                    AppInfo(
-                        info.activityInfo.packageName,
-                        info.loadLabel(packageManager).toString(),
-                        GetMainActivityName(packageManager, info.activityInfo.packageName),
-                        info.loadIcon(packageManager)
-                    )
-                )
+            val packageName = info.activityInfo.packageName
+            val appName = info.loadLabel(packageManager).toString()
+            if ( hasInstallThisPackage(packageName, packageManager) ) {
+                if ( packageName != BuildConfig.APPLICATION_ID ) {
+                    appNameMap.put(packageName, appName)
+                    appIconMap.put(packageName, info.loadIcon(packageManager))
+                }
             }
         }
-        launcherIconPackageList = launcherIconPackageList.filter { it.packageName != "xyz.hyli.connect" }.toMutableList()
-//        launcherIconPackageList = launcherIconPackageList.sortedWith { o1, o2 -> Collator.getInstance(Locale.CHINESE).compare(o1.appName, o2.appName) }.toMutableList()
-        launcherIconPackageList = launcherIconPackageList.sortedBy { getPinYin(it.appName) }.toMutableList()
+        appNameMap = appNameMap.toList().sortedBy { (_, value) -> getPinYin(value) }.toMap().toMutableMap()
+        packageList = appNameMap.toList().map { (key, _) -> key }
 //        Log.i("GetAppList", launcherIconPackageList.toString())
-        return launcherIconPackageList
+        return packageList
     }
     private fun getPinYin(content: String): String {
         val stringBuilder = StringBuilder()
