@@ -23,13 +23,12 @@ class AppListActivity : ComponentActivity() {
 
         setContentView(R.layout.activity_app_list)
         var listView = findViewById<ListView>(R.id.applist)
-        val appList: MutableList<PackageUtils.AppInfo> = PackageUtils.GetAppList(packageManager)
+        val appList: List<String> = intent.getStringArrayExtra("appList")!!.toList()
         val adapter = AppListAdapter(this, appList)
         listView.adapter = adapter
         listView.setOnItemClickListener { parent, view, position, id ->
-            val appInfo = appList[position]
-            val packageName = appInfo.packageName
-            val mainActivityName = appInfo.mainActivityName
+            val packageName = appList[position]
+            val mainActivityName = PackageUtils.GetMainActivityName(packageManager, packageName)
             val displayID = VirtualDisplayUtils(this).createDisplay(packageName, 720, 1440, this.resources.displayMetrics.densityDpi)
             ShellUtils.execCommand("am start --display $displayID -n $packageName/$mainActivityName", "Root")
             val intent = Intent(this, DisplayActivity::class.java)
