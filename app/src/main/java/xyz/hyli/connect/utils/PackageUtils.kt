@@ -4,6 +4,11 @@ import android.content.Intent
 import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.PixelFormat
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.UserHandle
@@ -16,7 +21,13 @@ import xyz.hyli.connect.BuildConfig
 object PackageUtils {
     var packageList: List<String> = listOf()
     var appNameMap: MutableMap<String, String> = mutableMapOf()
-    var appIconMap: MutableMap<String, Drawable> = mutableMapOf()
+    var appIconMap: MutableMap<String, AppIcon> = mutableMapOf()
+    data class AppIcon(
+        val icon: Drawable,
+        val width: Int,
+        val height: Int,
+        val iconByteArray: ByteArray
+    )
     //获取应用列表
     fun GetAppList(packageManager: PackageManager): List<String> {
         val intent = Intent()
@@ -31,7 +42,8 @@ object PackageUtils {
             if ( hasInstallThisPackage(packageName, packageManager) ) {
                 if ( packageName != BuildConfig.APPLICATION_ID ) {
                     appNameMap.put(packageName, appName)
-                    appIconMap.put(packageName, info.loadIcon(packageManager))
+                    val icon = info.loadIcon(packageManager)
+                    appIconMap.put(packageName, AppIcon(icon, icon.intrinsicWidth, icon.intrinsicHeight, drawalbeToByte(info.loadIcon(packageManager))))
                 }
             }
         }
@@ -83,5 +95,23 @@ object PackageUtils {
             }
         }
         return mainActivityName
+    }
+
+    fun drawalbeToByte(drawable: Drawable): ByteArray {
+        val bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth,
+            drawable.intrinsicHeight,
+            if (drawable.opacity !== PixelFormat.OPAQUE) Bitmap.Config.ARGB_8888 else Bitmap.Config.RGB_565
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        val stream = java.io.ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+        return stream.toByteArray()
+    }
+    fun byteToDrawable(byteArray: ByteArray): Drawable {
+        val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        return BitmapDrawable(bitmap)
     }
 }
