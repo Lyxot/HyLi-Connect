@@ -1,11 +1,14 @@
 package xyz.hyli.connect.ui.main
 
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.core.view.WindowCompat
@@ -17,6 +20,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
+import xyz.hyli.connect.service.HttpServerService
 import xyz.hyli.connect.utils.PackageUtils
 import java.util.concurrent.CompletableFuture
 
@@ -25,15 +29,32 @@ class MainActivity : ComponentActivity() {
     private val SHIZUKU_CODE = 0xCA07A
     private var shizukuPermissionFuture = CompletableFuture<Boolean>()
     private var appList: Deferred<List<String>>? = null
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var editor: SharedPreferences.Editor
+    var UUID: Deferred<String>? = null
+    var IP_ADDRESS: Deferred<String>? = null
+    var NICKNAME: Deferred<String>? = null
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
+        startService(Intent(this, HttpServerService::class.java))
+        sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE)
+        editor = sharedPreferences.edit()
+        Log.i("MainActivity", "$sharedPreferences")
+
         val applist_button = findViewById<Button>(R.id.applist_button)
+        val textView = findViewById<TextView>(R.id.info_textview)
         GlobalScope.launch(Dispatchers.IO) {
             appList = async { PackageUtils.GetAppList(packageManager) }
+            UUID = async { ConfigHelper().getUUID(sharedPreferences, editor) }
+            IP_ADDRESS = async { ConfigHelper().getIPAddress(this@MainActivity) }
+            NICKNAME = async { ConfigHelper().getNickname(sharedPreferences, editor) }
+        }
+        GlobalScope.launch(Dispatchers.Main) {
+            textView.text = "UUID: ${UUID?.await()}\nIP_ADDRESS: ${IP_ADDRESS?.await()}\nNICKNAME: ${NICKNAME?.await()}"
         }
         applist_button.setOnClickListener {
             GlobalScope.launch(Dispatchers.Main) {

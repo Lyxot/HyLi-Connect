@@ -77,6 +77,8 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
     implementation 'androidx.compose.material3:material3:1.1.2'
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    implementation 'com.alibaba.fastjson2:fastjson2-kotlin:2.0.43'
 
     implementation 'org.lsposed.hiddenapibypass:hiddenapibypass:4.3'
 
