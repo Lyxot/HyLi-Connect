@@ -52,6 +52,16 @@ const val HTTP_URL_APP_LIST = "/api/apps"
 
 class ServerConfig {
     companion object {
+        val NON_AUTH_URL = listOf(
+            HTTP_URL_INFO
+        )
+        val AUTH_URL = listOf(
+            HTTP_URL_CONNECT,
+            HTTP_URL_DISCONNECT,
+            HTTP_URL_HEARTBEAT,
+            HTTP_URL_CLIENT_LIST,
+            HTTP_URL_APP_LIST
+        )
         val clientMap: MutableMap<String, HttpServer.Clients> = mutableMapOf()
     }
 }

@@ -77,14 +77,13 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
     implementation 'androidx.compose.material3:material3:1.1.2'
+    implementation 'io.github.biezhi:TinyPinyin:2.0.3.RELEASE'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'com.alibaba.fastjson2:fastjson2-kotlin:2.0.43'
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
 
     implementation 'org.lsposed.hiddenapibypass:hiddenapibypass:4.3'
-
-
     compileOnly files('libs/XposedBridgeAPI-89.jar')
-    implementation 'io.github.biezhi:TinyPinyin:2.0.3.RELEASE'
 
     def shizuku_version = '13.1.5'
     implementation "dev.rikka.shizuku:api:$shizuku_version"

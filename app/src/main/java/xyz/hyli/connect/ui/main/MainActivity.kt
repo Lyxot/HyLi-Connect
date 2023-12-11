@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -20,6 +21,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
+import xyz.hyli.connect.client.HttpClient
 import xyz.hyli.connect.service.HttpServerService
 import xyz.hyli.connect.utils.PackageUtils
 import java.util.concurrent.CompletableFuture
@@ -47,6 +49,25 @@ class MainActivity : ComponentActivity() {
 
         val applist_button = findViewById<Button>(R.id.applist_button)
         val textView = findViewById<TextView>(R.id.info_textview)
+        val editText = findViewById<TextView>(R.id.edittext)
+        val connectButton = findViewById<Button>(R.id.connect_button)
+        val linearLayout = findViewById<LinearLayout>(R.id.linearlayout_main)
+        connectButton.setOnClickListener{
+            val ip = editText.text.toString()
+            var response: String
+            GlobalScope.launch(Dispatchers.IO) {
+                response = HttpClient.get_info(ip)
+                runOnUiThread{ linearLayout.addView(TextView(this@MainActivity).apply { text = response }) }
+                response = HttpClient.connect(ip)
+                runOnUiThread{ linearLayout.addView(TextView(this@MainActivity).apply { text = response }) }
+                response = HttpClient.get_clients(ip)
+                runOnUiThread{ linearLayout.addView(TextView(this@MainActivity).apply { text = response }) }
+//                response = HttpClient.get_apps(ip)
+//                runOnUiThread{ linearLayout.addView(TextView(this@MainActivity).apply { text = response }) }
+                response = HttpClient.disconnect(ip)
+                runOnUiThread{ linearLayout.addView(TextView(this@MainActivity).apply { text = response }) }
+            }
+        }
         GlobalScope.launch(Dispatchers.IO) {
             appList = async { PackageUtils.GetAppList(packageManager) }
             UUID = async { ConfigHelper().getUUID(sharedPreferences, editor) }
