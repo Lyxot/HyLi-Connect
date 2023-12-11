@@ -16,8 +16,8 @@ def method_get(uri):
     print(uri, response.text)
     return json.loads(response.text)
 
-def method_post(uri,params):
-    response = requests.post(url+uri,params=params,headers=headers)
+def method_post(uri,data):
+    response = requests.post(url+uri,data=data,headers=headers)
     print(uri, response.text)
     return json.loads(response.text)
 
