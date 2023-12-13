@@ -12,22 +12,23 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.UserHandle
+import android.util.Base64
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.github.promeg.pinyinhelper.Pinyin
 import xyz.hyli.connect.BuildConfig
+import java.util.Locale
+import kotlin.concurrent.thread
 
 
 object PackageUtils {
     var packageList: List<String> = listOf()
     var appNameMap: MutableMap<String, String> = mutableMapOf()
-    var appIconMap: MutableMap<String, AppIcon> = mutableMapOf()
-    data class AppIcon(
-        val icon: Drawable,
-        val width: Int,
-        val height: Int,
-        val iconByteArray: ByteArray
-    )
+    var appIconMap: MutableMap<String, Drawable> = mutableMapOf()
+    var appWidthMap: MutableMap<String, Int> = mutableMapOf()
+    var appHeightMap: MutableMap<String, Int> = mutableMapOf()
+    var appVersionMap: MutableMap<String, String> = mutableMapOf()
+    var appIconByteMap: MutableMap<String, String> = mutableMapOf()
     //获取应用列表
     fun GetAppList(packageManager: PackageManager): List<String> {
         val intent = Intent()
@@ -38,12 +39,19 @@ object PackageUtils {
 
         for (info in resolveInfos) {
             val packageName = info.activityInfo.packageName
-            val appName = info.loadLabel(packageManager).toString()
             if ( hasInstallThisPackage(packageName, packageManager) ) {
                 if ( packageName != BuildConfig.APPLICATION_ID ) {
-                    appNameMap.put(packageName, appName)
-                    val icon = info.loadIcon(packageManager)
-                    appIconMap.put(packageName, AppIcon(icon, icon.intrinsicWidth, icon.intrinsicHeight, drawalbeToByte(info.loadIcon(packageManager))))
+                    val appName = info.loadLabel(packageManager).toString()
+                    appNameMap[packageName] = appName
+                    thread {
+                        val icon = info.loadIcon(packageManager)
+//                        appIconMap.put(packageName, AppIcon(icon, icon.intrinsicWidth, icon.intrinsicHeight, drawalbeToByte(info.loadIcon(packageManager))))
+                        appIconMap[packageName] = icon
+                        appWidthMap[packageName] = icon.intrinsicWidth
+                        appHeightMap[packageName] = icon.intrinsicHeight
+                        appVersionMap[packageName] = packageManager.getPackageInfo(packageName, 0).versionName
+                        appIconByteMap[packageName] = drawalbeToBase64(icon)
+                    }
                 }
             }
         }
@@ -58,7 +66,7 @@ object PackageUtils {
         for (i in content) {
             stringBuilder.append(Pinyin.toPinyin(i))
         }
-        return stringBuilder.toString().toLowerCase()
+        return stringBuilder.toString().lowercase(Locale.ROOT)
     }
     //判断是否安装了这个应用
     fun hasInstallThisPackage(packageName: String, packageManager: PackageManager): Boolean {
@@ -70,7 +78,6 @@ object PackageUtils {
         }
     }
     //判断某个用户是否安装了这个应用
-    @RequiresApi(Build.VERSION_CODES.O)
     fun hasInstallThisPackageWithUserId(
         packageName: String,
         launcherApps: LauncherApps,
@@ -97,7 +104,7 @@ object PackageUtils {
         return mainActivityName
     }
 
-    fun drawalbeToByte(drawable: Drawable): ByteArray {
+    private fun drawalbeToBase64(drawable: Drawable): String {
         val bitmap = Bitmap.createBitmap(
             drawable.intrinsicWidth,
             drawable.intrinsicHeight,
@@ -108,9 +115,10 @@ object PackageUtils {
         drawable.draw(canvas)
         val stream = java.io.ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-        return stream.toByteArray()
+        return Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT)
     }
-    fun byteToDrawable(byteArray: ByteArray): Drawable {
+    fun base64ToDrawable(base64: String): Drawable {
+        val byteArray = Base64.decode(base64, Base64.DEFAULT)
         val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
         return BitmapDrawable(bitmap)
     }
