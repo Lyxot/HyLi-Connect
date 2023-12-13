@@ -23,7 +23,7 @@ class AppListAdapter(private val context: Context, private val appList: List<Str
         // 获取应用的图标和名称
         val packageName = appList[position]
         var appName = PackageUtils.appNameMap[packageName]
-        var appIcon: Drawable? = PackageUtils.appIconMap[packageName]?.icon ?: null
+        var appIcon: Drawable? = PackageUtils.appIconMap[packageName]
         //        Log.i("xyz.hyli.connect.ui.applist.AppListAdapter", "packageName: " + packageName);
 
         // 显示应用的图标和名称

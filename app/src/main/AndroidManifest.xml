@@ -20,10 +20,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.HyLiConnect"
-        tools:targetApi="31"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        tools:targetApi="31">
         <service
-            android:name=".service.HttpServerService"
+            android:name=".service.SocketServerService"
             android:enabled="true"
             android:exported="true"></service>
 
