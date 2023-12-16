@@ -84,9 +84,10 @@ class SocketConfig {
 
         var uuidMap: HashMap<String, String> = HashMap()
         var nicknameMap: HashMap<String, String> = HashMap()
-        var clientMap: HashMap<String, Socket> = HashMap()
+        var socketMap: HashMap<String, Socket> = HashMap()
         var inputStreamMap: HashMap<String, InputStream> = HashMap()
         var outputStreamMap: HashMap<String, OutputStream> = HashMap()
+        var connectionMap: HashMap<String, Long> = HashMap()
         var isMainServer: Boolean = false
     }
 }
