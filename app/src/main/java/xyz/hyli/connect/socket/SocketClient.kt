@@ -4,6 +4,7 @@ import android.util.Log
 import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.socket.MessageHandler.messageHandler
+import xyz.hyli.connect.socket.utils.SocketUtils
 import xyz.hyli.connect.ui.main.ConfigHelper
 import java.io.IOException
 import java.io.OutputStreamWriter
@@ -13,32 +14,45 @@ import kotlin.concurrent.thread
 
 object SocketClient {
     private val TAG = "SocketClient"
-    fun start(ip: String) {
-        val socket = Socket(ip, SERVER_PORT)
-
-        Log.i(TAG, "Start client = $socket")
+    fun start(ip: String, port: Int = SERVER_PORT) {
+        if ( SocketConfig.socketMap["/$ip:$port"] != null ) return
         thread {
+            val socket = Socket(ip, port)
+            val IPAddress = socket.remoteSocketAddress.toString()
+            Log.i(TAG, "Start client = $socket")
+            Log.i(TAG, "Connect to: $IPAddress")
+            SocketConfig.socketMap[IPAddress] = socket
+            SocketConfig.connectionMap[IPAddress] = System.currentTimeMillis()
             try {
                 val inputStream = socket.getInputStream()
                 val bufferedReader = inputStream.bufferedReader()
                 val outputStream = socket.getOutputStream()
-                val printWriter = PrintWriter(OutputStreamWriter(outputStream))
 
-                var message: String? = null
-                while ((message == bufferedReader.readLine()) != null) {
-                    Log.i(TAG, "Receive message: $message")
-                    messageHandler(ip, message?:"")
+                SocketConfig.inputStreamMap[IPAddress] = inputStream
+                SocketConfig.outputStreamMap[IPAddress] = outputStream
+                socket.keepAlive = true
+                SocketUtils.sendHeartbeat(IPAddress)
+
+                var message: String?
+                while (socket.isConnected) {
+                    message = bufferedReader.readLine()
+                    if ( message.isNullOrEmpty().not() ) {
+                        Log.i(TAG, "Receive message: $IPAddress $message")
+                        messageHandler(IPAddress, message)
+                    }
                 }
             } catch (e: IOException) {
                 Log.e(TAG, "Error: ${e.message}")
             } finally {
-                socket.close()
+                SocketUtils.closeConnection(IPAddress)
+                Log.i(TAG, "Close connection: $IPAddress")
             }
         }
     }
-    fun getInfo(ip: String): JSONObject? {
+    fun getInfo(ip: String, port: Int = SERVER_PORT): JSONObject? {
         try {
-            val socket = Socket(ip, SERVER_PORT)
+            val socket = Socket(ip, port)
+            Log.i(TAG, "Start client: $socket")
             val inputStream = socket.getInputStream()
             val bufferedReader = inputStream.bufferedReader()
             val printWriter = PrintWriter(OutputStreamWriter(socket.getOutputStream()), true)
@@ -54,8 +68,10 @@ object SocketClient {
             messageData["nickname"] = ConfigHelper.NICKNAME
             messageJson["data"] = messageData
             messageJson["uuid"] = ConfigHelper.uuid
+            messageJson["status"] = "success"
             printWriter.println(messageJson.toJSONString())
-            var message: String
+            Log.i(TAG, "Send message: ${messageJson.toJSONString()}")
+            var message: String?
             val t1 = System.currentTimeMillis()
             while (socket.isConnected) {
                 message = bufferedReader.readLine()
@@ -65,7 +81,11 @@ object SocketClient {
                     if ( messageJson["message_type"] == "response" ) {
                         if ( messageJson["command"] == COMMAND_GET_INFO ) {
                             val data = messageJson.getJSONObject("data")
+                            Log.i(TAG, "Get info: $data")
+                            printWriter.close()
+                            bufferedReader.close()
                             socket.close()
+                            Log.i(TAG, "Close client: $socket")
                             return data
                         }
                     }
@@ -73,7 +93,10 @@ object SocketClient {
 
                 if ( System.currentTimeMillis() - t1 > 10000 ) break
             }
+            printWriter.close()
+            bufferedReader.close()
             socket.close()
+            Log.i(TAG, "Close client: $socket")
             Log.i(TAG, "Failed to get info: $ip")
             return null
         } catch (e: IOException) {

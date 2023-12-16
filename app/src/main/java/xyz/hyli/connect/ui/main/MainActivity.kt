@@ -11,8 +11,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
-import com.alibaba.fastjson2.JSONObject
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -21,44 +22,57 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
-import xyz.hyli.connect.service.SocketServerService
+import xyz.hyli.connect.service.SocketService
+import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.socket.SocketClient
-import xyz.hyli.connect.socket.SocketServer
 import xyz.hyli.connect.utils.PackageUtils
 import java.util.concurrent.CompletableFuture
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private val SHIZUKU_CODE = 0xCA07A
     private var shizukuPermissionFuture = CompletableFuture<Boolean>()
     private var appList: Deferred<List<String>>? = null
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
+    private lateinit var localBroadcastManager: LocalBroadcastManager
     var UUID: Deferred<String>? = null
     var IP_ADDRESS: Deferred<String>? = null
     var NICKNAME: Deferred<String>? = null
+
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
-        startService(Intent(this, SocketServerService::class.java))
+        startForegroundService(Intent(this, SocketService::class.java))
         sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
+        localBroadcastManager = LocalBroadcastManager.getInstance(this)
         Log.i("MainActivity", "$sharedPreferences")
 
         val applist_button = findViewById<Button>(R.id.applist_button)
         val textView = findViewById<TextView>(R.id.info_textview)
         val editText = findViewById<TextView>(R.id.edittext)
+        val infoButton = findViewById<Button>(R.id.info_button)
         val connectButton = findViewById<Button>(R.id.connect_button)
         val linearLayout = findViewById<LinearLayout>(R.id.linearlayout_main)
+        infoButton.setOnClickListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                val ip = editText.text.toString()
+                val response = SocketClient.getInfo(ip).toString()
+                runOnUiThread { linearLayout.addView(TextView(this@MainActivity).apply { text = response }) }
+            }
+        }
         connectButton.setOnClickListener{
             val ip = editText.text.toString()
-            var response: String
             GlobalScope.launch(Dispatchers.IO) {
-                response = SocketClient.getInfo(ip).toString()
-                runOnUiThread { linearLayout.addView(TextView(this@MainActivity).apply { text = response }) }
+                val intent = Intent("xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT")
+                intent.putExtra("command", "start")
+                intent.putExtra("ip", ip)
+                intent.putExtra("port", SERVER_PORT)
+                localBroadcastManager.sendBroadcast(intent)
             }
         }
         GlobalScope.launch(Dispatchers.IO) {

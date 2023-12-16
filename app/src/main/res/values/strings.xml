@@ -3,4 +3,9 @@
     <string name="xposed_description">Prevent app from launching ouside of the window</string>
     <string name="title_activity_display" translatable="false">Display Activity</string>
     <string name="title_activity_app_list" translatable="false">AppList Activity</string>
+    <string name="dialog_connect_request_title">Connection request</string>
+    <string name="dialog_connect_request_message">request connection</string>
+    <string name="channel_1_name">Foreground service notification</string>
+    <string name="channel_1_notification_title">Hyli Connect is running</string>
+    <string name="channel_1_notification_message">This notification is required to keep Hyli Connect running</string>
 </resources>

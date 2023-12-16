@@ -26,6 +26,11 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/info_button"
+            android:text="Info"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/connect_button"
             android:text="Connect"/>
     </LinearLayout>
