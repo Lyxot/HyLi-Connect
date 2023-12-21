@@ -83,6 +83,19 @@ private val DarkColors = darkColorScheme(
 )
 
 @Composable
+fun HyliConnectColorScheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = true
+) = when {
+    dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        val context = LocalContext.current
+        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    }
+    darkTheme -> DarkColors
+    else -> LightColors
+}
+
+@Composable
 fun HyliConnectTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,

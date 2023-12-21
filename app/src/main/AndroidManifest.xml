@@ -30,26 +30,31 @@
             android:permission="android.permission.BIND_JOB_SERVICE"/>
 
         <activity
-            android:name=".ui.main.AppListActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:exported="false"
-            android:label="@string/title_activity_app_list"
-            android:theme="@style/Theme.HyLiConnect" />
-        <activity
-            android:name=".ui.main.DisplayActivity"
-            android:exported="false"
-            android:label="@string/title_activity_display"
-            android:theme="@style/Theme.HyLiConnect" />
-        <activity
-            android:name=".ui.main.MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.HyLiConnect">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.test.AppListActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="false"
+            android:label="@string/title_activity_app_list"
+            android:theme="@style/Theme.HyLiConnect" />
+        <activity
+            android:name=".ui.test.DisplayActivity"
+            android:exported="false"
+            android:label="@string/title_activity_display"
+            android:theme="@style/Theme.HyLiConnect" />
+        <activity
+            android:name=".ui.test.TestActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.HyLiConnect">
         </activity>
 
         <provider

@@ -1,19 +1,14 @@
-package xyz.hyli.connect.ui.main
+package xyz.hyli.connect.ui.test
 
-import xyz.hyli.connect.ui.applist.AppListAdapter
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.ListView
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.core.view.WindowCompat
-import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
 import xyz.hyli.connect.utils.PackageUtils
 import xyz.hyli.connect.utils.ShellUtils
 import xyz.hyli.connect.utils.VirtualDisplayUtils
-import java.util.concurrent.CompletableFuture
 
 
 class AppListActivity : ComponentActivity() {

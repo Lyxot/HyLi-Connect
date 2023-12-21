@@ -1,13 +1,12 @@
 package xyz.hyli.connect.socket.utils
 
-import android.provider.ContactsContract.CommonDataKinds.Nickname
 import android.util.Log
 import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.socket.COMMAND_CONNECT
 import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.socket.SocketClient
 import xyz.hyli.connect.socket.SocketConfig
-import xyz.hyli.connect.ui.main.ConfigHelper
+import xyz.hyli.connect.ui.test.ConfigHelper
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.util.UUID.randomUUID
