@@ -8,4 +8,7 @@
     <string name="channel_1_name">Foreground service notification</string>
     <string name="channel_1_notification_title">Hyli Connect is running</string>
     <string name="channel_1_notification_message">This notification is required to keep Hyli Connect running</string>
+    <string name="page_connect">Connect</string>
+    <string name="page_devices">Devices</string>
+    <string name="page_settings">Settings</string>
 </resources>

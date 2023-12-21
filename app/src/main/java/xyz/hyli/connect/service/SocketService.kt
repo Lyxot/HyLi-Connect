@@ -21,7 +21,7 @@ import xyz.hyli.connect.socket.MessageHandler
 import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.socket.SocketConfig
 import xyz.hyli.connect.socket.utils.SocketUtils
-import xyz.hyli.connect.ui.main.MainActivity
+import xyz.hyli.connect.ui.test.TestActivity
 import java.io.IOException
 import java.net.ServerSocket
 import kotlin.concurrent.thread
@@ -176,7 +176,7 @@ class SocketService : Service() {
         notificationManager.createNotificationChannel(channel)
 
         val pendingIntent: PendingIntent =
-            Intent(this, MainActivity::class.java).let { notificationIntent ->
+            Intent(this, TestActivity::class.java).let { notificationIntent ->
                 PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_ONE_SHOT)
             }
 

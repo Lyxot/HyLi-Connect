@@ -1,4 +1,4 @@
-package xyz.hyli.connect.ui.applist
+package xyz.hyli.connect.ui.test
 
 import android.content.Context
 import android.graphics.drawable.Drawable
@@ -24,7 +24,7 @@ class AppListAdapter(private val context: Context, private val appList: List<Str
         val packageName = appList[position]
         var appName = PackageUtils.appNameMap[packageName]
         var appIcon: Drawable? = PackageUtils.appIconMap[packageName]
-        //        Log.i("xyz.hyli.connect.ui.applist.AppListAdapter", "packageName: " + packageName);
+        //        Log.i("xyz.hyli.connect.ui.test.AppListAdapter", "packageName: " + packageName);
 
         // 显示应用的图标和名称
         if (appIcon == null) {

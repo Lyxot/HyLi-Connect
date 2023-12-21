@@ -1,22 +1,13 @@
-package xyz.hyli.connect.ui.main
+package xyz.hyli.connect.ui.test
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.ImageFormat
-import android.graphics.Rect
 import android.graphics.SurfaceTexture
-import android.graphics.YuvImage
 import android.hardware.display.VirtualDisplay
 import android.os.Bundle
-import android.util.Log
 import android.view.Surface
-import android.view.SurfaceHolder
-import android.view.SurfaceView
 import android.view.TextureView
 import androidx.activity.ComponentActivity
 import xyz.hyli.connect.R
 import xyz.hyli.connect.utils.VirtualDisplayUtils
-import java.io.ByteArrayOutputStream
 
 class DisplayActivity : ComponentActivity() {
     private var displayID: Int = 0

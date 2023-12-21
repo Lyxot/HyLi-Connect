@@ -1,13 +1,11 @@
 package xyz.hyli.connect.socket
 
-import android.content.Intent
-import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.alibaba.fastjson2.JSONArray
 import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.socket.utils.SocketUtils
-import xyz.hyli.connect.ui.main.ConfigHelper
+import xyz.hyli.connect.ui.test.ConfigHelper
 import xyz.hyli.connect.utils.PackageUtils
 
 object MessageHandler {

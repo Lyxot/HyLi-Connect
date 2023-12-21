@@ -1,4 +1,4 @@
-package xyz.hyli.connect.ui.main
+package xyz.hyli.connect.ui.test
 
 import android.content.Context
 import android.content.SharedPreferences

@@ -1,4 +1,4 @@
-package xyz.hyli.connect.ui.main
+package xyz.hyli.connect.ui.test
 
 import android.content.Context
 import android.content.Intent
@@ -10,7 +10,6 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -29,7 +28,7 @@ import xyz.hyli.connect.utils.PackageUtils
 import java.util.concurrent.CompletableFuture
 
 
-class MainActivity : AppCompatActivity() {
+class TestActivity : AppCompatActivity() {
     private val SHIZUKU_CODE = 0xCA07A
     private var shizukuPermissionFuture = CompletableFuture<Boolean>()
     private var appList: Deferred<List<String>>? = null
@@ -45,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_test)
         startForegroundService(Intent(this, SocketService::class.java))
         sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
@@ -62,7 +61,7 @@ class MainActivity : AppCompatActivity() {
             GlobalScope.launch(Dispatchers.IO) {
                 val ip = editText.text.toString()
                 val response = SocketClient.getInfo(ip).toString()
-                runOnUiThread { linearLayout.addView(TextView(this@MainActivity).apply { text = response }) }
+                runOnUiThread { linearLayout.addView(TextView(this@TestActivity).apply { text = response }) }
             }
         }
         connectButton.setOnClickListener{
@@ -78,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.IO) {
             appList = async { PackageUtils.GetAppList(packageManager) }
             UUID = async { ConfigHelper().getUUID(sharedPreferences, editor) }
-            IP_ADDRESS = async { ConfigHelper().getIPAddress(this@MainActivity) }
+            IP_ADDRESS = async { ConfigHelper().getIPAddress(this@TestActivity) }
             NICKNAME = async { ConfigHelper().getNickname(sharedPreferences, editor) }
         }
         GlobalScope.launch(Dispatchers.Main) {
@@ -86,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         }
         applist_button.setOnClickListener {
             GlobalScope.launch(Dispatchers.Main) {
-                val intent = Intent(this@MainActivity, AppListActivity::class.java)
+                val intent = Intent(this@TestActivity, AppListActivity::class.java)
                 intent.putExtra("appList", appList?.await()?.toTypedArray())
                 startActivity(intent)
             }

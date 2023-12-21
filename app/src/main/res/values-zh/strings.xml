@@ -6,4 +6,7 @@
     <string name="channel_1_name">前台服务通知</string>
     <string name="channel_1_notification_title">Hyli Connect正在运行</string>
     <string name="channel_1_notification_message">此通知用于保持Hyli Connect在后台运行</string>
+    <string name="page_connect">连接</string>
+    <string name="page_devices">设备</string>
+    <string name="page_settings">设置</string>
 </resources>
