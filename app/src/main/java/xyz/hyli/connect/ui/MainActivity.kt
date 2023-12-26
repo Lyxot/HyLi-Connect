@@ -1,5 +1,6 @@
 package xyz.hyli.connect.ui
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,17 +15,34 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import xyz.hyli.connect.service.SocketService
 import xyz.hyli.connect.ui.navigation.compactScreen
 import xyz.hyli.connect.ui.navigation.expandedScreen
 import xyz.hyli.connect.ui.navigation.mediumScreen
 import xyz.hyli.connect.ui.theme.HyliConnectTheme
+import xyz.hyli.connect.utils.PackageUtils
 
 class MainActivity: ComponentActivity() {
+    private var appList: Deferred<List<String>>? = null
+    var IP_ADDRESS: Deferred<String>? = null
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.navigationBarColor = Color.TRANSPARENT
         enableEdgeToEdge()
+
+        startForegroundService(Intent(this, SocketService::class.java))
+
+        GlobalScope.launch(Dispatchers.IO) {
+            IP_ADDRESS = async { ConfigHelper().getIPAddress(this@MainActivity) }
+            appList = async { PackageUtils.GetAppList(packageManager) }
+        }
+
         setContent {
             HyliConnectTheme {
                 val widthSizeClass = calculateWindowSizeClass(this).widthSizeClass

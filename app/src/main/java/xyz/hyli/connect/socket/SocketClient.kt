@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.socket.MessageHandler.messageHandler
 import xyz.hyli.connect.socket.utils.SocketUtils
-import xyz.hyli.connect.ui.test.ConfigHelper
+import xyz.hyli.connect.ui.ConfigHelper
 import java.io.IOException
 import java.io.OutputStreamWriter
 import java.io.PrintWriter

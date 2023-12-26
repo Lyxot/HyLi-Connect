@@ -5,8 +5,12 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
+import android.net.nsd.NsdManager
+import android.net.nsd.NsdServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
@@ -16,18 +20,28 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
+import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.MessageHandler
+import xyz.hyli.connect.socket.PLATFORM
 import xyz.hyli.connect.socket.SERVER_PORT
+import xyz.hyli.connect.socket.SERVICE_TYPE
 import xyz.hyli.connect.socket.SocketConfig
 import xyz.hyli.connect.socket.utils.SocketUtils
+import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.ui.test.TestActivity
 import java.io.IOException
 import java.net.ServerSocket
 import kotlin.concurrent.thread
 
 class SocketService : Service() {
+    private var serverPort: Int = SERVER_PORT
     private var serverSocket: ServerSocket? = null
+    private lateinit var mNsdManager: NsdManager
+    private lateinit var NsdRegistrationListener: NsdManager.RegistrationListener
+    private var mNsdServiceName: String? = null
+    private var nsdRunning = false
     private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: android.content.Context, intent: Intent) {
             val action = intent.action
@@ -86,7 +100,11 @@ class SocketService : Service() {
     override fun onCreate() {
         super.onCreate()
         setForeground()
-        startServer()
+        val sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE)
+        ConfigHelper().initConfig(sharedPreferences, sharedPreferences.edit())
+        serverPort = ConfigHelper.SERVER_PORT
+        startServer(serverPort)
+        registerNsdService(sharedPreferences)
         checkConnection()
         val filter = IntentFilter()
         filter.addAction("xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT")
@@ -96,7 +114,11 @@ class SocketService : Service() {
         localBroadcastManager.registerReceiver(broadcastReceiver, filter)
     }
     override fun onBind(intent: Intent): IBinder {
-        startServer()
+        val sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE)
+        ConfigHelper().initConfig(sharedPreferences, sharedPreferences.edit())
+        serverPort = ConfigHelper.SERVER_PORT
+        startServer(serverPort)
+        registerNsdService(sharedPreferences)
         checkConnection()
         return Binder()
     }
@@ -109,6 +131,7 @@ class SocketService : Service() {
         super.onDestroy()
         checkConnectionThread.stop()
         stop()
+        unregisterNsdService()
         stopForeground(true)
         localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SOCKET_SERVER").apply {
             putExtra("command", "start")
@@ -188,6 +211,58 @@ class SocketService : Service() {
             .setTicker(getText(R.string.channel_1_notification_title))
             .build()
         startForeground(1, notification)
+    }
+    private fun registerNsdService(sharedPreferences: SharedPreferences) {
+        if ( nsdRunning ) {
+            return
+        }
+
+        val uuid = ConfigHelper.uuid
+        val nickname = ConfigHelper.NICKNAME
+        val mNsdServiceInfo = NsdServiceInfo().apply {
+            serviceName = "HyliConnect@$uuid"
+            serviceType = SERVICE_TYPE
+            port = serverPort
+        }
+        mNsdServiceInfo.setAttribute("uuid", uuid)
+        mNsdServiceInfo.setAttribute("nickname", nickname)
+        mNsdServiceInfo.setAttribute("api", API_VERSION.toString())
+        mNsdServiceInfo.setAttribute("app", BuildConfig.VERSION_CODE.toString())
+        mNsdServiceInfo.setAttribute("app_name", BuildConfig.VERSION_NAME)
+        mNsdServiceInfo.setAttribute("platform", PLATFORM)
+        mNsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
+        NsdRegistrationListener = object : NsdManager.RegistrationListener {
+            override fun onRegistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
+                // Registration failed! Put debugging code here to determine why.
+            }
+
+            override fun onUnregistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
+                // Unregistration failed. Put debugging code here to determine why.
+            }
+
+            override fun onServiceRegistered(serviceInfo: NsdServiceInfo) {
+                // Save the service name. Android may have changed it in order to
+                // resolve a conflict, so update the name you initially requested
+                // with the name Android actually used.
+                mNsdServiceName = serviceInfo.serviceName
+                nsdRunning = true
+                Log.i("SocketService", "Register service: $mNsdServiceName")
+            }
+
+            override fun onServiceUnregistered(serviceInfo: NsdServiceInfo) {
+                // Service has been unregistered. This only happens when you call
+                // NsdManager.unregisterService() and pass in this listener.
+                nsdRunning = false
+                Log.i("SocketService", "Unregister service: $mNsdServiceName")
+            }
+        }
+        mNsdManager.registerService(mNsdServiceInfo, NsdManager.PROTOCOL_DNS_SD, NsdRegistrationListener)
+    }
+    private fun unregisterNsdService() {
+        if ( nsdRunning.not() ) {
+            return
+        }
+        mNsdManager.unregisterService(NsdRegistrationListener)
     }
     private fun createDialog(ip: String, nickname: String, uuid: String) {
         val dialog = MaterialAlertDialogBuilder(this, R.style.Theme_HyLiConnect)

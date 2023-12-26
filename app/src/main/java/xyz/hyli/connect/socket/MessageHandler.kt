@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSONArray
 import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.socket.utils.SocketUtils
-import xyz.hyli.connect.ui.test.ConfigHelper
+import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.utils.PackageUtils
 
 object MessageHandler {
@@ -62,7 +62,6 @@ object MessageHandler {
             when (command) {
                 COMMAND_CONNECT -> {
                     responseData["uuid"] = ConfigHelper.uuid
-                    responseData["ip_address"] = ConfigHelper.IP_ADDRESS
                     responseData["nickname"] = ConfigHelper.NICKNAME
 
                     // temporary

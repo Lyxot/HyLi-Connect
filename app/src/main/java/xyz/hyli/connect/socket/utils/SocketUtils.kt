@@ -6,7 +6,7 @@ import xyz.hyli.connect.socket.COMMAND_CONNECT
 import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.socket.SocketClient
 import xyz.hyli.connect.socket.SocketConfig
-import xyz.hyli.connect.ui.test.ConfigHelper
+import xyz.hyli.connect.ui.ConfigHelper
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.util.UUID.randomUUID
@@ -41,7 +41,6 @@ object SocketUtils {
         messageJson["message_type"] = "response"
         messageJson["command"] = COMMAND_CONNECT
         messageData["uuid"] = ConfigHelper.uuid
-        messageData["ip_address"] = ConfigHelper.IP_ADDRESS
         messageData["nickname"] = ConfigHelper.NICKNAME
         messageJson["data"] = messageData
         messageJson["uuid"] = ConfigHelper.uuid
@@ -53,7 +52,6 @@ object SocketUtils {
         messageJson["message_type"] = "response"
         messageJson["command"] = COMMAND_CONNECT
         messageData["uuid"] = ConfigHelper.uuid
-        messageData["ip_address"] = ConfigHelper.IP_ADDRESS
         messageData["nickname"] = ConfigHelper.NICKNAME
         messageJson["data"] = messageData
         messageJson["uuid"] = ConfigHelper.uuid
