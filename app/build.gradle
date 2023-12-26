@@ -77,6 +77,9 @@ dependencies {
     implementation 'io.github.biezhi:TinyPinyin:2.0.3.RELEASE'
     implementation 'com.alibaba.fastjson2:fastjson2-kotlin:2.0.43'
     implementation 'com.google.android.material:material:1.11.0'
+    implementation 'br.com.devsrsouza.compose.icons:font-awesome:1.1.0'
+    implementation 'br.com.devsrsouza.compose.icons:line-awesome:1.1.0'
+    implementation 'br.com.devsrsouza.compose.icons:css-gg:1.1.0'
 
     def accompanist_version = "0.32.0"
     implementation "com.google.accompanist:accompanist-adaptive:$accompanist_version"

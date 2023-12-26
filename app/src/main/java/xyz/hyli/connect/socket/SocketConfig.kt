@@ -7,6 +7,7 @@ import java.net.Socket
 const val API_VERSION = 1
 const val PLATFORM = "Android Phone"
 const val SERVER_PORT = 15372
+const val SERVICE_TYPE = "_hyli-connect._tcp."
 
 /**
  * Json
@@ -36,7 +37,6 @@ const val COMMAND_GET_INFO = "get_info"
 /** connect
  * data: {
  *   "uuid": String,
- *   "ip_address": String,
  *   "nickname": String
  *   }
  */

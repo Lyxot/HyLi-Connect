@@ -24,6 +24,7 @@ import xyz.hyli.connect.R
 import xyz.hyli.connect.service.SocketService
 import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.socket.SocketClient
+import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.utils.PackageUtils
 import java.util.concurrent.CompletableFuture
 
