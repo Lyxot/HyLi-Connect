@@ -39,6 +39,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.dialog.RequestConnectionActivity"
+            android:exported="true"
+            android:label="@string/dialog_connect_request_title"
+            android:theme="@style/Theme.HyLiConnect.DialogTransparent"
+            android:excludeFromRecents="true" />
+
         <activity
             android:name=".ui.test.AppListActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"

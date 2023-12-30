@@ -1,11 +1,11 @@
 package xyz.hyli.connect.ui.pages
 
 import android.content.Context
+import android.content.Intent
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -14,6 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import compose.icons.CssGgIcons
@@ -51,28 +53,34 @@ import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.socket.SERVICE_TYPE
+import xyz.hyli.connect.socket.SocketConfig
 import xyz.hyli.connect.ui.ConfigHelper
+import xyz.hyli.connect.ui.HyliConnectViewModel
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
-val mNsdManagerState = mutableStateOf<NsdManager?>(null)
-val nsdDeviceMap = mutableStateMapOf<String,DeviceInfo>()
-val visibilityMap = mutableStateMapOf<String,MutableState<Boolean>>()
-val connectedDeviceMap = mutableStateMapOf<String,DeviceInfo>()
+private val mNsdManagerState = mutableStateOf<NsdManager?>(null)
+private lateinit var localBroadcastManager: LocalBroadcastManager
+private lateinit var nsdDeviceMap: MutableMap<String,DeviceInfo>
+private lateinit var connectDeviceVisibilityMap: MutableMap<String,MutableState<Boolean>>
+private lateinit var connectedDeviceMap: MutableMap<String,DeviceInfo>
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun connectScreen(navController: NavHostController, currentSelect: MutableState<Int>) {
-    val semaphore = remember { Semaphore(1) }
+fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
     val context = LocalContext.current
+    nsdDeviceMap = viewModel.nsdDeviceMap
+    connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
+    connectedDeviceMap = viewModel.connectedDeviceMap
 
     val sharedPreferences = remember { context.getSharedPreferences("config", Context.MODE_PRIVATE) }
     val NICKNAME = remember { ConfigHelper().getNickname(sharedPreferences, sharedPreferences.edit()) }
     val IP_ADDRESS = remember { ConfigHelper().getIPAddress(context) }
     val UUID = remember { ConfigHelper().getUUID(sharedPreferences, sharedPreferences.edit()) }
 
+    val semaphore = remember { Semaphore(1) }
     mNsdManagerState.value = context.getSystemService(Context.NSD_SERVICE) as NsdManager
     val mNsdManager = mNsdManagerState.value
     val mResolverListener = object : NsdManager.ResolveListener {
@@ -160,6 +168,8 @@ fun connectScreen(navController: NavHostController, currentSelect: MutableState<
             }
         }
     }
+
+    localBroadcastManager = LocalBroadcastManager.getInstance(context)
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(12.dp)) {
@@ -178,6 +188,7 @@ fun connectScreen(navController: NavHostController, currentSelect: MutableState<
             Text(text = NICKNAME)
             Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier
                 .padding(horizontal = 2.dp)
+                .align(Alignment.CenterVertically)
                 .clickable {
                     currentSelect.value = 2
                     navController.navigate("settingsScreen") {
@@ -193,12 +204,14 @@ fun connectScreen(navController: NavHostController, currentSelect: MutableState<
         LazyColumn(content = {
             item {
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    Text(text = "Available device")
+                    Text(text = stringResource(id = R.string.page_connect_available_devices))
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier
                         .padding(horizontal = 2.dp)
+                        .align(Alignment.CenterVertically)
                         .clickable {
                             /*TODO(Manual Connect)*/
-                        })
+                        }
+                    )
                 }
             }
             if ( nsdDeviceMap.isEmpty() ) {
@@ -225,33 +238,44 @@ fun connectScreen(navController: NavHostController, currentSelect: MutableState<
                         }
                     }
                 ) {
-                    Text(text = "Connected device")
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier.padding(horizontal = 2.dp))
+                    Text(text = stringResource(id = R.string.page_connect_connected_devices))
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier
+                        .padding(horizontal = 2.dp)
+                        .align(Alignment.CenterVertically))
                 }
             }
             items(connectedDeviceMap.values.toList()) { deviceInfo ->
-                deviceCard(deviceInfo)
+                deviceCard(deviceInfo, navController, currentSelect)
             }
         })
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun deviceCard(deviceInfo: DeviceInfo) {
-    AnimatedVisibility(visible = visibilityMap[deviceInfo.uuid]?.value ?: remember { mutableStateOf(false) }.value,
+private fun deviceCard(deviceInfo: DeviceInfo, navController: NavHostController? = null, currentSelect: MutableState<Int>? = null) {
+    AnimatedVisibility(visible = connectDeviceVisibilityMap[deviceInfo.uuid]?.value ?: remember { mutableStateOf(false) }.value,
         enter = fadeIn(animationSpec = tween(400)),
         exit = fadeOut(animationSpec = tween(400))) {
         Card(modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                if (deviceInfo.uuid in connectedDeviceMap.keys) {
-//                    connectedDeviceMap.remove(deviceInfo.uuid)
+                if (deviceInfo.uuid in connectedDeviceMap.keys && navController != null && currentSelect != null) {
+                    currentSelect.value = 1
+                    navController.navigate("DevicesScreen") {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 } else {
                     /*TODO(Connect to device)*/
-                    connectedDeviceMap[deviceInfo.uuid] = deviceInfo
-                    nsdDeviceMap.remove(deviceInfo.uuid)
-                    visibilityMap[deviceInfo.uuid]!!.value = false
+                    localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT").apply {
+                        putExtra("command", "start")
+                        putExtra("ip", deviceInfo.ip_address[0])
+                        putExtra("port", deviceInfo.port)
+                    })
                 }
             }
             .padding(6.dp),
@@ -262,23 +286,26 @@ fun deviceCard(deviceInfo: DeviceInfo) {
                 disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
             )
         ) {
-            Row {
-                Row(modifier = Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(when(deviceInfo.platform) {
-                        "Android Phone" -> { LineAwesomeIcons.MobileAltSolid }
-                        "Android TV" -> { LineAwesomeIcons.TvSolid }
-                        "Windows" -> { LineAwesomeIcons.DesktopSolid }
-                        "Linux" -> { LineAwesomeIcons.DesktopSolid }
-                        "Mac" -> { CssGgIcons.Laptop }
-                        "Web" -> { CssGgIcons.GlobeAlt }
-                        else -> { LineAwesomeIcons.QuestionCircleSolid }
-                    }, contentDescription = null, modifier = Modifier
-                        .size(84.dp)
-                        .padding(top = 12.dp, bottom = 12.dp))
-                }
-                Column(modifier = Modifier.padding(top = 12.dp, bottom = 12.dp, end = 12.dp)) {
-                    Text(text = deviceInfo.nickname, style = HyliConnectTypography.titleMedium)
-                    Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(when(deviceInfo.platform) {
+                    "Android Phone" -> { LineAwesomeIcons.MobileAltSolid }
+                    "Android TV" -> { LineAwesomeIcons.TvSolid }
+                    "Windows" -> { LineAwesomeIcons.DesktopSolid }
+                    "Linux" -> { LineAwesomeIcons.DesktopSolid }
+                    "Mac" -> { CssGgIcons.Laptop }
+                    "Web" -> { CssGgIcons.GlobeAlt }
+                    else -> { LineAwesomeIcons.QuestionCircleSolid }
+                }, contentDescription = null, modifier = Modifier
+                    .size(84.dp)
+                    .padding(top = 12.dp, bottom = 12.dp))
+                Column(modifier = Modifier.padding(top = 12.dp, bottom = 12.dp, end = 12.dp), verticalArrangement = Arrangement.Center) {
+                    Row(verticalAlignment = Alignment.CenterVertically){
+                        Text(text = when(deviceInfo.uuid) {
+                            ConfigHelper.uuid -> { deviceInfo.nickname + " (" + stringResource(id = R.string.page_connect_this_device) + ")" }
+                            else -> { deviceInfo.nickname }
+                        }, style = HyliConnectTypography.titleMedium)
+                    }
+                    FlowRow {
                         Card(modifier = Modifier.padding(end = 6.dp, top = 4.dp), colors = CardColors(
                             containerColor = HyliConnectColorScheme().tertiaryContainer,
                             contentColor = HyliConnectColorScheme().onTertiaryContainer,
@@ -303,7 +330,7 @@ fun deviceCard(deviceInfo: DeviceInfo) {
             }
         }
     }
-    visibilityMap[deviceInfo.uuid] = remember { mutableStateOf(true) }
+    connectDeviceVisibilityMap[deviceInfo.uuid] = remember { mutableStateOf(true) }
 }
 
 @Composable

@@ -1,9 +1,11 @@
 package xyz.hyli.connect.socket
 
+import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.alibaba.fastjson2.JSONArray
 import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
+import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.socket.utils.SocketUtils
 import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.utils.PackageUtils
@@ -65,13 +67,14 @@ object MessageHandler {
                     responseData["nickname"] = ConfigHelper.NICKNAME
 
                     // temporary
-                    SocketUtils.acceptConnection(ip, data.getString("nickname") ?: "", uuid)
-//                val intent = Intent("xyz.hyli.connect.service.SocketService.action.CONNECT_REQUEST")
-//                intent.putExtra("command", "connect")
-//                intent.putExtra("ip", ip)
-//                intent.putExtra("nickname", data.getString("nickname")?:"")
-//                intent.putExtra("uuid", uuid)
-//                broadcastManager?.sendBroadcast(intent)
+//                    SocketUtils.acceptConnection(ip, data.getString("nickname") ?: "", uuid)
+                    val intent = Intent("xyz.hyli.connect.service.SocketService.action.CONNECT_REQUEST")
+                    intent.putExtra("command", "connect")
+                    intent.putExtra("ip", ip)
+                    intent.putExtra("nickname", data.getString("nickname")?:"")
+                    intent.putExtra("uuid", uuid)
+                    intent.putExtra("data", data.toString())
+                    broadcastManager?.sendBroadcast(intent)
                 }
 
                 COMMAND_DISCONNECT -> {
@@ -86,7 +89,6 @@ object MessageHandler {
                         val clientInfo = JSONObject()
                         clientInfo["uuid"] = value
                         clientInfo["ip_address"] = key
-                        clientInfo["nickname"] = SocketConfig.nicknameMap[key]
                         clientList.add(clientInfo)
                     }
                     responseData["client_list"] = clientList
@@ -117,6 +119,35 @@ object MessageHandler {
         messageJson: JSONObject,
         broadcastManager: LocalBroadcastManager? = null
     ) {
+        val command = messageJson.getString("command") ?: ""
+        val data = messageJson.getJSONObject("data") ?: JSONObject()
+        val uuid = data.getString("uuid") ?: ""
+        if (command == "" || data == JSONObject() || uuid == "") return
+
+        when (command) {
+            COMMAND_CONNECT -> {
+                val status = messageJson.getString("status") ?: ""
+                if (status == "accept") {
+                    SocketConfig.uuidMap[ip] = uuid
+                    val ip_address = ip.substring(1, ip.length).split(":")[0]
+                    val port = ip.substring(1, ip.length).split(":").last().toInt()
+                    val deviceInfo = DeviceInfo(
+                        data.getIntValue("api_version"),
+                        data.getIntValue("app_version"),
+                        data.getString("app_version_name") ?: "",
+                        data.getString("platform") ?: "",
+                        uuid,
+                        data.getString("nickname") ?: "",
+                        mutableListOf(ip_address),
+                        port
+                    )
+                    SocketConfig.deviceInfoMap[uuid] = deviceInfo
+                    SocketUtils.sendHeartbeat(ip)
+                } else if (status == "reject") {
+                    SocketUtils.closeConnection(ip)
+                }
+            }
+        }
 
     }
 
@@ -144,7 +175,13 @@ object MessageHandler {
         SocketConfig.connectionMap[ip] = System.currentTimeMillis()
         Thread.sleep(3000)
         if (System.currentTimeMillis() - SocketConfig.connectionMap[ip]!! >= 3000 || SocketConfig.connectionMap.containsKey(ip).not() || SocketConfig.connectionMap[ip] == null) {
-            SocketUtils.sendHeartbeat(ip)
+            if ( SocketConfig.uuidMap.containsKey(ip) ) {
+                try {
+                    SocketUtils.sendHeartbeat(ip)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 }

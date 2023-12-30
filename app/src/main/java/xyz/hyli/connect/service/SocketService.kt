@@ -15,11 +15,10 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
 import xyz.hyli.connect.socket.API_VERSION
@@ -30,6 +29,7 @@ import xyz.hyli.connect.socket.SERVICE_TYPE
 import xyz.hyli.connect.socket.SocketConfig
 import xyz.hyli.connect.socket.utils.SocketUtils
 import xyz.hyli.connect.ui.ConfigHelper
+import xyz.hyli.connect.ui.dialog.RequestConnectionActivity
 import xyz.hyli.connect.ui.test.TestActivity
 import java.io.IOException
 import java.net.ServerSocket
@@ -63,9 +63,18 @@ class SocketService : Service() {
                 val ip = intent.getStringExtra("ip")
                 val nickname = intent.getStringExtra("nickname")
                 val uuid = intent.getStringExtra("uuid")
-                if ( command.isNullOrEmpty().not() && ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() ) {
+                val messageData = intent.getStringExtra("data")
+                if ( command.isNullOrEmpty().not() && ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() && messageData.isNullOrEmpty().not() ) {
                     if ( command == "connect" ) {
-                        createDialog(ip!!, nickname!!, uuid!!)
+                        if ( SocketConfig.uuidMap.containsKey(ip).not() ) {
+                            context.startActivity(Intent(context, RequestConnectionActivity::class.java)
+                                .apply {
+                                    putExtra("ip", ip)
+                                    putExtra("data", messageData)
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                            )
+                        }
                     }
                 }
             } else if ( action == "xyz.hyli.connect.service.SocketService.action.SOCKET_SERVER" ) {
@@ -161,6 +170,14 @@ class SocketService : Service() {
                             SocketConfig.outputStreamMap[IPAddress] = outputStream
                             socket.keepAlive = true
                             SocketUtils.sendHeartbeat(IPAddress)
+                            // Authorization timeout
+                            thread {
+                                Thread.sleep(30000)
+                                if ( SocketConfig.uuidMap.containsKey(IPAddress).not() ) {
+                                    Log.i(TAG, "Authorization timeout: $IPAddress")
+                                    SocketUtils.closeConnection(IPAddress)
+                                }
+                            }
 
                             var message: String?
                             while (socket.isConnected) {
@@ -263,22 +280,5 @@ class SocketService : Service() {
             return
         }
         mNsdManager.unregisterService(NsdRegistrationListener)
-    }
-    private fun createDialog(ip: String, nickname: String, uuid: String) {
-        val dialog = MaterialAlertDialogBuilder(this, R.style.Theme_HyLiConnect)
-            .setTitle(getString(R.string.dialog_connect_request_title))
-            .setMessage("$nickname($ip) ${getString(R.string.dialog_connect_request_message)}")
-            .setPositiveButton("Accept") { dialog, which ->
-                SocketUtils.acceptConnection(ip, nickname, uuid)
-                dialog.dismiss()
-            }
-            .setNegativeButton("Reject") { dialog, which ->
-                SocketUtils.rejectConnection(ip)
-                dialog.dismiss()
-            }
-            .setCancelable(true)
-            .create()
-        dialog.window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
-        dialog.show()
     }
 }
