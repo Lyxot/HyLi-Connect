@@ -11,63 +11,95 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.service.SocketService
+import xyz.hyli.connect.socket.SocketConfig
 import xyz.hyli.connect.ui.navigation.compactScreen
 import xyz.hyli.connect.ui.navigation.expandedScreen
 import xyz.hyli.connect.ui.navigation.mediumScreen
 import xyz.hyli.connect.ui.theme.HyliConnectTheme
 import xyz.hyli.connect.utils.PackageUtils
+import kotlin.concurrent.thread
 
 class MainActivity: ComponentActivity() {
     private var appList: Deferred<List<String>>? = null
-    var IP_ADDRESS: Deferred<String>? = null
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+    private lateinit var viewModel: HyliConnectViewModel
+    private lateinit var nsdDeviceMap: MutableMap<String, DeviceInfo>
+    private lateinit var connectDeviceVisibilityMap: MutableMap<String, MutableState<Boolean>>
+    private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
+    private val connectDeviceThread = Thread {
+        while (true) {
+            nsdDeviceMap = viewModel.nsdDeviceMap
+            connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
+            connectedDeviceMap = viewModel.connectedDeviceMap
+            SocketConfig.uuidMap.forEach {
+                if ( nsdDeviceMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
+                    connectedDeviceMap[it.value] = nsdDeviceMap[it.value]!!
+                    nsdDeviceMap.remove(it.value)
+                    connectDeviceVisibilityMap[it.value]!!.value = false
+                } else if ( SocketConfig.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
+                    connectedDeviceMap[it.value] = SocketConfig.deviceInfoMap[it.value]!!
+                    connectDeviceVisibilityMap[it.value]!!.value = false
+                }
+            }
+            Thread.sleep(1000)
+        }
+    }
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.navigationBarColor = Color.TRANSPARENT
+        window.statusBarColor = Color.TRANSPARENT
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
 
         startForegroundService(Intent(this, SocketService::class.java))
 
         GlobalScope.launch(Dispatchers.IO) {
-            IP_ADDRESS = async { ConfigHelper().getIPAddress(this@MainActivity) }
             appList = async { PackageUtils.GetAppList(packageManager) }
         }
 
+        viewModel = ViewModelProvider(this, HyliConnectViewModelFactory()).get(HyliConnectViewModel::class.java)
         setContent {
             HyliConnectTheme {
                 val widthSizeClass = calculateWindowSizeClass(this).widthSizeClass
 //                TestScreen()
-                MainScreen(widthSizeClass)
+                MainScreen(widthSizeClass, viewModel)
             }
+        }
+        if (connectDeviceThread.isAlive.not()) {
+            connectDeviceThread.start()
         }
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun MainScreen(widthSizeClass: WindowWidthSizeClass) {
+private fun MainScreen(widthSizeClass: WindowWidthSizeClass, viewModel: HyliConnectViewModel) {
     val currentSelect = remember { mutableStateOf(0) }
-    val navController = rememberAnimatedNavController()
+    val navController = rememberNavController()
     when (widthSizeClass) {
-        WindowWidthSizeClass.Compact -> { compactScreen(navController,currentSelect) }
-        WindowWidthSizeClass.Medium -> { mediumScreen(navController,currentSelect) }
-        WindowWidthSizeClass.Expanded -> { expandedScreen(navController,currentSelect) }
-        else -> { compactScreen(navController,currentSelect) }
+        WindowWidthSizeClass.Compact -> { compactScreen(viewModel,navController,currentSelect) }
+        WindowWidthSizeClass.Medium -> { mediumScreen(viewModel,navController,currentSelect) }
+        WindowWidthSizeClass.Expanded -> { expandedScreen(viewModel,navController,currentSelect) }
+        else -> { compactScreen(viewModel,navController,currentSelect) }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun DefaultPreview() {
-    MainScreen(widthSizeClass = WindowWidthSizeClass.Compact)
+fun MainScreenPreview() {
+    MainScreen(WindowWidthSizeClass.Compact,HyliConnectViewModel())
 }
