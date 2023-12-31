@@ -24,6 +24,7 @@ import xyz.hyli.connect.R
 import xyz.hyli.connect.service.SocketService
 import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.ui.ConfigHelper
+import xyz.hyli.connect.utils.NetworkUtils
 import xyz.hyli.connect.utils.PackageUtils
 import java.util.concurrent.CompletableFuture
 
@@ -36,7 +37,7 @@ class TestActivity : AppCompatActivity() {
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var localBroadcastManager: LocalBroadcastManager
     var UUID: Deferred<String>? = null
-    var IP_ADDRESS: Deferred<String>? = null
+    var IP_ADDRESS: Deferred<Map<String,String>>? = null
     var NICKNAME: Deferred<String>? = null
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -77,7 +78,7 @@ class TestActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.IO) {
             appList = async { PackageUtils.GetAppList(packageManager) }
             UUID = async { ConfigHelper().getUUID(sharedPreferences, editor) }
-            IP_ADDRESS = async { ConfigHelper().getIPAddress(this@TestActivity) }
+            IP_ADDRESS = async { NetworkUtils.getLocalIPInfo(this@TestActivity) }
             NICKNAME = async { ConfigHelper().getNickname(sharedPreferences, editor) }
         }
         GlobalScope.launch(Dispatchers.Main) {

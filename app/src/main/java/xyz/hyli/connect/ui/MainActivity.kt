@@ -31,6 +31,7 @@ import xyz.hyli.connect.ui.navigation.compactScreen
 import xyz.hyli.connect.ui.navigation.expandedScreen
 import xyz.hyli.connect.ui.navigation.mediumScreen
 import xyz.hyli.connect.ui.theme.HyliConnectTheme
+import xyz.hyli.connect.utils.NetworkUtils
 import xyz.hyli.connect.utils.PackageUtils
 import kotlin.concurrent.thread
 
