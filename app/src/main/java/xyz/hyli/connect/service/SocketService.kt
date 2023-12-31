@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.SharedPreferences
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Binder
@@ -30,6 +29,7 @@ import xyz.hyli.connect.socket.utils.SocketUtils
 import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.ui.dialog.RequestConnectionActivity
 import xyz.hyli.connect.ui.test.TestActivity
+import xyz.hyli.connect.utils.NetworkUtils
 import java.io.IOException
 import java.net.ServerSocket
 import java.net.Socket
@@ -78,13 +78,15 @@ class SocketService : Service() {
                         }
                     }
                 }
-            } else if ( action == "xyz.hyli.connect.service.SocketService.action.SOCKET_SERVER" ) {
+            } else if ( action == "xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER" ) {
                 val command = intent.getStringExtra("command")
                 if ( command.isNullOrEmpty().not() ) {
-                    if ( command == "start" ) {
+                    if ( command == "start_service" ) {
                         startForegroundService(Intent(this@SocketService, SocketService::class.java))
-                    } else if ( command == "stop" ) {
-                        stop()
+                    } else if ( command == "stop_service" ) {
+                        stopSocket()
+                    } else if ( command == "reboot_nsd_service" ) {
+                        restartNsdService()
                     }
                 }
             }
@@ -114,12 +116,12 @@ class SocketService : Service() {
         ConfigHelper().initConfig(sharedPreferences, sharedPreferences.edit())
         serverPort = ConfigHelper.SERVER_PORT
         startServer(serverPort)
-        registerNsdService(sharedPreferences)
+        registerNsdService()
         checkConnection()
         val filter = IntentFilter()
         filter.addAction("xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT")
         filter.addAction("xyz.hyli.connect.service.SocketService.action.CONNECT_REQUEST")
-        filter.addAction("xyz.hyli.connect.service.SocketService.action.SOCKET_SERVER")
+        filter.addAction("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER")
         localBroadcastManager = LocalBroadcastManager.getInstance(this)
         localBroadcastManager.registerReceiver(broadcastReceiver, filter)
     }
@@ -128,7 +130,7 @@ class SocketService : Service() {
         ConfigHelper().initConfig(sharedPreferences, sharedPreferences.edit())
         serverPort = ConfigHelper.SERVER_PORT
         startServer(serverPort)
-        registerNsdService(sharedPreferences)
+        registerNsdService()
         checkConnection()
         return Binder()
     }
@@ -139,14 +141,18 @@ class SocketService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        checkConnectionThread.stop()
-        stop()
-        unregisterNsdService()
-        stopForeground(true)
-        localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SOCKET_SERVER").apply {
-            putExtra("command", "start")
-        })
-        unregisterReceiver(broadcastReceiver)
+        try {
+            localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
+                putExtra("command", "start")
+            })
+            checkConnectionThread.interrupt()
+            stopSocket()
+            unregisterNsdService()
+            stopForeground(true)
+            unregisterReceiver(broadcastReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun startServer(port: Int = SERVER_PORT) {
@@ -236,7 +242,7 @@ class SocketService : Service() {
             }
         }
     }
-    private fun stop() {
+    private fun stopSocket() {
         SocketUtils.closeAllConnection()
     }
     private fun checkConnection() {
@@ -266,7 +272,7 @@ class SocketService : Service() {
             .build()
         startForeground(1, notification)
     }
-    private fun registerNsdService(sharedPreferences: SharedPreferences) {
+    private fun registerNsdService() {
         if ( nsdRunning ) {
             return
         }
@@ -284,6 +290,7 @@ class SocketService : Service() {
         mNsdServiceInfo.setAttribute("app", BuildConfig.VERSION_CODE.toString())
         mNsdServiceInfo.setAttribute("app_name", BuildConfig.VERSION_NAME)
         mNsdServiceInfo.setAttribute("platform", PLATFORM)
+        mNsdServiceInfo.setAttribute("ip_addr", NetworkUtils.getLocalIPInfo(this)["wlan0"] ?: "0.0.0.0")
         mNsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
         NsdRegistrationListener = object : NsdManager.RegistrationListener {
             override fun onRegistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
@@ -317,5 +324,12 @@ class SocketService : Service() {
             return
         }
         mNsdManager.unregisterService(NsdRegistrationListener)
+    }
+    private fun restartNsdService() {
+        if ( nsdRunning ) {
+            mNsdManager.unregisterService(NsdRegistrationListener)
+            nsdRunning = false
+        }
+        registerNsdService()
     }
 }

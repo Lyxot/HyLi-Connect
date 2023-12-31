@@ -58,6 +58,7 @@ import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.ui.HyliConnectViewModel
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
+import xyz.hyli.connect.utils.NetworkUtils
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
@@ -77,7 +78,7 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
 
     val sharedPreferences = remember { context.getSharedPreferences("config", Context.MODE_PRIVATE) }
     val NICKNAME = remember { ConfigHelper().getNickname(sharedPreferences, sharedPreferences.edit()) }
-    val IP_ADDRESS = remember { ConfigHelper().getIPAddress(context) }
+    val IP_ADDRESS = remember { NetworkUtils.getLocalIPInfo(context) }
     val UUID = remember { ConfigHelper().getUUID(sharedPreferences, sharedPreferences.edit()) }
 
     val semaphore = remember { Semaphore(1) }
@@ -100,6 +101,7 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             val platform = String(attributes["platform"] ?: byteArrayOf())
             val uuid = String(attributes["uuid"] ?: byteArrayOf())
             val nickname = String(attributes["nickname"] ?: byteArrayOf())
+            val ip_address = String(attributes["ip_addr"] ?: byteArrayOf())
 
             // Filter out self
             if ( uuid == UUID && BuildConfig.DEBUG.not() ) {
@@ -113,7 +115,13 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                 if ( host in nsdDeviceMap[uuid]!!.ip_address ) {
                     return
                 }
-                nsdDeviceMap[uuid]!!.ip_address += host
+                val newMap = nsdDeviceMap
+                if ( host == ip_address ) {
+                    newMap[uuid]!!.ip_address.add(0, host)
+                } else {
+                    newMap[uuid]!!.ip_address.add(host)
+                }
+                nsdDeviceMap = newMap
             } else {
                 nsdDeviceMap[uuid] = DeviceInfo(
                     api_version = api_version,
@@ -157,6 +165,10 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
     }
 //    mNsdManager!!.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener)
     DisposableEffect(Unit) {
+        localBroadcastManager = LocalBroadcastManager.getInstance(context)
+        localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
+            putExtra("command", "reboot_nsd_service")
+        })
         mNsdManager!!.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener)
         onDispose {
             nsdDeviceMap.clear()
@@ -167,8 +179,6 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             }
         }
     }
-
-    localBroadcastManager = LocalBroadcastManager.getInstance(context)
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(12.dp)) {
@@ -197,7 +207,37 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                     }
                 })
         }
-        Text(text = "IP: $IP_ADDRESS")
+        Row {
+            if ( IP_ADDRESS.isEmpty().not() ) {
+                Text(text = "IP: ")
+                LazyColumn {
+                    if ( IP_ADDRESS.containsKey("wlan0") && IP_ADDRESS.containsKey("wlan1") ) {
+                        item {
+                            Text(text = "[ wlan0 ]:\t${IP_ADDRESS["wlan0"]}")
+                        }
+                        item {
+                            Text(text = "[ wlan1 ]:\t${IP_ADDRESS["wlan1"]}")
+                        }
+                    } else if ( IP_ADDRESS.containsKey("wlan0") && IP_ADDRESS.containsKey("wlan1").not() ) {
+                        item {
+                            Text(text = "${IP_ADDRESS["wlan0"]}")
+                        }
+                    } else if ( IP_ADDRESS.containsKey("wlan0").not() && IP_ADDRESS.containsKey("wlan1").not() && IP_ADDRESS.size == 1 ) {
+                        item {
+                            Text(text = "[ ${IP_ADDRESS.keys.first()} ]:${IP_ADDRESS.values.first()}")
+                        }
+                    } else {
+                        IP_ADDRESS.forEach {
+                            item {
+                                Text(text = "[ ${it.key} ]:\t${it.value}")
+                            }
+                        }
+                    }
+                }
+            } else {
+                Text(text = "IP: 0.0.0.0")
+            }
+        }
         Text(text = UUID, style = HyliConnectTypography.bodySmall, color = HyliConnectColorScheme().outline)
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn(content = {
