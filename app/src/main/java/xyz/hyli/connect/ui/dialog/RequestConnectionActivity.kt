@@ -33,13 +33,13 @@ class RequestConnectionActivity : ComponentActivity() {
         setContent {
             HyliConnectTheme {
                 if ((ip != null && messageData != null) && Settings.canDrawOverlays(this)) {
-                    ip = ip!!.substring(1, ip!!.length)
+                    val IP_Address = ip!!.substring(1, ip!!.length)
                     val data = JSONObject.parseObject(messageData)
                     val nickname = data.getString("nickname")
                     val uuid = data.getString("uuid")
                     dialog = MaterialAlertDialogBuilder(this)
                         .setTitle(getString(R.string.dialog_connect_request_title))
-                        .setMessage("$nickname ($ip) ${getString(R.string.dialog_connect_request_message)}\n\nUUID: $uuid")
+                        .setMessage("$nickname ($IP_Address) ${getString(R.string.dialog_connect_request_message)}\n\nUUID: $uuid")
                         .setPositiveButton(getString(R.string.dialog_connect_request_accept)) { dialog, which ->
                             SocketUtils.acceptConnection(ip!!, data)
                             dialog.dismiss()

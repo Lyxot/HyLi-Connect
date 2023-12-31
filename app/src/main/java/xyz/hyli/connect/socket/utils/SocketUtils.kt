@@ -8,7 +8,6 @@ import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.COMMAND_CONNECT
 import xyz.hyli.connect.socket.PLATFORM
 import xyz.hyli.connect.socket.SERVER_PORT
-import xyz.hyli.connect.socket.SocketClient
 import xyz.hyli.connect.socket.SocketConfig
 import xyz.hyli.connect.ui.ConfigHelper
 import java.io.OutputStreamWriter
@@ -86,7 +85,7 @@ object SocketUtils {
     }
     fun connect(ip: String, port: Int = SERVER_PORT) {
         val t = System.currentTimeMillis()
-        SocketClient.start(ip, port)
+//        SocketClient.start(ip, port)
         val IPAddress = "/$ip:$port"
         val messageJson = JSONObject()
         val messageData = JSONObject()

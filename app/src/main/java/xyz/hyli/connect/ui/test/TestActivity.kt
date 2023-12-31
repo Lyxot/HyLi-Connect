@@ -23,7 +23,6 @@ import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
 import xyz.hyli.connect.service.SocketService
 import xyz.hyli.connect.socket.SERVER_PORT
-import xyz.hyli.connect.socket.SocketClient
 import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.utils.PackageUtils
 import java.util.concurrent.CompletableFuture
@@ -58,13 +57,13 @@ class TestActivity : AppCompatActivity() {
         val infoButton = findViewById<Button>(R.id.info_button)
         val connectButton = findViewById<Button>(R.id.connect_button)
         val linearLayout = findViewById<LinearLayout>(R.id.linearlayout_main)
-        infoButton.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                val ip = editText.text.toString()
-                val response = SocketClient.getInfo(ip).toString()
-                runOnUiThread { linearLayout.addView(TextView(this@TestActivity).apply { text = response }) }
-            }
-        }
+//        infoButton.setOnClickListener {
+//            GlobalScope.launch(Dispatchers.IO) {
+//                val ip = editText.text.toString()
+//                val response = SocketClient.getInfo(ip).toString()
+//                runOnUiThread { linearLayout.addView(TextView(this@TestActivity).apply { text = response }) }
+//            }
+//        }
         connectButton.setOnClickListener{
             val ip = editText.text.toString()
             GlobalScope.launch(Dispatchers.IO) {

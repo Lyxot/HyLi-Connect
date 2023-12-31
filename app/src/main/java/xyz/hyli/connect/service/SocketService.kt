@@ -18,7 +18,6 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
 import xyz.hyli.connect.socket.API_VERSION
@@ -33,6 +32,7 @@ import xyz.hyli.connect.ui.dialog.RequestConnectionActivity
 import xyz.hyli.connect.ui.test.TestActivity
 import java.io.IOException
 import java.net.ServerSocket
+import java.net.Socket
 import kotlin.concurrent.thread
 
 class SocketService : Service() {
@@ -54,6 +54,7 @@ class SocketService : Service() {
                         SocketUtils.closeConnection("/$ip:$port")
                     } else if ( command == "start" ) {
                         if (ip != null) {
+                            startClient(ip, port)
                             SocketUtils.connect(ip, port)
                         }
                     }
@@ -149,7 +150,7 @@ class SocketService : Service() {
     }
 
     private fun startServer(port: Int = SERVER_PORT) {
-        val TAG = "SocketServer(SERVICE)"
+        val TAG = "SocketServer"
         if ( serverSocket == null ) {
             thread {
                 serverSocket = ServerSocket(port)
@@ -196,6 +197,42 @@ class SocketService : Service() {
 
                     }
                 }
+            }
+        }
+    }
+    private fun startClient(ip: String, port: Int = SERVER_PORT) {
+        val TAG = "SocketClient"
+        if ( SocketConfig.socketMap["/$ip:$port"] != null ) return
+        thread {
+            val socket = Socket(ip, port)
+            val IPAddress = socket.remoteSocketAddress.toString()
+            Log.i(TAG, "Start client = $socket")
+            Log.i(TAG, "Connect to: $IPAddress")
+            SocketConfig.socketMap[IPAddress] = socket
+            SocketConfig.connectionMap[IPAddress] = System.currentTimeMillis()
+            try {
+                val inputStream = socket.getInputStream()
+                val bufferedReader = inputStream.bufferedReader()
+                val outputStream = socket.getOutputStream()
+
+                SocketConfig.inputStreamMap[IPAddress] = inputStream
+                SocketConfig.outputStreamMap[IPAddress] = outputStream
+                socket.keepAlive = true
+                SocketUtils.sendHeartbeat(IPAddress)
+
+                var message: String?
+                while (socket.isConnected) {
+                    message = bufferedReader.readLine()
+                    if ( message.isNullOrEmpty().not() ) {
+                        Log.i(TAG, "Receive message: $IPAddress $message")
+                        MessageHandler.messageHandler(IPAddress, message)
+                    }
+                }
+            } catch (e: IOException) {
+                Log.e(TAG, "Error: ${e.message}")
+            } finally {
+                SocketUtils.closeConnection(IPAddress)
+                Log.i(TAG, "Close connection: $IPAddress")
             }
         }
     }
