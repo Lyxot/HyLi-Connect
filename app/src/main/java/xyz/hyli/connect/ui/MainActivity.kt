@@ -53,6 +53,9 @@ class MainActivity: ComponentActivity() {
                 } else if ( SocketConfig.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
                     connectedDeviceMap[it.value] = SocketConfig.deviceInfoMap[it.value]!!
                     connectDeviceVisibilityMap[it.value]!!.value = false
+                } else if ( connectedDeviceMap.containsKey(it.value) && SocketConfig.deviceInfoMap.containsKey(it.value).not() ) {
+                    connectedDeviceMap.remove(it.value)
+                    connectDeviceVisibilityMap[it.value]!!.value = false
                 }
             }
             Thread.sleep(1000)

@@ -126,7 +126,6 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                     port = port
                 )
             }
-            Log.i("mResolverListener","$nsdDeviceMap")
             semaphore.release()
         }
     }
@@ -270,7 +269,6 @@ private fun deviceCard(deviceInfo: DeviceInfo, navController: NavHostController?
                         restoreState = true
                     }
                 } else {
-                    /*TODO(Connect to device)*/
                     localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT").apply {
                         putExtra("command", "start")
                         putExtra("ip", deviceInfo.ip_address[0])

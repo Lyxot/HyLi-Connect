@@ -18,6 +18,7 @@ import kotlin.concurrent.thread
 object SocketUtils {
     fun closeConnection(ip: String) {
         SocketConfig.socketMap[ip]?.close()
+        SocketConfig.deviceInfoMap.remove(SocketConfig.uuidMap[ip] ?: "")
         SocketConfig.uuidMap.remove(ip)
         SocketConfig.socketMap.remove(ip)
         SocketConfig.inputStreamMap.remove(ip)
@@ -33,6 +34,7 @@ object SocketUtils {
         SocketConfig.inputStreamMap.clear()
         SocketConfig.outputStreamMap.clear()
         SocketConfig.connectionMap.clear()
+        SocketConfig.deviceInfoMap.clear()
     }
     fun acceptConnection(ip: String, data: JSONObject) {
         SocketConfig.uuidMap[ip] = data.getString("uuid") ?: ""
