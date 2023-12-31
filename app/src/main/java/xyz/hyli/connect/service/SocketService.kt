@@ -95,14 +95,18 @@ class SocketService : Service() {
     private lateinit var localBroadcastManager: LocalBroadcastManager
     private val checkConnectionThread = thread {
         while (true) {
-            val map = SocketConfig.connectionMap
-            map.forEach { (ip, time) ->
-                if (System.currentTimeMillis() - time > 12000) {
-                    SocketUtils.closeConnection(ip)
-                    Log.i("SocketService", "Close connection: $ip (timeout)")
-                } else if (System.currentTimeMillis() - time > 6000) {
-                    SocketUtils.sendHeartbeat(ip)
+            try {
+                val map = SocketConfig.connectionMap
+                map.forEach { (ip, time) ->
+                    if (System.currentTimeMillis() - time > 12000) {
+                        SocketUtils.closeConnection(ip)
+                        Log.i("SocketService", "Close connection: $ip (timeout)")
+                    } else if (System.currentTimeMillis() - time > 6000) {
+                        SocketUtils.sendHeartbeat(ip)
+                    }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
             Thread.sleep(3000)
         }

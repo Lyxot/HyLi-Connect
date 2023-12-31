@@ -3,6 +3,7 @@ package xyz.hyli.connect.ui
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -38,26 +39,28 @@ import kotlin.concurrent.thread
 class MainActivity: ComponentActivity() {
     private var appList: Deferred<List<String>>? = null
     private lateinit var viewModel: HyliConnectViewModel
-    private lateinit var nsdDeviceMap: MutableMap<String, DeviceInfo>
-    private lateinit var connectDeviceVisibilityMap: MutableMap<String, MutableState<Boolean>>
-    private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
     private val connectDeviceThread = Thread {
         while (true) {
-            nsdDeviceMap = viewModel.nsdDeviceMap
-            connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
-            connectedDeviceMap = viewModel.connectedDeviceMap
-            SocketConfig.uuidMap.forEach {
-                if ( nsdDeviceMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
-                    connectedDeviceMap[it.value] = nsdDeviceMap[it.value]!!
-                    nsdDeviceMap.remove(it.value)
-                    connectDeviceVisibilityMap[it.value]!!.value = false
-                } else if ( SocketConfig.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
-                    connectedDeviceMap[it.value] = SocketConfig.deviceInfoMap[it.value]!!
-                    connectDeviceVisibilityMap[it.value]!!.value = false
-                } else if ( connectedDeviceMap.containsKey(it.value) && SocketConfig.deviceInfoMap.containsKey(it.value).not() ) {
-                    connectedDeviceMap.remove(it.value)
-                    connectDeviceVisibilityMap[it.value]!!.value = false
+            try {
+                SocketConfig.uuidMap.forEach {
+                    if ( viewModel.nsdDeviceMap.containsKey(it.value) && viewModel.connectedDeviceMap.containsKey(it.value).not() ) {
+                        viewModel.connectedDeviceMap[it.value] = viewModel.nsdDeviceMap[it.value]!!
+                        viewModel.nsdDeviceMap.remove(it.value)
+                        viewModel.connectDeviceVisibilityMap[it.value]!!.value = false
+                    } else if ( SocketConfig.deviceInfoMap.containsKey(it.value) && viewModel.connectedDeviceMap.containsKey(it.value).not() ) {
+                        viewModel.connectedDeviceMap[it.value] = SocketConfig.deviceInfoMap[it.value]!!
+                        viewModel.connectDeviceVisibilityMap[it.value]!!.value = false
+                    }
                 }
+                val uuid_list = viewModel.connectedDeviceMap.keys.toMutableList()
+                uuid_list.forEach {
+                    if ( SocketConfig.deviceInfoMap.containsKey(it).not() ) {
+                        viewModel.connectedDeviceMap.remove(it)
+                        viewModel.connectDeviceVisibilityMap.remove(it)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
             Thread.sleep(1000)
         }
