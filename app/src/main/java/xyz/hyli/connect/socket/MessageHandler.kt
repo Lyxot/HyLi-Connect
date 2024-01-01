@@ -81,11 +81,11 @@ object MessageHandler {
                     SocketUtils.closeConnection(ip)
                 }
             }
-        } else if (uuid in SocketConfig.uuidMap.values) {
+        } else if (uuid in SocketData.uuidMap.values) {
             when (command) {
                 COMMAND_CLIENT_LIST -> {
                     val clientList = JSONArray()
-                    SocketConfig.uuidMap.forEach { (key, value) ->
+                    SocketData.uuidMap.forEach { (key, value) ->
                         val clientInfo = JSONObject()
                         clientInfo["uuid"] = value
                         clientInfo["ip_address"] = key
@@ -128,7 +128,7 @@ object MessageHandler {
             COMMAND_CONNECT -> {
                 val status = messageJson.getString("status") ?: ""
                 if (status == "accept") {
-                    SocketConfig.uuidMap[ip] = uuid
+                    SocketData.uuidMap[ip] = uuid
                     val ip_address = ip.substring(1, ip.length).split(":")[0]
                     val port = ip.substring(1, ip.length).split(":").last().toInt()
                     val deviceInfo = DeviceInfo(
@@ -141,7 +141,7 @@ object MessageHandler {
                         mutableListOf(ip_address),
                         port
                     )
-                    SocketConfig.deviceInfoMap[uuid] = deviceInfo
+                    SocketData.deviceInfoMap[uuid] = deviceInfo
                     SocketUtils.sendHeartbeat(ip)
                 } else if (status == "reject") {
                     SocketUtils.closeConnection(ip)
@@ -172,10 +172,10 @@ object MessageHandler {
         messageJson: JSONObject,
         broadcastManager: LocalBroadcastManager? = null
     ) {
-        SocketConfig.connectionMap[ip] = System.currentTimeMillis()
+        SocketData.connectionMap[ip] = System.currentTimeMillis()
         Thread.sleep(3000)
-        if (System.currentTimeMillis() - SocketConfig.connectionMap[ip]!! >= 3000 || SocketConfig.connectionMap.containsKey(ip).not() || SocketConfig.connectionMap[ip] == null) {
-            if ( SocketConfig.uuidMap.containsKey(ip) ) {
+        if (System.currentTimeMillis() - SocketData.connectionMap[ip]!! >= 3000 || SocketData.connectionMap.containsKey(ip).not() || SocketData.connectionMap[ip] == null) {
+            if ( SocketData.uuidMap.containsKey(ip) ) {
                 try {
                     SocketUtils.sendHeartbeat(ip)
                 } catch (e: Exception) {

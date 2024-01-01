@@ -82,13 +82,5 @@ class SocketConfig {
             COMMAND_CLIENT_LIST,
             COMMAND_APP_LIST
         )
-        // ip: data
-        var uuidMap: HashMap<String, String> = HashMap()
-        var socketMap: HashMap<String, Socket> = HashMap()
-        var inputStreamMap: HashMap<String, InputStream> = HashMap()
-        var outputStreamMap: HashMap<String, OutputStream> = HashMap()
-        var connectionMap: HashMap<String, Long> = HashMap()
-        // uuid: deviceInfo
-        var deviceInfoMap: HashMap<String, DeviceInfo> = HashMap()
     }
 }
