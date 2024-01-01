@@ -27,7 +27,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.service.SocketService
-import xyz.hyli.connect.socket.SocketConfig
+import xyz.hyli.connect.socket.SocketData
 import xyz.hyli.connect.ui.navigation.compactScreen
 import xyz.hyli.connect.ui.navigation.expandedScreen
 import xyz.hyli.connect.ui.navigation.mediumScreen
@@ -42,19 +42,19 @@ class MainActivity: ComponentActivity() {
     private val connectDeviceThread = Thread {
         while (true) {
             try {
-                SocketConfig.uuidMap.forEach {
+                SocketData.uuidMap.forEach {
                     if ( viewModel.nsdDeviceMap.containsKey(it.value) && viewModel.connectedDeviceMap.containsKey(it.value).not() ) {
                         viewModel.connectedDeviceMap[it.value] = viewModel.nsdDeviceMap[it.value]!!
                         viewModel.nsdDeviceMap.remove(it.value)
                         viewModel.connectDeviceVisibilityMap[it.value]!!.value = false
-                    } else if ( SocketConfig.deviceInfoMap.containsKey(it.value) && viewModel.connectedDeviceMap.containsKey(it.value).not() ) {
-                        viewModel.connectedDeviceMap[it.value] = SocketConfig.deviceInfoMap[it.value]!!
+                    } else if ( SocketData.deviceInfoMap.containsKey(it.value) && viewModel.connectedDeviceMap.containsKey(it.value).not() ) {
+                        viewModel.connectedDeviceMap[it.value] = SocketData.deviceInfoMap[it.value]!!
                         viewModel.connectDeviceVisibilityMap[it.value]!!.value = false
                     }
                 }
                 val uuid_list = viewModel.connectedDeviceMap.keys.toMutableList()
                 uuid_list.forEach {
-                    if ( SocketConfig.deviceInfoMap.containsKey(it).not() ) {
+                    if ( SocketData.deviceInfoMap.containsKey(it).not() ) {
                         viewModel.connectedDeviceMap.remove(it)
                         viewModel.connectDeviceVisibilityMap.remove(it)
                     }

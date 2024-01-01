@@ -24,7 +24,7 @@ import xyz.hyli.connect.socket.MessageHandler
 import xyz.hyli.connect.socket.PLATFORM
 import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.socket.SERVICE_TYPE
-import xyz.hyli.connect.socket.SocketConfig
+import xyz.hyli.connect.socket.SocketData
 import xyz.hyli.connect.socket.utils.SocketUtils
 import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.ui.dialog.RequestConnectionActivity
@@ -67,7 +67,7 @@ class SocketService : Service() {
                 val messageData = intent.getStringExtra("data")
                 if ( command.isNullOrEmpty().not() && ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() && messageData.isNullOrEmpty().not() ) {
                     if ( command == "connect" ) {
-                        if ( SocketConfig.uuidMap.containsKey(ip).not() ) {
+                        if ( SocketData.uuidMap.containsKey(ip).not() ) {
                             context.startActivity(Intent(context, RequestConnectionActivity::class.java)
                                 .apply {
                                     putExtra("ip", ip)
@@ -96,7 +96,7 @@ class SocketService : Service() {
     private val checkConnectionThread = thread {
         while (true) {
             try {
-                val map = SocketConfig.connectionMap
+                val map = SocketData.connectionMap
                 map.forEach { (ip, time) ->
                     if (System.currentTimeMillis() - time > 12000) {
                         SocketUtils.closeConnection(ip)
@@ -169,22 +169,22 @@ class SocketService : Service() {
                     val socket = serverSocket!!.accept()
                     val IPAddress = socket.remoteSocketAddress.toString()
                     Log.i(TAG, "Accept connection: $IPAddress")
-                    SocketConfig.socketMap[IPAddress] = socket
-                    SocketConfig.connectionMap[IPAddress] = System.currentTimeMillis()
+                    SocketData.socketMap[IPAddress] = socket
+                    SocketData.connectionMap[IPAddress] = System.currentTimeMillis()
                     thread {
                         try {
                             val inputStream = socket.getInputStream()
                             val bufferedReader = inputStream.bufferedReader()
                             val outputStream = socket.getOutputStream()
 
-                            SocketConfig.inputStreamMap[IPAddress] = inputStream
-                            SocketConfig.outputStreamMap[IPAddress] = outputStream
+                            SocketData.inputStreamMap[IPAddress] = inputStream
+                            SocketData.outputStreamMap[IPAddress] = outputStream
                             socket.keepAlive = true
                             SocketUtils.sendHeartbeat(IPAddress)
                             // Authorization timeout
                             thread {
                                 Thread.sleep(30000)
-                                if ( SocketConfig.uuidMap.containsKey(IPAddress).not() ) {
+                                if ( SocketData.uuidMap.containsKey(IPAddress).not() ) {
                                     Log.i(TAG, "Authorization timeout: $IPAddress")
                                     SocketUtils.closeConnection(IPAddress)
                                 }
@@ -212,21 +212,21 @@ class SocketService : Service() {
     }
     private fun startClient(ip: String, port: Int = SERVER_PORT) {
         val TAG = "SocketClient"
-        if ( SocketConfig.socketMap["/$ip:$port"] != null ) return
+        if ( SocketData.socketMap["/$ip:$port"] != null ) return
         thread {
             val socket = Socket(ip, port)
             val IPAddress = socket.remoteSocketAddress.toString()
             Log.i(TAG, "Start client = $socket")
             Log.i(TAG, "Connect to: $IPAddress")
-            SocketConfig.socketMap[IPAddress] = socket
-            SocketConfig.connectionMap[IPAddress] = System.currentTimeMillis()
+            SocketData.socketMap[IPAddress] = socket
+            SocketData.connectionMap[IPAddress] = System.currentTimeMillis()
             try {
                 val inputStream = socket.getInputStream()
                 val bufferedReader = inputStream.bufferedReader()
                 val outputStream = socket.getOutputStream()
 
-                SocketConfig.inputStreamMap[IPAddress] = inputStream
-                SocketConfig.outputStreamMap[IPAddress] = outputStream
+                SocketData.inputStreamMap[IPAddress] = inputStream
+                SocketData.outputStreamMap[IPAddress] = outputStream
                 socket.keepAlive = true
                 SocketUtils.sendHeartbeat(IPAddress)
 

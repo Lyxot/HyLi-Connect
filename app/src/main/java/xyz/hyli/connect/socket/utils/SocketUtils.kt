@@ -8,7 +8,7 @@ import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.COMMAND_CONNECT
 import xyz.hyli.connect.socket.PLATFORM
 import xyz.hyli.connect.socket.SERVER_PORT
-import xyz.hyli.connect.socket.SocketConfig
+import xyz.hyli.connect.socket.SocketData
 import xyz.hyli.connect.ui.ConfigHelper
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
@@ -17,27 +17,27 @@ import kotlin.concurrent.thread
 
 object SocketUtils {
     fun closeConnection(ip: String) {
-        SocketConfig.socketMap[ip]?.close()
-        SocketConfig.deviceInfoMap.remove(SocketConfig.uuidMap[ip] ?: "")
-        SocketConfig.uuidMap.remove(ip)
-        SocketConfig.socketMap.remove(ip)
-        SocketConfig.inputStreamMap.remove(ip)
-        SocketConfig.outputStreamMap.remove(ip)
-        SocketConfig.connectionMap.remove(ip)
+        SocketData.socketMap[ip]?.close()
+        SocketData.deviceInfoMap.remove(SocketData.uuidMap[ip] ?: "")
+        SocketData.uuidMap.remove(ip)
+        SocketData.socketMap.remove(ip)
+        SocketData.inputStreamMap.remove(ip)
+        SocketData.outputStreamMap.remove(ip)
+        SocketData.connectionMap.remove(ip)
     }
     fun closeAllConnection() {
-        SocketConfig.socketMap.forEach {
+        SocketData.socketMap.forEach {
             it.value.close()
         }
-        SocketConfig.uuidMap.clear()
-        SocketConfig.socketMap.clear()
-        SocketConfig.inputStreamMap.clear()
-        SocketConfig.outputStreamMap.clear()
-        SocketConfig.connectionMap.clear()
-        SocketConfig.deviceInfoMap.clear()
+        SocketData.uuidMap.clear()
+        SocketData.socketMap.clear()
+        SocketData.inputStreamMap.clear()
+        SocketData.outputStreamMap.clear()
+        SocketData.connectionMap.clear()
+        SocketData.deviceInfoMap.clear()
     }
     fun acceptConnection(ip: String, data: JSONObject) {
-        SocketConfig.uuidMap[ip] = data.getString("uuid") ?: ""
+        SocketData.uuidMap[ip] = data.getString("uuid") ?: ""
         val messageJson = JSONObject()
         val messageData = JSONObject()
         messageJson["message_type"] = "response"
@@ -50,7 +50,7 @@ object SocketUtils {
         messageData["nickname"] = ConfigHelper.NICKNAME
         messageJson["data"] = messageData
         messageJson["uuid"] = ConfigHelper.uuid
-        SocketConfig.deviceInfoMap[data.getString("uuid") ?: ""] = DeviceInfo(
+        SocketData.deviceInfoMap[data.getString("uuid") ?: ""] = DeviceInfo(
             data.getIntValue("api_version"),
             data.getIntValue("app_version"),
             data.getString("app_version_name") ?: "",
@@ -101,10 +101,10 @@ object SocketUtils {
         messageData["nickname"] = ConfigHelper.NICKNAME
         messageJson["data"] = messageData
         messageJson["uuid"] = ConfigHelper.uuid
-        while ( SocketConfig.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800 ) {
+        while ( SocketData.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800 ) {
             Thread.sleep(20)
         }
-        if ( SocketConfig.socketMap[IPAddress] == null ) {
+        if ( SocketData.socketMap[IPAddress] == null ) {
             Log.e("SocketUtils", "Connect timeout")
             return
         }
@@ -114,7 +114,7 @@ object SocketUtils {
         messageJson["message_id"] = randomUUID().toString()
         messageJson["status"] = status
         try {
-            val outputStream = SocketConfig.outputStreamMap[ip]
+            val outputStream = SocketData.outputStreamMap[ip]
             if (outputStream != null) {
                 val writerPrinter = PrintWriter(OutputStreamWriter(outputStream), true)
                 writerPrinter.println(messageJson.toString())
