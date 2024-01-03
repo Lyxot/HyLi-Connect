@@ -2,7 +2,7 @@
 <resources>
     <string name="xposed_description">防止APP从窗口外启动</string>
     <string name="dialog_connect_request_title">请求连接</string>
-    <string name="dialog_connect_request_message">请求连接</string>
+    <string name="dialog_connect_request_message">%1$s (%2$s) 请求连接</string>
     <string name="channel_1_name">前台服务通知</string>
     <string name="channel_1_notification_title">Hyli Connect正在运行</string>
     <string name="channel_1_notification_message">此通知用于保持Hyli Connect在后台运行</string>
@@ -14,4 +14,19 @@
     <string name="dialog_connect_request_accept">接受</string>
     <string name="dialog_connect_request_reject_countdown">拒绝 (%1$d)</string>
     <string name="page_connect_this_device">本机</string>
+    <string name="page_connect_nickname">昵称</string>
+    <string name="state_service_running">%1$s正在运行。</string>
+    <string name="state_service_stopped">%1$s已停止运行。</string>
+    <string name="state_service_socket_server_port_in_use">端口 %1$s 已被占用，已替换为 %2$s。 请在设置中更改端口。</string>
+    <string name="service_socket_service">后台服务</string>
+    <string name="service_nsd_service">网络发现服务</string>
+    <string name="service_socket_server">服务器</string>
+    <string name="state_permission_true">已获得%1$s权限</string>
+    <string name="state_permission_false">未获得%1$s权限</string>
+    <string name="permission_overlay">悬浮窗</string>
+    <string name="state_application_running">工作中</string>
+    <string name="state_application_stopped">未运行</string>
+    <string name="state_application_error">运行异常</string>
+    <string name="permission_accessibility">无障碍</string>
+    <string name="permission_notification_listener">通知使用</string>
 </resources>

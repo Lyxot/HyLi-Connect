@@ -12,14 +12,29 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -28,10 +43,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,34 +68,46 @@ import compose.icons.lineawesomeicons.TvSolid
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
+import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.socket.SERVICE_TYPE
-import xyz.hyli.connect.socket.SocketConfig
 import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.ui.HyliConnectViewModel
+import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
 import xyz.hyli.connect.utils.NetworkUtils
+import xyz.hyli.connect.utils.ServiceUtils
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
 private val mNsdManagerState = mutableStateOf<NsdManager?>(null)
+private lateinit var applicationState: MutableState<String>
+private lateinit var permissionState: MutableState<Boolean>
 private lateinit var localBroadcastManager: LocalBroadcastManager
 private lateinit var nsdDeviceMap: MutableMap<String,DeviceInfo>
 private lateinit var connectDeviceVisibilityMap: MutableMap<String,MutableState<Boolean>>
 private lateinit var connectedDeviceMap: MutableMap<String,DeviceInfo>
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
     val context = LocalContext.current
+    localBroadcastManager = viewModel.localBroadcastManager.value ?: LocalBroadcastManager.getInstance(context)
+    applicationState = viewModel.applicationState
+    permissionState = viewModel.permissionState
     nsdDeviceMap = viewModel.nsdDeviceMap
     connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
     connectedDeviceMap = viewModel.connectedDeviceMap
+    HyliConnectState.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
+        ServiceState("running", "SocketService is running")
+    } else {
+        ServiceState("stopped", "SocketService is not running")
+    }
 
-    val sharedPreferences = remember { context.getSharedPreferences("config", Context.MODE_PRIVATE) }
-    val NICKNAME = remember { ConfigHelper().getNickname(sharedPreferences, sharedPreferences.edit()) }
+    val configMap = remember { ConfigHelper.getConfigMap(context)}
+    val NICKNAME = remember { configMap["nickname"].toString() }
+    val UUID = remember { configMap["uuid"].toString() }
     val IP_ADDRESS = remember { NetworkUtils.getLocalIPInfo(context) }
-    val UUID = remember { ConfigHelper().getUUID(sharedPreferences, sharedPreferences.edit()) }
 
     val semaphore = remember { Semaphore(1) }
     mNsdManagerState.value = context.getSystemService(Context.NSD_SERVICE) as NsdManager
@@ -163,9 +191,9 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             mNsdManager!!.stopServiceDiscovery(this)
         }
     }
-//    mNsdManager!!.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener)
     DisposableEffect(Unit) {
-        localBroadcastManager = LocalBroadcastManager.getInstance(context)
+        viewModel.updateApplicationState()
+        viewModel.updatePermissionState(context)
         localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
             putExtra("command", "reboot_nsd_service")
         })
@@ -193,56 +221,150 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                 letterSpacing = 0.sp)
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Row {
-            Text(text = NICKNAME)
-            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier
-                .padding(horizontal = 2.dp)
-                .align(Alignment.CenterVertically)
-                .clickable {
-                    currentSelect.value = 2
-                    navController.navigate("settingsScreen") {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+        LazyColumn(content = {
+            item {
+                Card(modifier = Modifier
+                    .padding(6.dp)
+                    .animateItemPlacement(animationSpec = tween(400)),
+                    colors = when(applicationState.value) {
+                        "running" -> { CardColors(
+                            containerColor = HyliConnectColorScheme().secondaryContainer,
+                            contentColor = HyliConnectColorScheme().onSecondaryContainer,
+                            disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                            disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                        ) }
+                        "error" -> { CardColors(
+                            containerColor = Color(0xFFdcb334),
+                            contentColor = HyliConnectColorScheme().onError,
+                            disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                            disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                        ) }
+                        "stopped" -> { CardColors(
+                            containerColor = HyliConnectColorScheme(dynamicColor = false).error,
+                            contentColor = HyliConnectColorScheme(dynamicColor = false).onError,
+                            disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                            disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                        ) }
+                        else -> { CardColors(
+                            containerColor = HyliConnectColorScheme().secondaryContainer,
+                            contentColor = HyliConnectColorScheme().onSecondaryContainer,
+                            disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                            disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                        ) }
                     }
-                })
-        }
-        Row {
-            if ( IP_ADDRESS.isEmpty().not() ) {
-                Text(text = "IP: ")
-                LazyColumn {
-                    if ( IP_ADDRESS.containsKey("wlan0") && IP_ADDRESS.containsKey("wlan1") ) {
-                        item {
-                            Text(text = "[ wlan0 ]:\t${IP_ADDRESS["wlan0"]}")
-                        }
-                        item {
-                            Text(text = "[ wlan1 ]:\t${IP_ADDRESS["wlan1"]}")
-                        }
-                    } else if ( IP_ADDRESS.containsKey("wlan0") && IP_ADDRESS.containsKey("wlan1").not() ) {
-                        item {
-                            Text(text = "${IP_ADDRESS["wlan0"]}")
-                        }
-                    } else if ( IP_ADDRESS.containsKey("wlan0").not() && IP_ADDRESS.containsKey("wlan1").not() && IP_ADDRESS.size == 1 ) {
-                        item {
-                            Text(text = "[ ${IP_ADDRESS.keys.first()} ]:${IP_ADDRESS.values.first()}")
-                        }
-                    } else {
-                        IP_ADDRESS.forEach {
-                            item {
-                                Text(text = "[ ${it.key} ]:\t${it.value}")
+                ) {
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(imageVector = when(applicationState.value) {
+                            "running" -> { Icons.Default.Check }
+                            "error" -> { LineAwesomeIcons.QuestionCircleSolid }
+                            "stopped" -> { Icons.Default.Close }
+                            else -> { LineAwesomeIcons.QuestionCircleSolid }
+                        }, contentDescription = null, modifier = Modifier
+                            .size(42.dp)
+                            .padding(6.dp))
+                        Column(modifier = Modifier.padding(start = 12.dp),
+                            verticalArrangement = Arrangement.Center) {
+                            Text(text = when(applicationState.value) {
+                                "running" -> { stringResource(id = R.string.state_application_running) }
+                                "error" -> { stringResource(id = R.string.state_application_error) }
+                                "stopped" -> { stringResource(id = R.string.state_application_stopped) }
+                                else -> { "" }
+                            }, style = HyliConnectTypography.titleLarge)
+                            if ( applicationState.value != "stopped" ) {
+                                if ( applicationState.value == "error" ) {
+                                    HyliConnectState.serviceStateMap.forEach {
+                                        if ( it.value.state == "error" ) {
+                                            it.value.message?.let { it1 ->
+                                                Text(
+                                                    text = it1,
+                                                    style = HyliConnectTypography.bodySmall,
+                                                    color = HyliConnectColorScheme().onError
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Row {
+                                    Text(text = "${stringResource(id = R.string.page_connect_nickname)}: $NICKNAME")
+                                    Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier
+                                        .size(24.dp)
+                                        .padding(horizontal = 2.dp)
+                                        .align(Alignment.CenterVertically)
+                                        .clickable {
+                                            currentSelect.value = 2
+                                            navController.navigate("settingsScreen") {
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
+                                        })
+                                }
+                                Row {
+                                    if ( IP_ADDRESS.isEmpty().not() ) {
+                                        Text(text = "IP: ")
+                                        Column {
+                                            if ( IP_ADDRESS.containsKey("wlan0") && IP_ADDRESS.containsKey("wlan1") ) {
+                                                Text(text = "[ wlan0 ]:\t${IP_ADDRESS["wlan0"]}")
+                                                Text(text = "[ wlan1 ]:\t${IP_ADDRESS["wlan1"]}")
+                                            } else if ( IP_ADDRESS.containsKey("wlan0") && IP_ADDRESS.containsKey("wlan1").not() ) {
+                                                Text(text = "${IP_ADDRESS["wlan0"]}")
+                                            } else if ( IP_ADDRESS.containsKey("wlan0").not() && IP_ADDRESS.containsKey("wlan1").not() && IP_ADDRESS.size == 1 ) {
+                                                Text(text = "[ ${IP_ADDRESS.keys.first()} ]:${IP_ADDRESS.values.first()}")
+                                            } else {
+                                                IP_ADDRESS.forEach {
+                                                    Text(text = "[ ${it.key} ]:\t${it.value}")
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        Text(text = "IP: 0.0.0.0")
+                                    }
+                                }
+                                Text(text = UUID, style = HyliConnectTypography.bodySmall, color = HyliConnectColorScheme().outline)
+                            } else {
+                                HyliConnectState.serviceStateMap.forEach {
+                                    if ( it.value.state != "running" ) {
+                                        it.value.message?.let { it1 ->
+                                            Text(
+                                                text = it1,
+                                                style = HyliConnectTypography.bodySmall,
+                                                color = HyliConnectColorScheme().onError
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            } else {
-                Text(text = "IP: 0.0.0.0")
             }
-        }
-        Text(text = UUID, style = HyliConnectTypography.bodySmall, color = HyliConnectColorScheme().outline)
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn(content = {
             item {
-                Row(modifier = Modifier.fillMaxWidth()) {
+                if (permissionState.value.not()) {
+                    Card(modifier = Modifier
+                        .padding(6.dp)
+                        .animateItemPlacement(animationSpec = tween(400))) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            HyliConnectState.permissionStateMap.forEach {
+                                if (it.value.not() && it.key in viewModel.permissionMap.keys) {
+                                    Row {
+                                        Icon(Icons.Default.Close, contentDescription = null)
+                                        Text(stringResource(id = viewModel.permissionMap[it.key]!!))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            item {
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .animateItemPlacement(animationSpec = tween(400))) {
                     Text(text = stringResource(id = R.string.page_connect_available_devices))
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier
                         .padding(horizontal = 2.dp)
@@ -339,7 +461,7 @@ private fun deviceCard(deviceInfo: DeviceInfo, navController: NavHostController?
                 Column(modifier = Modifier.padding(top = 12.dp, bottom = 12.dp, end = 12.dp), verticalArrangement = Arrangement.Center) {
                     Row(verticalAlignment = Alignment.CenterVertically){
                         Text(text = when(deviceInfo.uuid) {
-                            ConfigHelper.uuid -> { deviceInfo.nickname + " (" + stringResource(id = R.string.page_connect_this_device) + ")" }
+                            ConfigHelper.getConfigMap()["uuid"].toString() -> { deviceInfo.nickname + " (" + stringResource(id = R.string.page_connect_this_device) + ")" }
                             else -> { deviceInfo.nickname }
                         }, style = HyliConnectTypography.titleMedium)
                     }

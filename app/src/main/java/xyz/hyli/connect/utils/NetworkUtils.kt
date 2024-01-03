@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import java.net.Inet4Address
 import java.net.NetworkInterface
+import java.net.ServerSocket
 import java.net.SocketException
 
 
@@ -44,5 +45,24 @@ object NetworkUtils {
     }
     private fun intToIp(i: Int): String {
         return (i and 0xFF).toString() + "." + (i shr 8 and 0xFF) + "." + (i shr 16 and 0xFF) + "." + (i shr 24 and 0xFF)
+    }
+    fun isPortInUse(port: Int): Boolean {
+        return try {
+            val socket = ServerSocket(port)
+            socket.close()
+            false
+        } catch (e: Exception) {
+            true
+        }
+    }
+    fun getAvailablePort(): Int {
+        var port = 0
+        while (true) {
+            port = (Math.random() * 10000).toInt() + 10240
+            if (isPortInUse(port).not()) {
+                break
+            }
+        }
+        return port
     }
 }

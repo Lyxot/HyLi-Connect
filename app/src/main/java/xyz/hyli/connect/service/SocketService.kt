@@ -19,6 +19,7 @@ import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
+import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.MessageHandler
 import xyz.hyli.connect.socket.PLATFORM
@@ -28,6 +29,7 @@ import xyz.hyli.connect.socket.SocketData
 import xyz.hyli.connect.socket.utils.SocketUtils
 import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.ui.dialog.RequestConnectionActivity
+import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.ui.test.TestActivity
 import xyz.hyli.connect.utils.NetworkUtils
 import java.io.IOException
@@ -43,7 +45,7 @@ class SocketService : Service() {
     private var mNsdServiceName: String? = null
     private var nsdRunning = false
     private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: android.content.Context, intent: Intent) {
+        override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
             if ( action == "xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT" ) {
                 val command = intent.getStringExtra("command")
@@ -111,14 +113,14 @@ class SocketService : Service() {
             Thread.sleep(3000)
         }
     }
+    private lateinit var configMap: MutableMap<String, Any>
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate() {
         super.onCreate()
         setForeground()
-        val sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE)
-        ConfigHelper().initConfig(sharedPreferences, sharedPreferences.edit())
-        serverPort = ConfigHelper.SERVER_PORT
+        configMap = ConfigHelper.getConfigMap(this)
+        serverPort = configMap["server_port"] as Int
         startServer(serverPort)
         registerNsdService()
         checkConnection()
@@ -130,9 +132,8 @@ class SocketService : Service() {
         localBroadcastManager.registerReceiver(broadcastReceiver, filter)
     }
     override fun onBind(intent: Intent): IBinder {
-        val sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE)
-        ConfigHelper().initConfig(sharedPreferences, sharedPreferences.edit())
-        serverPort = ConfigHelper.SERVER_PORT
+        configMap = ConfigHelper.getConfigMap(this)
+        serverPort = configMap["server_port"] as Int
         startServer(serverPort)
         registerNsdService()
         checkConnection()
@@ -146,6 +147,7 @@ class SocketService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         try {
+            HyliConnectState.serviceStateMap["SocketService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_service)))
             localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
                 putExtra("command", "start")
             })
@@ -162,8 +164,16 @@ class SocketService : Service() {
     private fun startServer(port: Int = SERVER_PORT) {
         val TAG = "SocketServer"
         if ( serverSocket == null ) {
+            HyliConnectState.serviceStateMap["SocketServer"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_server)))
+            serverPort = port
+            if ( NetworkUtils.isPortInUse(port) ) {
+                Log.i(TAG, "Port $port is in use")
+                HyliConnectState.serviceStateMap["SocketServer"] = ServiceState("error", getString(R.string.state_service_socket_server_port_in_use, port.toString(), serverPort.toString()))
+            } else {
+                HyliConnectState.serviceStateMap["SocketServer"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_socket_server)))
+            }
             thread {
-                serverSocket = ServerSocket(port)
+                serverSocket = ServerSocket(serverPort)
                 Log.i(TAG, "Start server: $serverSocket")
                 while (true) {
                     val socket = serverSocket!!.accept()
@@ -248,6 +258,7 @@ class SocketService : Service() {
     }
     private fun stopSocket() {
         SocketUtils.closeAllConnection()
+        HyliConnectState.serviceStateMap["SocketServer"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_server)))
     }
     private fun checkConnection() {
         if ( checkConnectionThread.isAlive.not() ) {
@@ -280,9 +291,10 @@ class SocketService : Service() {
         if ( nsdRunning ) {
             return
         }
+        HyliConnectState.serviceStateMap["NsdService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_nsd_service)))
 
-        val uuid = ConfigHelper.uuid
-        val nickname = ConfigHelper.NICKNAME
+        val uuid = configMap["uuid"].toString()
+        val nickname = configMap["nickname"].toString()
         val mNsdServiceInfo = NsdServiceInfo().apply {
             serviceName = "HyliConnect@$uuid"
             serviceType = SERVICE_TYPE
@@ -322,12 +334,14 @@ class SocketService : Service() {
             }
         }
         mNsdManager.registerService(mNsdServiceInfo, NsdManager.PROTOCOL_DNS_SD, NsdRegistrationListener)
+        HyliConnectState.serviceStateMap["NsdService"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_nsd_service)))
     }
     private fun unregisterNsdService() {
         if ( nsdRunning.not() ) {
             return
         }
         mNsdManager.unregisterService(NsdRegistrationListener)
+        HyliConnectState.serviceStateMap["NsdService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_nsd_service)))
     }
     private fun restartNsdService() {
         if ( nsdRunning ) {
