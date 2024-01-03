@@ -1,16 +1,12 @@
 package xyz.hyli.connect.ui.dialog
 
 import android.content.DialogInterface
-import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.provider.Settings
 import android.view.Gravity
-import android.view.View
 import android.view.Window
 import android.view.WindowManager
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AlertDialog
@@ -39,7 +35,7 @@ class RequestConnectionActivity : ComponentActivity() {
                     val uuid = data.getString("uuid")
                     dialog = MaterialAlertDialogBuilder(this)
                         .setTitle(getString(R.string.dialog_connect_request_title))
-                        .setMessage("$nickname ($IP_Address) ${getString(R.string.dialog_connect_request_message)}\n\nUUID: $uuid")
+                        .setMessage("${getString(R.string.dialog_connect_request_message, nickname, IP_Address)}\n\nUUID: $uuid")
                         .setPositiveButton(getString(R.string.dialog_connect_request_accept)) { dialog, which ->
                             SocketUtils.acceptConnection(ip!!, data)
                             dialog.dismiss()

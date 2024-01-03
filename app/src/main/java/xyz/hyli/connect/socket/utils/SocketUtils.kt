@@ -46,10 +46,10 @@ object SocketUtils {
         messageData["app_version"] = BuildConfig.VERSION_CODE
         messageData["app_version_name"] = BuildConfig.VERSION_NAME
         messageData["platform"] = PLATFORM
-        messageData["uuid"] = ConfigHelper.uuid
-        messageData["nickname"] = ConfigHelper.NICKNAME
+        messageData["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
+        messageData["nickname"] = ConfigHelper.getConfigMap()["nickname"].toString()
         messageJson["data"] = messageData
-        messageJson["uuid"] = ConfigHelper.uuid
+        messageJson["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
         SocketData.deviceInfoMap[data.getString("uuid") ?: ""] = DeviceInfo(
             data.getIntValue("api_version"),
             data.getIntValue("app_version"),
@@ -67,10 +67,10 @@ object SocketUtils {
         val messageData = JSONObject()
         messageJson["message_type"] = "response"
         messageJson["command"] = COMMAND_CONNECT
-        messageData["uuid"] = ConfigHelper.uuid
-        messageData["nickname"] = ConfigHelper.NICKNAME
+        messageData["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
+        messageData["nickname"] = ConfigHelper.getConfigMap()["nickname"].toString()
         messageJson["data"] = messageData
-        messageJson["uuid"] = ConfigHelper.uuid
+        messageJson["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
         thread {
             sendMessage(ip, messageJson, "reject")
             closeConnection(ip)
@@ -82,7 +82,7 @@ object SocketUtils {
         messageJson["message_type"] = "heartbeat"
         messageData["timestamp"] = System.currentTimeMillis()
         messageJson["data"] = messageData
-        messageJson["uuid"] = ConfigHelper.uuid
+        messageJson["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
         thread { sendMessage(ip, messageJson) }
     }
     fun connect(ip: String, port: Int = SERVER_PORT) {
@@ -97,10 +97,10 @@ object SocketUtils {
         messageData["app_version"] = BuildConfig.VERSION_CODE
         messageData["app_version_name"] = BuildConfig.VERSION_NAME
         messageData["platform"] = PLATFORM
-        messageData["uuid"] = ConfigHelper.uuid
-        messageData["nickname"] = ConfigHelper.NICKNAME
+        messageData["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
+        messageData["nickname"] = ConfigHelper.getConfigMap()["nickname"].toString()
         messageJson["data"] = messageData
-        messageJson["uuid"] = ConfigHelper.uuid
+        messageJson["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
         while ( SocketData.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800 ) {
             Thread.sleep(20)
         }

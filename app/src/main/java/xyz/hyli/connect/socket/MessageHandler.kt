@@ -45,7 +45,7 @@ object MessageHandler {
         val responseJson = JSONObject()
         responseJson["message_type"] = "response"
         responseJson["command"] = command
-        responseJson["uuid"] = ConfigHelper.uuid
+        responseJson["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
         val responseData = JSONObject()
 
         if (command in SocketConfig.NON_AUTH_COMMAND) {
@@ -54,8 +54,8 @@ object MessageHandler {
                 responseData["app_version"] = BuildConfig.VERSION_CODE
                 responseData["app_version_name"] = BuildConfig.VERSION_NAME
                 responseData["platform"] = PLATFORM
-                responseData["uuid"] = ConfigHelper.uuid
-                responseData["nickname"] = ConfigHelper.NICKNAME
+                responseData["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
+                responseData["nickname"] = ConfigHelper.getConfigMap()["nickname"].toString()
                 responseJson["data"] = responseData
                 SocketUtils.sendMessage(ip, responseJson)
                 SocketUtils.closeConnection(ip)
@@ -63,8 +63,8 @@ object MessageHandler {
         } else if (command in SocketConfig.AUTH_COMMAND) {
             when (command) {
                 COMMAND_CONNECT -> {
-                    responseData["uuid"] = ConfigHelper.uuid
-                    responseData["nickname"] = ConfigHelper.NICKNAME
+                    responseData["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
+                    responseData["nickname"] = ConfigHelper.getConfigMap()["nickname"].toString()
 
                     // temporary
 //                    SocketUtils.acceptConnection(ip, data.getString("nickname") ?: "", uuid)

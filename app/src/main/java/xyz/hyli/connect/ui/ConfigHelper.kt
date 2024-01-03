@@ -3,20 +3,20 @@ package xyz.hyli.connect.ui
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
-import android.text.format.Formatter
-import android.util.Log
+import xyz.hyli.connect.socket.SERVER_PORT
 import java.util.UUID.randomUUID
-import java.net.NetworkInterface
 
-class ConfigHelper {
-    companion object {
-        var uuid: String = ""
-        var NICKNAME: String = ""
-        var SERVER_PORT: Int = 15372
-    }
+object ConfigHelper {
+    private val configList = listOf(
+        "uuid",
+        "nickname",
+        "server_port",
+        "is_stream"
+    )
+    private val configMap = mutableMapOf<String, Any>()
 
-    fun getUUID(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor): String{
-        uuid = sharedPreferences.getString("uuid", "").toString()
+    private fun getUUID(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor): String{
+        var uuid = sharedPreferences.getString("uuid", "").toString()
         if (uuid == "") {
             uuid = randomUUID().toString()
             editor.putString("uuid", uuid)
@@ -24,21 +24,16 @@ class ConfigHelper {
         }
         return uuid
     }
-    fun getNickname(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor): String {
-        NICKNAME = sharedPreferences.getString("nickname", "").toString()
-        if (NICKNAME == "") {
-            NICKNAME = Build.BRAND + " " + Build.MODEL
-            editor.putString("nickname", NICKNAME)
+    private fun getNickname(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor): String {
+        var nickname = sharedPreferences.getString("nickname", "").toString()
+        if (nickname == "") {
+            nickname = Build.BRAND + " " + Build.MODEL
+            editor.putString("nickname", nickname)
             editor.apply()
         }
-        return NICKNAME
+        return nickname
     }
-    fun editNickname(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor, nickname: String) {
-        NICKNAME = nickname
-        editor.putString("nickname", NICKNAME)
-        editor.apply()
-    }
-    fun getServerPort(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor): Int {
+    private fun getServerPort(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor): Int {
         var serverPort = sharedPreferences.getInt("server_port", 0)
         if (serverPort == 0) {
             serverPort = SERVER_PORT
@@ -47,13 +42,25 @@ class ConfigHelper {
         }
         return serverPort
     }
-    fun editServerPort(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor, serverPort: Int) {
-        editor.putInt("server_port", serverPort)
-        editor.apply()
+    private fun getIsStream(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor): Boolean {
+        if (sharedPreferences.contains("is_stream").not()) {
+            editor.putBoolean("is_stream", false)
+            editor.apply()
+        }
+        return sharedPreferences.getBoolean("is_stream", false)
     }
-    fun initConfig(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor) {
-        getUUID(sharedPreferences, editor)
-        getNickname(sharedPreferences, editor)
-        getServerPort(sharedPreferences, editor)
+    private fun initConfig(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor) {
+        configMap["uuid"] = getUUID(sharedPreferences, editor)
+        configMap["nickname"] = getNickname(sharedPreferences, editor)
+        configMap["server_port"] = getServerPort(sharedPreferences, editor)
+        configMap["is_stream"] = getIsStream(sharedPreferences, editor)
+    }
+    fun getConfigMap(context: Context? = null): MutableMap<String, Any> {
+        if (configMap.isEmpty() && context != null) {
+            val sharedPreferences = context.getSharedPreferences("config", Context.MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            initConfig(sharedPreferences, editor)
+        }
+        return configMap
     }
 }

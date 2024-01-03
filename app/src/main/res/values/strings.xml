@@ -4,7 +4,7 @@
     <string name="title_activity_display" translatable="false">Display Activity</string>
     <string name="title_activity_app_list" translatable="false">AppList Activity</string>
     <string name="dialog_connect_request_title">Connection request</string>
-    <string name="dialog_connect_request_message">request connection</string>
+    <string name="dialog_connect_request_message">%1$s (%2$s) request connection</string>
     <string name="channel_1_name">Foreground service notification</string>
     <string name="channel_1_notification_title">Hyli Connect is running</string>
     <string name="channel_1_notification_message">This notification is required to keep Hyli Connect running</string>
@@ -16,4 +16,23 @@
     <string name="dialog_connect_request_accept">Accept</string>
     <string name="dialog_connect_request_reject_countdown">Reject (%1$d)</string>
     <string name="page_connect_this_device">this device</string>
+    <string name="page_connect_nickname">Nickname</string>
+    <string name="state_service_running">%1$s is running.</string>
+    <string name="state_service_stopped">%1$s is not running.</string>
+    <string name="state_service_socket_server_port_in_use">Port %1$s is in use. Use port %2$s instead. Please edit the port in settings.</string>
+    <string name="service_socket_service">Background service</string>
+    <string name="service_nsd_service">Network discovery service</string>
+    <string name="service_socket_server">Server</string>
+    <string name="state_permission_true">%1$s is available</string>
+    <string name="state_permission_false">%1$s is not available</string>
+    <string name="permission_overlay">Overlay</string>
+    <string name="state_application_running">Running</string>
+    <string name="state_application_stopped">Stopped</string>
+    <string name="state_application_error">Running with exceptions</string>
+    <string name="permission_shizuku" translatable="false">Shizuku</string>
+    <string name="permission_adb" translatable="false">Adb</string>
+    <string name="permission_root" translatable="false">Root</string>
+    <string name="permission_xposed" translatable="false">Xposed</string>
+    <string name="permission_accessibility">Accessibility</string>
+    <string name="permission_notification_listener">Notification listener</string>
 </resources>
