@@ -60,8 +60,7 @@ class MainActivity: ComponentActivity() {
                 }
             } catch (_: Exception) { }
             try {
-                val uuid_list = viewModel.connectedDeviceMap.keys.toMutableList()
-                uuid_list.forEach {
+                viewModel.connectedDeviceMap.keys.toMutableList().forEach {
                     if ( SocketData.deviceInfoMap.containsKey(it).not() ) {
                         viewModel.connectedDeviceMap.remove(it)
                         viewModel.connectDeviceVisibilityMap.remove(it)
@@ -103,8 +102,9 @@ class MainActivity: ComponentActivity() {
                 shizukuPermissionFuture.complete(granted)
             }
         }
-
-        HyliConnectState.permissionStateMap["Shizuku"] = checkShizukuPermission()
+        if (ConfigHelper.getConfigMap(this)["is_stream"] == true && (ConfigHelper.getConfigMap(this)["stream_method"] == "Shizuku" || ConfigHelper.getConfigMap(this)["refuse_fullscreen_method"] == "Shizuku")) {
+            HyliConnectState.permissionStateMap["Shizuku"] = checkShizukuPermission()
+        }
 
         setContent {
             HyliConnectTheme {

@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
+import xyz.hyli.connect.hook.utils.HookTest
 import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.utils.PermissionUtils
 
@@ -28,18 +29,16 @@ class HyliConnectViewModel: ViewModel() {
     val permissionMap = mapOf(
         "Overlay" to R.string.permission_overlay,
         "Shizuku" to R.string.permission_shizuku,
-        "ADB" to R.string.permission_adb,
         "Root" to R.string.permission_root,
         "Xposed" to R.string.permission_xposed,
         "Accessibility" to R.string.permission_accessibility,
         "NotificationListener" to R.string.permission_notification_listener,
     )
-    val keyPermissionList = listOf(
+    val keyPermissionList = mutableListOf(
         "Overlay"
     )
     val streamPermissionList = listOf(
         "Shizuku",
-        "ADB",
         "Root"
     )
     val refuseFullScreenPermissionList = listOf(
@@ -80,26 +79,22 @@ class HyliConnectViewModel: ViewModel() {
             }
         }
         var state2 = true
-        if ( ConfigHelper.getConfigMap()["is_stream"] == true ) {
-            var streamPermissionState = false
-            streamPermissionList.forEach {
-                if ( HyliConnectState.permissionStateMap[it] == true ) {
-                    streamPermissionState = true
-                }
-            }
-            var refuseFullScreenPermissionState = false
-            refuseFullScreenPermissionList.forEach {
-                if ( HyliConnectState.permissionStateMap[it] == true ) {
-                    refuseFullScreenPermissionState = true
-                }
-            }
-            state2 = streamPermissionState && refuseFullScreenPermissionState
+        if (ConfigHelper.getConfigMap()["is_stream"] == true) {
+            state2 = (HyliConnectState.permissionStateMap[ConfigHelper.getConfigMap()["stream_method"]] == true) &&
+                    (HyliConnectState.permissionStateMap[ConfigHelper.getConfigMap()["refuse_full_screen_method"]] == true)
         }
         // TODO: optional permission
         permissionState.value = state1 && state2
     }
     private fun checkPermission(context: Context) {
         HyliConnectState.permissionStateMap["Overlay"] = PermissionUtils.checkOverlayPermission(context)
+        if (ConfigHelper.getConfigMap()["is_stream"] == true) {
+            keyPermissionList.add(ConfigHelper.getConfigMap()["stream_method"].toString())
+            keyPermissionList.add(ConfigHelper.getConfigMap()["refuse_full_screen_method"].toString())
+            if (ConfigHelper.getConfigMap()["refuse_full_screen_method"] == "Xposed") {
+                HyliConnectState.permissionStateMap["Xposed"] = HookTest().checkXposed()
+            }
+        }
     }
 }
 

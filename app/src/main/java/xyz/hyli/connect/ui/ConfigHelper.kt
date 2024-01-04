@@ -49,11 +49,27 @@ object ConfigHelper {
         }
         return sharedPreferences.getBoolean("is_stream", false)
     }
+    private fun getStreamMethod(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor): String {
+        if (sharedPreferences.contains("stream_method").not()) {
+            editor.putString("stream_method", "Shizuku")
+            editor.apply()
+        }
+        return sharedPreferences.getString("stream_method", "Shizuku").toString()
+    }
+    private fun getRefuseFullScreenMethod(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor): String {
+        if (sharedPreferences.contains("refuse_fullscreen_method").not()) {
+            editor.putString("refuse_full_screen_method", "Shizuku")
+            editor.apply()
+        }
+        return sharedPreferences.getString("refuse_full_screen_method", "Shizuku").toString()
+    }
     private fun initConfig(sharedPreferences: SharedPreferences, editor: SharedPreferences.Editor) {
         configMap["uuid"] = getUUID(sharedPreferences, editor)
         configMap["nickname"] = getNickname(sharedPreferences, editor)
         configMap["server_port"] = getServerPort(sharedPreferences, editor)
         configMap["is_stream"] = getIsStream(sharedPreferences, editor)
+        configMap["stream_method"] = getStreamMethod(sharedPreferences, editor)
+        configMap["refuse_full_screen_method"] = getRefuseFullScreenMethod(sharedPreferences, editor)
     }
     fun getConfigMap(context: Context? = null): MutableMap<String, Any> {
         if (configMap.isEmpty() && context != null) {
