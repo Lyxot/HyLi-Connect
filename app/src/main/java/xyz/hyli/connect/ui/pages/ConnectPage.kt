@@ -347,13 +347,19 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                 if (permissionState.value.not()) {
                     Card(modifier = Modifier
                         .padding(6.dp)
-                        .animateItemPlacement(animationSpec = tween(400))) {
+                        .animateItemPlacement(animationSpec = tween(400)),
+                        colors = CardColors(
+                            containerColor = Color(0xFFdcb334),
+                            contentColor = HyliConnectColorScheme().onError,
+                            disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                            disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                        )) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             HyliConnectState.permissionStateMap.forEach {
-                                if (it.value.not() && it.key in viewModel.permissionMap.keys) {
-                                    Row {
+                                if (it.value.not() && it.key in viewModel.keyPermissionList) {
+                                    Row(modifier = Modifier.padding(12.dp)) {
                                         Icon(Icons.Default.Close, contentDescription = null)
-                                        Text(stringResource(id = viewModel.permissionMap[it.key]!!))
+                                        Text(stringResource(id = R.string.state_permission_false, stringResource(id = viewModel.permissionMap[it.key]!!)))
                                     }
                                 }
                             }
@@ -504,6 +510,20 @@ fun EmptyDeviceCard() {
         CssGgIcons.Laptop,
         CssGgIcons.GlobeAlt
     )
+    val changeIconThread = remember {
+        Thread {
+            while (nsdDeviceMap.isEmpty()) {
+                try {
+                    isIconVisible.value = false
+                    Thread.sleep(400)
+                    icon.value = iconList[(iconList.indexOf(icon.value) + 1) % iconList.size]
+                    Thread.sleep(400)
+                    isIconVisible.value = true
+                    Thread.sleep(4000)
+                } catch (_: Exception) { }
+            }
+        }
+    }
     AnimatedVisibility(visible = true,
         enter = fadeIn(animationSpec = tween(400)),
         exit = fadeOut(animationSpec = tween(400))) {
@@ -568,16 +588,8 @@ fun EmptyDeviceCard() {
             }
         }
     }
-    thread {
-        Thread.sleep(2000)
-        while (nsdDeviceMap.isEmpty()) {
-            isIconVisible.value = false
-            Thread.sleep(400)
-            icon.value = iconList[(iconList.indexOf(icon.value) + 1) % iconList.size]
-            Thread.sleep(400)
-            isIconVisible.value = true
-            Thread.sleep(4000)
-        }
+    if (changeIconThread.isAlive.not()) {
+        changeIconThread.start()
     }
 }
 
