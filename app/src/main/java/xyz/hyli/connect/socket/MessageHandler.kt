@@ -66,14 +66,16 @@ object MessageHandler {
                     responseData["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
                     responseData["nickname"] = ConfigHelper.getConfigMap()["nickname"].toString()
 
-                    // temporary
-//                    SocketUtils.acceptConnection(ip, data.getString("nickname") ?: "", uuid)
-                    val intent = Intent("xyz.hyli.connect.service.SocketService.action.CONNECT_REQUEST")
-                    intent.putExtra("command", "connect")
-                    intent.putExtra("ip", ip)
-                    intent.putExtra("nickname", data.getString("nickname")?:"")
-                    intent.putExtra("uuid", uuid)
-                    intent.putExtra("data", data.toString())
+                    val intent = Intent("xyz.hyli.connect.service.SocketService.action.CONNECT_REQUEST").apply {
+                        putExtra("command", "connect")
+                        putExtra("ip", ip)
+                        putExtra("nickname", data.getString("nickname")?:"")
+                        putExtra("uuid", uuid)
+                        putExtra("api_version", data.getIntValue("api_version"))
+                        putExtra("app_version", data.getIntValue("app_version"))
+                        putExtra("app_version_name", data.getString("app_version_name")?:"")
+                        putExtra("platform", data.getString("platform")?:"")
+                    }
                     broadcastManager?.sendBroadcast(intent)
                 }
 
