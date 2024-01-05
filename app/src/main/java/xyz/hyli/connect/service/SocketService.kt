@@ -66,14 +66,22 @@ class SocketService : Service() {
                 val ip = intent.getStringExtra("ip")
                 val nickname = intent.getStringExtra("nickname")
                 val uuid = intent.getStringExtra("uuid")
-                val messageData = intent.getStringExtra("data")
-                if ( command.isNullOrEmpty().not() && ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() && messageData.isNullOrEmpty().not() ) {
+                val api_version = intent.getIntExtra("api_version", 0)
+                val app_version = intent.getIntExtra("app_version", 0)
+                val app_version_name = intent.getStringExtra("app_version_name")
+                val platform = intent.getStringExtra("platform")
+                if ( command.isNullOrEmpty().not() && ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() && api_version != 0 && app_version != 0 && app_version_name.isNullOrEmpty().not() && platform.isNullOrEmpty().not() ) {
                     if ( command == "connect" ) {
                         if ( SocketData.uuidMap.containsKey(ip).not() ) {
                             context.startActivity(Intent(context, RequestConnectionActivity::class.java)
                                 .apply {
                                     putExtra("ip", ip)
-                                    putExtra("data", messageData)
+                                    putExtra("nickname", nickname)
+                                    putExtra("uuid", uuid)
+                                    putExtra("api_version", api_version)
+                                    putExtra("app_version", app_version)
+                                    putExtra("app_version_name", app_version_name)
+                                    putExtra("platform", platform)
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                             )

@@ -23,25 +23,38 @@ class RequestConnectionActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val intent = intent
-        var ip = intent.getStringExtra("ip")
-        val messageData = intent.getStringExtra("data")
+        val ip = intent.getStringExtra("ip")
+        val nickname = intent.getStringExtra("nickname")
+        val uuid = intent.getStringExtra("uuid")
+        val api_version = intent.getIntExtra("api_version", 0)
+        val app_version = intent.getIntExtra("app_version", 0)
+        val app_version_name = intent.getStringExtra("app_version_name")
+        val platform = intent.getStringExtra("platform")
 
         setContent {
             HyliConnectTheme {
-                if ((ip != null && messageData != null) && Settings.canDrawOverlays(this)) {
-                    val IP_Address = ip!!.substring(1, ip!!.length)
-                    val data = JSONObject.parseObject(messageData)
-                    val nickname = data.getString("nickname")
-                    val uuid = data.getString("uuid")
+                if ((ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() && api_version != 0 && app_version != 0 && app_version_name.isNullOrEmpty().not() && platform.isNullOrEmpty().not())
+                    && Settings.canDrawOverlays(this)) {
+                    val IP_Address = ip!!.substring(1, ip.length)
+                    val data = JSONObject(
+                        mapOf(
+                            "api_version" to api_version,
+                            "app_version" to app_version,
+                            "app_version_name" to app_version_name,
+                            "platform" to platform,
+                            "nickname" to nickname,
+                            "uuid" to uuid
+                        )
+                    )
                     dialog = MaterialAlertDialogBuilder(this)
                         .setTitle(getString(R.string.dialog_connect_request_title))
                         .setMessage("${getString(R.string.dialog_connect_request_message, nickname, IP_Address)}\n\nUUID: $uuid")
                         .setPositiveButton(getString(R.string.dialog_connect_request_accept)) { dialog, which ->
-                            SocketUtils.acceptConnection(ip!!, data)
+                            SocketUtils.acceptConnection(ip, data)
                             dialog.dismiss()
                         }
                         .setNegativeButton(getString(R.string.dialog_connect_request_reject_countdown, 30000 / 1000)) { dialog, which ->
-                            SocketUtils.rejectConnection(ip!!)
+                            SocketUtils.rejectConnection(ip)
                             dialog.dismiss()
                         }
                         .setCancelable(true)
