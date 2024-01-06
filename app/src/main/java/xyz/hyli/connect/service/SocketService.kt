@@ -17,6 +17,12 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.ServiceState
@@ -103,24 +109,7 @@ class SocketService : Service() {
         }
     }
     private lateinit var localBroadcastManager: LocalBroadcastManager
-    private val checkConnectionThread = thread {
-        while (true) {
-            try {
-                val map = SocketData.connectionMap
-                map.forEach { (ip, time) ->
-                    if (System.currentTimeMillis() - time > 12000) {
-                        SocketUtils.closeConnection(ip)
-                        Log.i("SocketService", "Close connection: $ip (timeout)")
-                    } else if (System.currentTimeMillis() - time > 6000) {
-                        SocketUtils.sendHeartbeat(ip)
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            Thread.sleep(3000)
-        }
-    }
+    private lateinit var checkConnectionJob: Job
     private lateinit var configMap: MutableMap<String, Any>
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -159,7 +148,7 @@ class SocketService : Service() {
             localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
                 putExtra("command", "start")
             })
-            checkConnectionThread.interrupt()
+            checkConnectionJob.cancel()
             stopSocket()
             unregisterNsdService()
             stopForeground(true)
@@ -169,6 +158,7 @@ class SocketService : Service() {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun startServer(port: Int = SERVER_PORT) {
         val TAG = "SocketServer"
         if ( serverSocket == null ) {
@@ -180,7 +170,7 @@ class SocketService : Service() {
             } else {
                 HyliConnectState.serviceStateMap["SocketServer"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_socket_server)))
             }
-            thread {
+            GlobalScope.launch(context = Dispatchers.IO) {
                 serverSocket = ServerSocket(serverPort)
                 Log.i(TAG, "Start server: $serverSocket")
                 while (true) {
@@ -189,7 +179,7 @@ class SocketService : Service() {
                     Log.i(TAG, "Accept connection: $IPAddress")
                     SocketData.socketMap[IPAddress] = socket
                     SocketData.connectionMap[IPAddress] = System.currentTimeMillis()
-                    thread {
+                    GlobalScope.launch(context = Dispatchers.IO) {
                         try {
                             val inputStream = socket.getInputStream()
                             val bufferedReader = inputStream.bufferedReader()
@@ -200,7 +190,7 @@ class SocketService : Service() {
                             socket.keepAlive = true
                             SocketUtils.sendHeartbeat(IPAddress)
                             // Authorization timeout
-                            thread {
+                            GlobalScope.launch(context = Dispatchers.IO) {
                                 Thread.sleep(30000)
                                 if ( SocketData.uuidMap.containsKey(IPAddress).not() ) {
                                     Log.i(TAG, "Authorization timeout: $IPAddress")
@@ -209,12 +199,17 @@ class SocketService : Service() {
                             }
 
                             var message: String?
-                            while (socket.isConnected) {
-                                message = bufferedReader.readLine()
-                                if ( message.isNullOrEmpty().not() ) {
-                                    Log.i(TAG, "Receive message: $IPAddress $message")
-                                    MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
+                            try {
+                                while (socket.isConnected) {
+                                    message = bufferedReader.readLine()
+                                    if ( message.isNullOrEmpty().not() ) {
+                                        Log.i(TAG, "Receive message: $IPAddress $message")
+                                        MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
+                                    }
                                 }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                SocketUtils.closeConnection(IPAddress)
                             }
                         } catch (e: IOException) {
                             Log.e(TAG, "Error: ${e.message}")
@@ -228,10 +223,11 @@ class SocketService : Service() {
             }
         }
     }
+    @OptIn(DelicateCoroutinesApi::class)
     private fun startClient(ip: String, port: Int = SERVER_PORT) {
         val TAG = "SocketClient"
         if ( SocketData.socketMap["/$ip:$port"] != null ) return
-        thread {
+        GlobalScope.launch(context = Dispatchers.IO) {
             val socket = Socket(ip, port)
             val IPAddress = socket.remoteSocketAddress.toString()
             Log.i(TAG, "Start client = $socket")
@@ -249,12 +245,17 @@ class SocketService : Service() {
                 SocketUtils.sendHeartbeat(IPAddress)
 
                 var message: String?
-                while (socket.isConnected) {
-                    message = bufferedReader.readLine()
-                    if ( message.isNullOrEmpty().not() ) {
-                        Log.i(TAG, "Receive message: $IPAddress $message")
-                        MessageHandler.messageHandler(IPAddress, message)
+                try {
+                    while (socket.isConnected) {
+                        message = bufferedReader.readLine()
+                        if ( message.isNullOrEmpty().not() ) {
+                            Log.i(TAG, "Receive message: $IPAddress $message")
+                            MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
+                        }
                     }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    SocketUtils.closeConnection(IPAddress)
                 }
             } catch (e: IOException) {
                 Log.e(TAG, "Error: ${e.message}")
@@ -268,9 +269,23 @@ class SocketService : Service() {
         SocketUtils.closeAllConnection()
         HyliConnectState.serviceStateMap["SocketServer"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_server)))
     }
+    @OptIn(DelicateCoroutinesApi::class)
     private fun checkConnection() {
-        if ( checkConnectionThread.isAlive.not() ) {
-            checkConnectionThread.start()
+        if ( ::checkConnectionJob.isInitialized.not() ) {
+            checkConnectionJob = GlobalScope.launch(context = Dispatchers.Main) {
+                while (true) {
+                    val map = SocketData.connectionMap
+                    map.forEach { (ip, time) ->
+                        if (System.currentTimeMillis() - time > 12000) {
+                            SocketUtils.closeConnection(ip)
+                            Log.i("SocketService", "Close connection: $ip (timeout)")
+                        } else if (System.currentTimeMillis() - time > 6000) {
+                            SocketUtils.sendHeartbeat(ip)
+                        }
+                    }
+                    delay(3000)
+                }
+            }
         }
     }
     private fun setForeground() {
