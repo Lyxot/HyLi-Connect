@@ -38,6 +38,8 @@ class HyliConnectViewModel: ViewModel() {
                 try {
                     connectedDeviceMap.keys.toMutableList().forEach {
                         if ( SocketData.deviceInfoMap.containsKey(it).not() ) {
+                            connectDeviceVisibilityMap[it]!!.value = false
+                            delay(500)
                             connectedDeviceMap.remove(it)
                             connectDeviceVisibilityMap.remove(it)
                         }
