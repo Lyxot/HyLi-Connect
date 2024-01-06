@@ -41,7 +41,6 @@ import xyz.hyli.connect.utils.NetworkUtils
 import java.io.IOException
 import java.net.ServerSocket
 import java.net.Socket
-import kotlin.concurrent.thread
 
 class SocketService : Service() {
     private var serverPort: Int = SERVER_PORT
@@ -166,6 +165,7 @@ class SocketService : Service() {
             serverPort = port
             if ( NetworkUtils.isPortInUse(port) ) {
                 Log.i(TAG, "Port $port is in use")
+                serverPort = NetworkUtils.getAvailablePort()
                 HyliConnectState.serviceStateMap["SocketServer"] = ServiceState("error", getString(R.string.state_service_socket_server_port_in_use, port.toString(), serverPort.toString()))
             } else {
                 HyliConnectState.serviceStateMap["SocketServer"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_socket_server)))
