@@ -6,14 +6,50 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.hook.utils.HookTest
+import xyz.hyli.connect.socket.SocketData
 import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.utils.PermissionUtils
 
 class HyliConnectViewModel: ViewModel() {
+    init {
+        viewModelScope.launch(context = Dispatchers.Main) {
+            delay(1000)
+            while (true) {
+                try {
+                    SocketData.uuidMap.forEach {
+                        if ( nsdDeviceMap.containsKey(it.value) && SocketData.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
+                            connectedDeviceMap[it.value] = SocketData.deviceInfoMap[it.value]!!
+                            nsdDeviceMap.remove(it.value)
+                            connectDeviceVisibilityMap[it.value]!!.value = false
+                        } else if ( SocketData.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
+                            connectedDeviceMap[it.value] = SocketData.deviceInfoMap[it.value]!!
+                            connectDeviceVisibilityMap[it.value]!!.value = false
+                        }
+                    }
+                } catch (_: Exception) { }
+                try {
+                    connectedDeviceMap.keys.toMutableList().forEach {
+                        if ( SocketData.deviceInfoMap.containsKey(it).not() ) {
+                            connectedDeviceMap.remove(it)
+                            connectDeviceVisibilityMap.remove(it)
+                        }
+                    }
+                } catch (_: Exception) { }
+                try {
+                    updateApplicationState()
+                } catch (_: Exception) { }
+                delay(1000)
+            }
+        }
+    }
     val localBroadcastManager = mutableStateOf<LocalBroadcastManager?>(null)
     val applicationState = mutableStateOf("error")
     val permissionState = mutableStateOf(false)

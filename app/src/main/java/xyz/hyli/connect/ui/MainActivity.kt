@@ -45,34 +45,6 @@ class MainActivity: ComponentActivity() {
     private var appList: Deferred<List<String>>? = null
     private lateinit var viewModel: HyliConnectViewModel
     private lateinit var localBroadcastManager: LocalBroadcastManager
-    private val observeVariableThread = Thread {
-        while (true) {
-            try {
-                SocketData.uuidMap.forEach {
-                    if ( viewModel.nsdDeviceMap.containsKey(it.value) && SocketData.deviceInfoMap.containsKey(it.value) && viewModel.connectedDeviceMap.containsKey(it.value).not() ) {
-                        viewModel.connectedDeviceMap[it.value] = SocketData.deviceInfoMap[it.value]!!
-                        viewModel.nsdDeviceMap.remove(it.value)
-                        viewModel.connectDeviceVisibilityMap[it.value]!!.value = false
-                    } else if ( SocketData.deviceInfoMap.containsKey(it.value) && viewModel.connectedDeviceMap.containsKey(it.value).not() ) {
-                        viewModel.connectedDeviceMap[it.value] = SocketData.deviceInfoMap[it.value]!!
-                        viewModel.connectDeviceVisibilityMap[it.value]!!.value = false
-                    }
-                }
-            } catch (_: Exception) { }
-            try {
-                viewModel.connectedDeviceMap.keys.toMutableList().forEach {
-                    if ( SocketData.deviceInfoMap.containsKey(it).not() ) {
-                        viewModel.connectedDeviceMap.remove(it)
-                        viewModel.connectDeviceVisibilityMap.remove(it)
-                    }
-                }
-            } catch (_: Exception) { }
-            try {
-                viewModel.updateApplicationState()
-            } catch (_: Exception) { }
-            Thread.sleep(1000)
-        }
-    }
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,9 +84,6 @@ class MainActivity: ComponentActivity() {
 //                TestScreen()
                 MainScreen(widthSizeClass, viewModel)
             }
-        }
-        if (observeVariableThread.isAlive.not()) {
-            observeVariableThread.start()
         }
     }
     private fun checkShizukuPermission(): Boolean {

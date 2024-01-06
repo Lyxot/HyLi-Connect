@@ -42,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +66,10 @@ import compose.icons.lineawesomeicons.DesktopSolid
 import compose.icons.lineawesomeicons.MobileAltSolid
 import compose.icons.lineawesomeicons.QuestionCircleSolid
 import compose.icons.lineawesomeicons.TvSolid
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
@@ -510,16 +515,17 @@ fun EmptyDeviceCard() {
         CssGgIcons.Laptop,
         CssGgIcons.GlobeAlt
     )
-    val changeIconThread = remember {
-        Thread {
+    LaunchedEffect(Unit) {
+        MainScope().launch(context = Dispatchers.Main) {
+            delay(1000)
             while (nsdDeviceMap.isEmpty()) {
                 try {
                     isIconVisible.value = false
-                    Thread.sleep(400)
+                    delay(400)
                     icon.value = iconList[(iconList.indexOf(icon.value) + 1) % iconList.size]
-                    Thread.sleep(400)
+                    delay(400)
                     isIconVisible.value = true
-                    Thread.sleep(4000)
+                    delay(4000)
                 } catch (_: Exception) { }
             }
         }
@@ -587,9 +593,6 @@ fun EmptyDeviceCard() {
                 }
             }
         }
-    }
-    if (changeIconThread.isAlive.not()) {
-        changeIconThread.start()
     }
 }
 
