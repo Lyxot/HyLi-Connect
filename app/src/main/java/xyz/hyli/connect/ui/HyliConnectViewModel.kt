@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
+import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.hook.utils.HookTest
 import xyz.hyli.connect.socket.SocketData
 import xyz.hyli.connect.ui.state.HyliConnectState
@@ -117,19 +118,19 @@ class HyliConnectViewModel: ViewModel() {
             }
         }
         var state2 = true
-        if (ConfigHelper.getConfigMap()["is_stream"] == true) {
-            state2 = (HyliConnectState.permissionStateMap[ConfigHelper.getConfigMap()["stream_method"]] == true) &&
-                    (HyliConnectState.permissionStateMap[ConfigHelper.getConfigMap()["refuse_full_screen_method"]] == true)
+        if (PreferencesDataStore.getConfigMap()["is_stream"] == true) {
+            state2 = (HyliConnectState.permissionStateMap[PreferencesDataStore.getConfigMap()["stream_method"]] == true) &&
+                    (HyliConnectState.permissionStateMap[PreferencesDataStore.getConfigMap()["refuse_full_screen_method"]] == true)
         }
         // TODO: optional permission
         permissionState.value = state1 && state2
     }
     private fun checkPermission(context: Context) {
         HyliConnectState.permissionStateMap["Overlay"] = PermissionUtils.checkOverlayPermission(context)
-        if (ConfigHelper.getConfigMap()["is_stream"] == true) {
-            keyPermissionList.add(ConfigHelper.getConfigMap()["stream_method"].toString())
-            keyPermissionList.add(ConfigHelper.getConfigMap()["refuse_full_screen_method"].toString())
-            if (ConfigHelper.getConfigMap()["refuse_full_screen_method"] == "Xposed") {
+        if (PreferencesDataStore.getConfigMap()["is_stream"] == true) {
+            keyPermissionList.add(PreferencesDataStore.getConfigMap()["stream_method"].toString())
+            keyPermissionList.add(PreferencesDataStore.getConfigMap()["refuse_full_screen_method"].toString())
+            if (PreferencesDataStore.getConfigMap()["refuse_full_screen_method"] == "Xposed") {
                 HyliConnectState.permissionStateMap["Xposed"] = HookTest().checkXposed()
             }
         }

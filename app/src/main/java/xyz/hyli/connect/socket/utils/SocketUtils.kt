@@ -4,12 +4,12 @@ import android.util.Log
 import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.bean.DeviceInfo
+import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.COMMAND_CONNECT
 import xyz.hyli.connect.socket.PLATFORM
 import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.socket.SocketData
-import xyz.hyli.connect.ui.ConfigHelper
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.util.UUID.randomUUID
@@ -46,10 +46,10 @@ object SocketUtils {
         messageData["app_version"] = BuildConfig.VERSION_CODE
         messageData["app_version_name"] = BuildConfig.VERSION_NAME
         messageData["platform"] = PLATFORM
-        messageData["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
-        messageData["nickname"] = ConfigHelper.getConfigMap()["nickname"].toString()
+        messageData["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
+        messageData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
         messageJson["data"] = messageData
-        messageJson["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
+        messageJson["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
         SocketData.deviceInfoMap[data.getString("uuid") ?: ""] = DeviceInfo(
             data.getIntValue("api_version"),
             data.getIntValue("app_version"),
@@ -67,10 +67,10 @@ object SocketUtils {
         val messageData = JSONObject()
         messageJson["message_type"] = "response"
         messageJson["command"] = COMMAND_CONNECT
-        messageData["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
-        messageData["nickname"] = ConfigHelper.getConfigMap()["nickname"].toString()
+        messageData["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
+        messageData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
         messageJson["data"] = messageData
-        messageJson["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
+        messageJson["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
         thread {
             sendMessage(ip, messageJson, "reject")
             closeConnection(ip)
@@ -82,7 +82,7 @@ object SocketUtils {
         messageJson["message_type"] = "heartbeat"
         messageData["timestamp"] = System.currentTimeMillis()
         messageJson["data"] = messageData
-        messageJson["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
+        messageJson["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
         thread { sendMessage(ip, messageJson) }
     }
     fun connect(ip: String, port: Int = SERVER_PORT) {
@@ -97,10 +97,10 @@ object SocketUtils {
         messageData["app_version"] = BuildConfig.VERSION_CODE
         messageData["app_version_name"] = BuildConfig.VERSION_NAME
         messageData["platform"] = PLATFORM
-        messageData["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
-        messageData["nickname"] = ConfigHelper.getConfigMap()["nickname"].toString()
+        messageData["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
+        messageData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
         messageJson["data"] = messageData
-        messageJson["uuid"] = ConfigHelper.getConfigMap()["uuid"].toString()
+        messageJson["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
         while ( SocketData.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800 ) {
             Thread.sleep(20)
         }

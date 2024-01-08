@@ -73,12 +73,15 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
     implementation 'androidx.compose.material3:material3:1.1.2'
+    implementation 'androidx.datastore:datastore-preferences:1.0.0'
     implementation 'io.github.biezhi:TinyPinyin:2.0.3.RELEASE'
     implementation 'com.alibaba.fastjson2:fastjson2-kotlin:2.0.43'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'br.com.devsrsouza.compose.icons:font-awesome:1.1.0'
     implementation 'br.com.devsrsouza.compose.icons:line-awesome:1.1.0'
     implementation 'br.com.devsrsouza.compose.icons:css-gg:1.1.0'
+    implementation 'androidx.startup:startup-runtime:1.1.1'
+    api 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.2'
 
     def accompanist_version = "0.32.0"
     implementation "com.google.accompanist:accompanist-adaptive:$accompanist_version"
