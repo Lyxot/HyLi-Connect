@@ -28,8 +28,8 @@ import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.ServiceState
+import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.service.SocketService
-import xyz.hyli.connect.socket.SocketData
 import xyz.hyli.connect.ui.navigation.compactScreen
 import xyz.hyli.connect.ui.navigation.expandedScreen
 import xyz.hyli.connect.ui.navigation.mediumScreen
@@ -74,7 +74,7 @@ class MainActivity: ComponentActivity() {
                 shizukuPermissionFuture.complete(granted)
             }
         }
-        if (ConfigHelper.getConfigMap(this)["is_stream"] == true && (ConfigHelper.getConfigMap(this)["stream_method"] == "Shizuku" || ConfigHelper.getConfigMap(this)["refuse_fullscreen_method"] == "Shizuku")) {
+        if (PreferencesDataStore.getConfigMap(true)["is_stream"] == true && (PreferencesDataStore.getConfigMap()["stream_method"] == "Shizuku" || PreferencesDataStore.getConfigMap()["refuse_fullscreen_method"] == "Shizuku")) {
             HyliConnectState.permissionStateMap["Shizuku"] = checkShizukuPermission()
         }
 

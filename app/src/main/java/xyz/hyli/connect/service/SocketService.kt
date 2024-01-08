@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.ServiceState
+import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.MessageHandler
 import xyz.hyli.connect.socket.PLATFORM
@@ -33,7 +34,6 @@ import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.socket.SERVICE_TYPE
 import xyz.hyli.connect.socket.SocketData
 import xyz.hyli.connect.socket.utils.SocketUtils
-import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.ui.dialog.RequestConnectionActivity
 import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.ui.test.TestActivity
@@ -115,7 +115,7 @@ class SocketService : Service() {
     override fun onCreate() {
         super.onCreate()
         setForeground()
-        configMap = ConfigHelper.getConfigMap(this)
+        configMap = PreferencesDataStore.getConfigMap()
         serverPort = configMap["server_port"] as Int
         startServer(serverPort)
         registerNsdService()
@@ -128,7 +128,7 @@ class SocketService : Service() {
         localBroadcastManager.registerReceiver(broadcastReceiver, filter)
     }
     override fun onBind(intent: Intent): IBinder {
-        configMap = ConfigHelper.getConfigMap(this)
+        configMap = PreferencesDataStore.getConfigMap()
         serverPort = configMap["server_port"] as Int
         startServer(serverPort)
         registerNsdService()

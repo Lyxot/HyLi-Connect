@@ -21,9 +21,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
+import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.service.SocketService
 import xyz.hyli.connect.socket.SERVER_PORT
-import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.utils.NetworkUtils
 import xyz.hyli.connect.utils.PackageUtils
 import java.util.concurrent.CompletableFuture
@@ -77,9 +77,9 @@ class TestActivity : AppCompatActivity() {
         }
         GlobalScope.launch(Dispatchers.IO) {
             appList = async { PackageUtils.GetAppList(packageManager) }
-            UUID = async { ConfigHelper.getConfigMap(this@TestActivity)["uuid"].toString() }
+            UUID = async { PreferencesDataStore.getConfigMap()["uuid"].toString() }
             IP_ADDRESS = async { NetworkUtils.getLocalIPInfo(this@TestActivity) }
-            NICKNAME = async { ConfigHelper.getConfigMap(this@TestActivity)["nickname"].toString() }
+            NICKNAME = async { PreferencesDataStore.getConfigMap()["nickname"].toString() }
         }
         GlobalScope.launch(Dispatchers.Main) {
             textView.text = "UUID: ${UUID?.await()}\nIP_ADDRESS: ${IP_ADDRESS?.await()}\nNICKNAME: ${NICKNAME?.await()}"

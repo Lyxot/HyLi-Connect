@@ -44,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -74,8 +75,8 @@ import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.ServiceState
+import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.socket.SERVICE_TYPE
-import xyz.hyli.connect.ui.ConfigHelper
 import xyz.hyli.connect.ui.HyliConnectViewModel
 import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
@@ -109,9 +110,9 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
         ServiceState("stopped", "SocketService is not running")
     }
 
-    val configMap = remember { ConfigHelper.getConfigMap(context)}
-    val NICKNAME = remember { configMap["nickname"].toString() }
-    val UUID = remember { configMap["uuid"].toString() }
+    val configMap = remember { PreferencesDataStore.getConfigMap(true)}
+    val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = configMap["nickname"].toString())
+    val UUID = PreferencesDataStore.uuid.asFlow().collectAsState(initial = configMap["uuid"].toString())
     val IP_ADDRESS = remember { NetworkUtils.getLocalIPInfo(context) }
 
     val semaphore = remember { Semaphore(1) }
@@ -137,7 +138,7 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             val ip_address = String(attributes["ip_addr"] ?: byteArrayOf())
 
             // Filter out self
-            if ( uuid == UUID && BuildConfig.DEBUG.not() ) {
+            if ( uuid == UUID.value && BuildConfig.DEBUG.not() ) {
                 return
             }
             // Filter out connected
@@ -293,7 +294,7 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                 }
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Row {
-                                    Text(text = "${stringResource(id = R.string.page_connect_nickname)}: $NICKNAME")
+                                    Text(text = "${stringResource(id = R.string.page_connect_nickname)}: ${NICKNAME.value}")
                                     Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier
                                         .size(24.dp)
                                         .padding(horizontal = 2.dp)
@@ -330,7 +331,7 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                         Text(text = "IP: 0.0.0.0")
                                     }
                                 }
-                                Text(text = UUID, style = HyliConnectTypography.bodySmall, color = HyliConnectColorScheme().outline)
+                                Text(text = UUID.value ?:"", style = HyliConnectTypography.bodySmall, color = HyliConnectColorScheme().outline)
                             } else {
                                 HyliConnectState.serviceStateMap.forEach {
                                     if ( it.value.state != "running" ) {
@@ -472,7 +473,7 @@ private fun deviceCard(deviceInfo: DeviceInfo, navController: NavHostController?
                 Column(modifier = Modifier.padding(top = 12.dp, bottom = 12.dp, end = 12.dp), verticalArrangement = Arrangement.Center) {
                     Row(verticalAlignment = Alignment.CenterVertically){
                         Text(text = when(deviceInfo.uuid) {
-                            ConfigHelper.getConfigMap()["uuid"].toString() -> { deviceInfo.nickname + " (" + stringResource(id = R.string.page_connect_this_device) + ")" }
+                            PreferencesDataStore.getConfigMap()["uuid"].toString() -> { deviceInfo.nickname + " (" + stringResource(id = R.string.page_connect_this_device) + ")" }
                             else -> { deviceInfo.nickname }
                         }, style = HyliConnectTypography.titleMedium)
                     }
