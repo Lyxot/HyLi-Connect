@@ -78,7 +78,7 @@ import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.socket.SERVICE_TYPE
-import xyz.hyli.connect.ui.HyliConnectViewModel
+import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
@@ -97,7 +97,7 @@ private lateinit var connectedDeviceMap: MutableMap<String,DeviceInfo>
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
+fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
     val context = LocalContext.current
     localBroadcastManager = viewModel.localBroadcastManager.value ?: LocalBroadcastManager.getInstance(context)
     applicationState = viewModel.applicationState
@@ -395,7 +395,7 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                 }
             }
             items(nsdDeviceMap.values.toList()) { deviceInfo ->
-                deviceCard(deviceInfo)
+                DeviceCard(deviceInfo)
             }
             item {
                 Row(modifier = Modifier
@@ -420,7 +420,7 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                 }
             }
             items(connectedDeviceMap.values.toList()) { deviceInfo ->
-                deviceCard(deviceInfo, navController, currentSelect)
+                DeviceCard(deviceInfo, navController, currentSelect)
             }
         })
     }
@@ -428,7 +428,7 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun deviceCard(deviceInfo: DeviceInfo, navController: NavHostController? = null, currentSelect: MutableState<Int>? = null) {
+private fun DeviceCard(deviceInfo: DeviceInfo, navController: NavHostController? = null, currentSelect: MutableState<Int>? = null) {
     AnimatedVisibility(visible = connectDeviceVisibilityMap[deviceInfo.uuid]?.value ?: remember { mutableStateOf(false) }.value,
         enter = fadeIn(animationSpec = tween(400)),
         exit = fadeOut(animationSpec = tween(400))) {
@@ -603,8 +603,8 @@ fun EmptyDeviceCard() {
 
 @Preview(showBackground = true)
 @Composable
-fun deviceCardPreview() {
-    deviceCard(DeviceInfo(
+fun DeviceCardPreview() {
+    DeviceCard(DeviceInfo(
         api_version = 1,
         app_version = 10000,
         app_version_name = "1.0.0",

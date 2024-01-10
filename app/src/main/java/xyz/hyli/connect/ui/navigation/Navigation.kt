@@ -35,14 +35,14 @@ import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.TabletAlt
 import xyz.hyli.connect.R
-import xyz.hyli.connect.ui.HyliConnectViewModel
-import xyz.hyli.connect.ui.pages.connectScreen
-import xyz.hyli.connect.ui.pages.devicesScreen
-import xyz.hyli.connect.ui.pages.settingsScreen
+import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
+import xyz.hyli.connect.ui.pages.ConnectScreen
+import xyz.hyli.connect.ui.pages.DevicesScreen
+import xyz.hyli.connect.ui.pages.SettingsScreen
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun compactScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
+fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
         NavigationBar {
             NavigationBarItem(
@@ -92,16 +92,16 @@ fun compactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             exitTransition = { fadeOut(animationSpec = tween(400)) },
             popEnterTransition = { fadeIn(animationSpec = tween(400)) },
             popExitTransition = { fadeOut(animationSpec = tween(400)) }) {
-            composable("connectScreen") { connectScreen(viewModel, navController, currentSelect) }
-            composable("devicesScreen") { devicesScreen(viewModel, navController, currentSelect) }
-            composable("settingsScreen") { settingsScreen(viewModel, navController, currentSelect) }
+            composable("connectScreen") { ConnectScreen(viewModel, navController, currentSelect) }
+            composable("devicesScreen") { DevicesScreen(viewModel, navController, currentSelect) }
+            composable("settingsScreen") { SettingsScreen(viewModel, navController, currentSelect) }
         }
     })
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun mediumScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
+fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
     Scaffold(modifier = Modifier.fillMaxSize(),
         content = {
             innerPadding -> println(innerPadding)
@@ -154,9 +154,9 @@ fun mediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
                     exitTransition = { fadeOut(animationSpec = tween(400)) },
                     popEnterTransition = { fadeIn(animationSpec = tween(400)) },
                     popExitTransition = { fadeOut(animationSpec = tween(400)) }) {
-                    composable("connectScreen") { connectScreen(viewModel, navController, currentSelect) }
-                    composable("devicesScreen") { devicesScreen(viewModel, navController, currentSelect) }
-                    composable("settingsScreen") { settingsScreen(viewModel, navController, currentSelect) }
+                    composable("connectScreen") { ConnectScreen(viewModel, navController, currentSelect) }
+                    composable("devicesScreen") { DevicesScreen(viewModel, navController, currentSelect) }
+                    composable("settingsScreen") { SettingsScreen(viewModel, navController, currentSelect) }
                 }
             }
         }
@@ -165,7 +165,7 @@ fun mediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun expandedScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
+fun ExpandedScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
     Scaffold(modifier = Modifier.fillMaxSize(),
         content = {
             innerPadding -> println(innerPadding)
@@ -221,9 +221,9 @@ fun expandedScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                     exitTransition = { fadeOut(animationSpec = tween(400)) },
                     popEnterTransition = { fadeIn(animationSpec = tween(400)) },
                     popExitTransition = { fadeOut(animationSpec = tween(400)) }) {
-                    composable("connectScreen") { connectScreen(viewModel, navController, currentSelect) }
-                    composable("devicesScreen") { devicesScreen(viewModel, navController, currentSelect) }
-                    composable("settingsScreen") { settingsScreen(viewModel, navController, currentSelect) }
+                    composable("connectScreen") { ConnectScreen(viewModel, navController, currentSelect) }
+                    composable("devicesScreen") { DevicesScreen(viewModel, navController, currentSelect) }
+                    composable("settingsScreen") { SettingsScreen(viewModel, navController, currentSelect) }
                 }
             }
         }
