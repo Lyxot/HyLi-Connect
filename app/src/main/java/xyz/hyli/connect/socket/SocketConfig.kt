@@ -1,13 +1,6 @@
 package xyz.hyli.connect.socket
 
-import xyz.hyli.connect.bean.DeviceInfo
-import java.io.InputStream
-import java.io.OutputStream
-import java.net.Socket
-
 const val API_VERSION = 1
-const val PLATFORM = "Android Phone"
-const val SERVER_PORT = 15372
 const val SERVICE_TYPE = "_hyli-connect._tcp."
 
 /**

@@ -73,7 +73,7 @@ class HyliConnectViewModel: ViewModel() {
         "Accessibility" to R.string.permission_accessibility,
         "NotificationListener" to R.string.permission_notification_listener,
     )
-    val keyPermissionList = mutableListOf(
+    var keyPermissionList = mutableListOf(
         "Overlay"
     )
     val streamPermissionList = listOf(
@@ -90,7 +90,7 @@ class HyliConnectViewModel: ViewModel() {
 //        "UsageStats"
     )
 
-    fun updateApplicationState() {
+    fun updateApplicationState(): String {
         val serviceStateList: MutableList<String> = mutableListOf()
         serviceMap.keys.forEach {
             if ( HyliConnectState.serviceStateMap.containsKey(it) ) {
@@ -107,32 +107,37 @@ class HyliConnectViewModel: ViewModel() {
         } else {
             applicationState.value = "running"
         }
+        return applicationState.value
     }
-    fun updatePermissionState(context: Context) {
+    fun updatePermissionState(context: Context): Boolean {
         checkPermission(context)
         var state1 = true
         keyPermissionList.forEach {
-            if ( HyliConnectState.permissionStateMap[it] != true ) {
+            if ( HyliConnectState.permissionStateMap[it] != true && permissionMap.containsKey(it) ) {
                 HyliConnectState.permissionStateMap[it] = false
                 state1 = false
             }
         }
-        var state2 = true
-        if (PreferencesDataStore.getConfigMap()["is_stream"] == true) {
-            state2 = (HyliConnectState.permissionStateMap[PreferencesDataStore.getConfigMap()["stream_method"]] == true) &&
-                    (HyliConnectState.permissionStateMap[PreferencesDataStore.getConfigMap()["refuse_full_screen_method"]] == true)
-        }
         // TODO: optional permission
-        permissionState.value = state1 && state2
+        permissionState.value = state1
+        return permissionState.value
     }
     private fun checkPermission(context: Context) {
+        keyPermissionList = mutableListOf(
+            "Overlay"
+        )
         HyliConnectState.permissionStateMap["Overlay"] = PermissionUtils.checkOverlayPermission(context)
-        if (PreferencesDataStore.getConfigMap()["is_stream"] == true) {
-            keyPermissionList.add(PreferencesDataStore.getConfigMap()["stream_method"].toString())
-            keyPermissionList.add(PreferencesDataStore.getConfigMap()["refuse_full_screen_method"].toString())
-            if (PreferencesDataStore.getConfigMap()["refuse_full_screen_method"] == "Xposed") {
+        val configMap = PreferencesDataStore.getConfigMap(true)
+        if (configMap["is_stream"] == true) {
+            keyPermissionList.add(configMap["stream_method"].toString())
+            keyPermissionList.add(configMap["refuse_fullscreen_method"].toString())
+            if (configMap["refuse_fullscreen_method"] == "Xposed") {
                 HyliConnectState.permissionStateMap["Xposed"] = HookTest().checkXposed()
             }
+        }
+        if (configMap["notification_forward"] == true) {
+            keyPermissionList.add("NotificationListener")
+            HyliConnectState.permissionStateMap["NotificationListener"] = PermissionUtils.checkNotificationListenerPermission(context)
         }
     }
 }

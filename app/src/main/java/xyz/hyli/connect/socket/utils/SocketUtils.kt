@@ -7,8 +7,6 @@ import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.COMMAND_CONNECT
-import xyz.hyli.connect.socket.PLATFORM
-import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.socket.SocketData
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
@@ -45,7 +43,7 @@ object SocketUtils {
         messageData["api_version"] = API_VERSION
         messageData["app_version"] = BuildConfig.VERSION_CODE
         messageData["app_version_name"] = BuildConfig.VERSION_NAME
-        messageData["platform"] = PLATFORM
+        messageData["platform"] = PreferencesDataStore.getConfigMap()["platform"].toString()
         messageData["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
         messageData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
         messageJson["data"] = messageData
@@ -85,7 +83,7 @@ object SocketUtils {
         messageJson["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
         thread { sendMessage(ip, messageJson) }
     }
-    fun connect(ip: String, port: Int = SERVER_PORT) {
+    fun connect(ip: String, port: Int) {
         val t = System.currentTimeMillis()
 //        SocketClient.start(ip, port)
         val IPAddress = "/$ip:$port"
@@ -96,7 +94,7 @@ object SocketUtils {
         messageData["api_version"] = API_VERSION
         messageData["app_version"] = BuildConfig.VERSION_CODE
         messageData["app_version_name"] = BuildConfig.VERSION_NAME
-        messageData["platform"] = PLATFORM
+        messageData["platform"] = PreferencesDataStore.getConfigMap()["platform"].toString()
         messageData["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
         messageData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
         messageJson["data"] = messageData

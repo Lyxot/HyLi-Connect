@@ -29,8 +29,6 @@ import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.MessageHandler
-import xyz.hyli.connect.socket.PLATFORM
-import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.socket.SERVICE_TYPE
 import xyz.hyli.connect.socket.SocketData
 import xyz.hyli.connect.socket.utils.SocketUtils
@@ -43,7 +41,7 @@ import java.net.ServerSocket
 import java.net.Socket
 
 class SocketService : Service() {
-    private var serverPort: Int = SERVER_PORT
+    private var serverPort: Int = 15372
     private var serverSocket: ServerSocket? = null
     private lateinit var mNsdManager: NsdManager
     private lateinit var NsdRegistrationListener: NsdManager.RegistrationListener
@@ -115,7 +113,7 @@ class SocketService : Service() {
     override fun onCreate() {
         super.onCreate()
         setForeground()
-        configMap = PreferencesDataStore.getConfigMap()
+        configMap = PreferencesDataStore.getConfigMap(true)
         serverPort = configMap["server_port"] as Int
         startServer(serverPort)
         registerNsdService()
@@ -128,7 +126,7 @@ class SocketService : Service() {
         localBroadcastManager.registerReceiver(broadcastReceiver, filter)
     }
     override fun onBind(intent: Intent): IBinder {
-        configMap = PreferencesDataStore.getConfigMap()
+        configMap = PreferencesDataStore.getConfigMap(true)
         serverPort = configMap["server_port"] as Int
         startServer(serverPort)
         registerNsdService()
@@ -158,7 +156,7 @@ class SocketService : Service() {
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    private fun startServer(port: Int = SERVER_PORT) {
+    private fun startServer(port: Int) {
         val TAG = "SocketServer"
         if ( serverSocket == null ) {
             HyliConnectState.serviceStateMap["SocketServer"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_server)))
@@ -224,7 +222,7 @@ class SocketService : Service() {
         }
     }
     @OptIn(DelicateCoroutinesApi::class)
-    private fun startClient(ip: String, port: Int = SERVER_PORT) {
+    private fun startClient(ip: String, port: Int) {
         val TAG = "SocketClient"
         if ( SocketData.socketMap["/$ip:$port"] != null ) return
         GlobalScope.launch(context = Dispatchers.IO) {
@@ -328,7 +326,7 @@ class SocketService : Service() {
         mNsdServiceInfo.setAttribute("api", API_VERSION.toString())
         mNsdServiceInfo.setAttribute("app", BuildConfig.VERSION_CODE.toString())
         mNsdServiceInfo.setAttribute("app_name", BuildConfig.VERSION_NAME)
-        mNsdServiceInfo.setAttribute("platform", PLATFORM)
+        mNsdServiceInfo.setAttribute("platform", configMap["platform"].toString())
         mNsdServiceInfo.setAttribute("ip_addr", NetworkUtils.getLocalIPInfo(this)["wlan0"] ?: "0.0.0.0")
         mNsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
         NsdRegistrationListener = object : NsdManager.RegistrationListener {

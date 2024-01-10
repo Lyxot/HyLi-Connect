@@ -53,7 +53,7 @@ object MessageHandler {
                 responseData["api_version"] = API_VERSION
                 responseData["app_version"] = BuildConfig.VERSION_CODE
                 responseData["app_version_name"] = BuildConfig.VERSION_NAME
-                responseData["platform"] = PLATFORM
+                responseData["platform"] = PreferencesDataStore.getConfigMap()["platform"].toString()
                 responseData["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
                 responseData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
                 responseJson["data"] = responseData
