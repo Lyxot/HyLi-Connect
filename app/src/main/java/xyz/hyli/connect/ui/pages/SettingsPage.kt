@@ -36,11 +36,11 @@ import xyz.hyli.connect.composeprefs3.prefs.EditTextPref
 import xyz.hyli.connect.composeprefs3.prefs.ListPref
 import xyz.hyli.connect.composeprefs3.prefs.SwitchPref
 import xyz.hyli.connect.datastore.PreferencesDataStore
-import xyz.hyli.connect.ui.HyliConnectViewModel
+import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun settingsScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
+fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
     PrefsScreen(dataStore = PreferencesDataStore.dataStore,
         modifier = Modifier
             .fillMaxSize()

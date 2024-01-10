@@ -32,11 +32,13 @@ import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.service.SocketService
-import xyz.hyli.connect.ui.navigation.compactScreen
-import xyz.hyli.connect.ui.navigation.expandedScreen
-import xyz.hyli.connect.ui.navigation.mediumScreen
+import xyz.hyli.connect.ui.navigation.CompactScreen
+import xyz.hyli.connect.ui.navigation.ExpandedScreen
+import xyz.hyli.connect.ui.navigation.MediumScreen
 import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.ui.theme.HyliConnectTheme
+import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
+import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModelFactory
 import xyz.hyli.connect.utils.PackageUtils
 import xyz.hyli.connect.utils.ServiceUtils
 import java.util.concurrent.CompletableFuture
@@ -129,15 +131,15 @@ private fun MainScreen(widthSizeClass: WindowWidthSizeClass, viewModel: HyliConn
     val currentSelect = remember { mutableStateOf(0) }
     val navController = rememberNavController()
     when (widthSizeClass) {
-        WindowWidthSizeClass.Compact -> { compactScreen(viewModel,navController,currentSelect) }
-        WindowWidthSizeClass.Medium -> { mediumScreen(viewModel,navController,currentSelect) }
-        WindowWidthSizeClass.Expanded -> { expandedScreen(viewModel,navController,currentSelect) }
-        else -> { compactScreen(viewModel,navController,currentSelect) }
+        WindowWidthSizeClass.Compact -> { CompactScreen(viewModel,navController,currentSelect) }
+        WindowWidthSizeClass.Medium -> { MediumScreen(viewModel,navController,currentSelect) }
+        WindowWidthSizeClass.Expanded -> { ExpandedScreen(viewModel,navController,currentSelect) }
+        else -> { CompactScreen(viewModel,navController,currentSelect) }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
-    MainScreen(WindowWidthSizeClass.Compact,HyliConnectViewModel())
+    MainScreen(WindowWidthSizeClass.Compact, HyliConnectViewModel())
 }

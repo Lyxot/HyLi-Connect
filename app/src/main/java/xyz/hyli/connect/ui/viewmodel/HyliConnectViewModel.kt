@@ -1,4 +1,4 @@
-package xyz.hyli.connect.ui
+package xyz.hyli.connect.ui.viewmodel
 
 import android.content.Context
 import androidx.compose.runtime.MutableState

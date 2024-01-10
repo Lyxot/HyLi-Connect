@@ -2,7 +2,6 @@ package xyz.hyli.connect.ui.pages
 
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,18 +17,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
-import xyz.hyli.connect.ui.HyliConnectViewModel
-import xyz.hyli.connect.ui.HyliConnectViewModelFactory
-import xyz.hyli.connect.ui.MainActivity
+import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 
 private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun devicesScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
+fun DevicesScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
     val context = LocalContext.current
     connectedDeviceMap = viewModel.connectedDeviceMap
     LazyColumn(modifier = Modifier
