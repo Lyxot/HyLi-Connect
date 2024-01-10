@@ -23,7 +23,6 @@ import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.service.SocketService
-import xyz.hyli.connect.socket.SERVER_PORT
 import xyz.hyli.connect.utils.NetworkUtils
 import xyz.hyli.connect.utils.PackageUtils
 import java.util.concurrent.CompletableFuture
@@ -71,7 +70,7 @@ class TestActivity : AppCompatActivity() {
                 val intent = Intent("xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT")
                 intent.putExtra("command", "start")
                 intent.putExtra("ip", ip)
-                intent.putExtra("port", SERVER_PORT)
+                intent.putExtra("port", 15372)
                 localBroadcastManager.sendBroadcast(intent)
             }
         }

@@ -23,9 +23,11 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
+import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
@@ -74,8 +76,12 @@ class MainActivity: ComponentActivity() {
                 shizukuPermissionFuture.complete(granted)
             }
         }
-        if (PreferencesDataStore.getConfigMap(true)["is_stream"] == true && (PreferencesDataStore.getConfigMap()["stream_method"] == "Shizuku" || PreferencesDataStore.getConfigMap()["refuse_fullscreen_method"] == "Shizuku")) {
+        try {
             HyliConnectState.permissionStateMap["Shizuku"] = checkShizukuPermission()
+        } catch (_: Exception) { }
+
+        MainScope().launch {
+            PreferencesDataStore.last_run_version_code.set(BuildConfig.VERSION_CODE)
         }
 
         setContent {
@@ -87,20 +93,21 @@ class MainActivity: ComponentActivity() {
         }
     }
     private fun checkShizukuPermission(): Boolean {
+        var toast: Toast? = null
         val b = if (!Shizuku.pingBinder()) {
-            Toast.makeText(this, "Shizuku is not available", Toast.LENGTH_LONG).show()
+            toast = Toast.makeText(this, "Shizuku is not available", Toast.LENGTH_LONG)
             false
         } else if (Shizuku.isPreV11()) {
-            Toast.makeText(this, "Shizuku < 11 is not supported!", Toast.LENGTH_LONG).show()
+            toast = Toast.makeText(this, "Shizuku < 11 is not supported!", Toast.LENGTH_LONG)
             false
         } else if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
             true
         } else if (Shizuku.shouldShowRequestPermissionRationale()) {
-            Toast.makeText(
+            toast = Toast.makeText(
                 this,
                 "You denied the permission for Shizuku. Please enable it in app.",
                 Toast.LENGTH_LONG
-            ).show()
+            )
             false
         } else {
             Shizuku.requestPermission(SHIZUKU_CODE)
@@ -110,7 +117,9 @@ class MainActivity: ComponentActivity() {
 
             result
         }
-
+        if ( PreferencesDataStore.getConfigMap(true)["is_stream"] == true && (PreferencesDataStore.getConfigMap()["stream_method"] == "Shizuku" || PreferencesDataStore.getConfigMap()["refuse_fullscreen_method"] == "Shizuku")) {
+            toast?.show()
+        }
         return b
     }
 }

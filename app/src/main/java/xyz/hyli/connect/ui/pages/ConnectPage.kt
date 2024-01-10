@@ -61,6 +61,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import compose.icons.CssGgIcons
 import compose.icons.LineAwesomeIcons
+import compose.icons.cssggicons.AppleWatch
 import compose.icons.cssggicons.GlobeAlt
 import compose.icons.cssggicons.Laptop
 import compose.icons.lineawesomeicons.DesktopSolid
@@ -94,7 +95,7 @@ private lateinit var nsdDeviceMap: MutableMap<String,DeviceInfo>
 private lateinit var connectDeviceVisibilityMap: MutableMap<String,MutableState<Boolean>>
 private lateinit var connectedDeviceMap: MutableMap<String,DeviceInfo>
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
     val context = LocalContext.current
@@ -105,9 +106,9 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
     connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
     connectedDeviceMap = viewModel.connectedDeviceMap
     HyliConnectState.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
-        ServiceState("running", "SocketService is running")
+        ServiceState("running", stringResource(R.string.state_service_running, stringResource(R.string.service_socket_service)))
     } else {
-        ServiceState("stopped", "SocketService is not running")
+        ServiceState("stopped", stringResource(R.string.state_service_stopped, stringResource(R.string.service_socket_service)))
     }
 
     val configMap = remember { PreferencesDataStore.getConfigMap(true)}
@@ -198,8 +199,8 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
         }
     }
     DisposableEffect(Unit) {
-        viewModel.updateApplicationState()
-        viewModel.updatePermissionState(context)
+        applicationState.value = viewModel.updateApplicationState()
+        permissionState.value = viewModel.updatePermissionState(context)
         localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
             putExtra("command", "reboot_nsd_service")
         })
@@ -351,6 +352,7 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             }
             item {
                 if (permissionState.value.not()) {
+                    Log.i("permissionState", HyliConnectState.permissionStateMap.toString())
                     Card(modifier = Modifier
                         .padding(6.dp)
                         .animateItemPlacement(animationSpec = tween(400)),
@@ -360,10 +362,10 @@ fun connectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                             disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
                             disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
                         )) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
                             HyliConnectState.permissionStateMap.forEach {
-                                if (it.value.not() && it.key in viewModel.keyPermissionList) {
-                                    Row(modifier = Modifier.padding(12.dp)) {
+                                if (it.value.not() && it.key in viewModel.keyPermissionList && it.key in viewModel.permissionMap.keys) {
+                                    Row(modifier = Modifier.padding(horizontal = 12.dp)) {
                                         Icon(Icons.Default.Close, contentDescription = null)
                                         Text(stringResource(id = R.string.state_permission_false, stringResource(id = viewModel.permissionMap[it.key]!!)))
                                     }
@@ -462,6 +464,7 @@ private fun deviceCard(deviceInfo: DeviceInfo, navController: NavHostController?
                 Icon(when(deviceInfo.platform) {
                     "Android Phone" -> { LineAwesomeIcons.MobileAltSolid }
                     "Android TV" -> { LineAwesomeIcons.TvSolid }
+                    "Android Wear" -> { CssGgIcons.AppleWatch }
                     "Windows" -> { LineAwesomeIcons.DesktopSolid }
                     "Linux" -> { LineAwesomeIcons.DesktopSolid }
                     "Mac" -> { CssGgIcons.Laptop }
@@ -512,6 +515,7 @@ fun EmptyDeviceCard() {
     val iconList = listOf(
         LineAwesomeIcons.MobileAltSolid,
         LineAwesomeIcons.TvSolid,
+        CssGgIcons.AppleWatch,
         LineAwesomeIcons.DesktopSolid,
         CssGgIcons.Laptop,
         CssGgIcons.GlobeAlt

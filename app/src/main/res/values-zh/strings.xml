@@ -29,4 +29,16 @@
     <string name="state_application_error">运行异常</string>
     <string name="permission_accessibility">无障碍</string>
     <string name="permission_notification_listener">通知使用</string>
+    <string name="page_settings_nickname">昵称</string>
+    <string name="page_settings_nickname_dialog_message">请输入昵称</string>
+    <string name="page_settings_device_type">设备类型</string>
+    <string name="page_settings_server_port">服务端口</string>
+    <string name="page_settings_server_port_dialog_message">请输入服务端口</string>
+    <string name="page_settings_stream">应用流转</string>
+    <string name="page_settings_stream_method">工作模式</string>
+    <string name="page_settings_stream_method_summary">启用应用流转所需的权限</string>
+    <string name="page_settings_refuse_fullscreen_method_summary">防止应用在主屏幕上启动所需的权限 (仅在安卓12+上支持Shizuku)</string>
+    <string name="page_settings_refuse_fullscreen_method">副工作模式</string>
+    <string name="page_settings_notification_forward">通知转发</string>
+    <string name="page_settings_notification_forward_summary">转发通知到已连接的设备。如果启用了应用流转，则可以在已连接的设备上打开通知</string>
 </resources>

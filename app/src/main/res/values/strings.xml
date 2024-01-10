@@ -35,4 +35,16 @@
     <string name="permission_xposed" translatable="false">Xposed</string>
     <string name="permission_accessibility">Accessibility</string>
     <string name="permission_notification_listener">Notification listener</string>
+    <string name="page_settings_nickname">Nickname</string>
+    <string name="page_settings_nickname_dialog_message">Please enter your nickname</string>
+    <string name="page_settings_device_type">Device type</string>
+    <string name="page_settings_server_port">Server port</string>
+    <string name="page_settings_server_port_dialog_message">Please enter the server port (1024-65535)</string>
+    <string name="page_settings_stream">App streaming</string>
+    <string name="page_settings_stream_method">Stream method</string>
+    <string name="page_settings_stream_method_summary">Permission required for app streaming</string>
+    <string name="page_settings_refuse_fullscreen_method_summary">Permission required for preventing apps from popping out to full screen (Shizuku is only supported on Android 12+)</string>
+    <string name="page_settings_refuse_fullscreen_method">Refuse fullscreen method</string>
+    <string name="page_settings_notification_forward">Notification forward</string>
+    <string name="page_settings_notification_forward_summary">Forward notifications to connected devices.If app streaming is enabled, notifications can be turned on on a connected device</string>
 </resources>
