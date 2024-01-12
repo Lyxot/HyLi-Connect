@@ -8,12 +8,18 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
@@ -33,7 +39,6 @@ import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.service.SocketService
 import xyz.hyli.connect.ui.navigation.CompactScreen
-import xyz.hyli.connect.ui.navigation.ExpandedScreen
 import xyz.hyli.connect.ui.navigation.MediumScreen
 import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.ui.theme.HyliConnectTheme
@@ -89,7 +94,6 @@ class MainActivity: ComponentActivity() {
         setContent {
             HyliConnectTheme {
                 val widthSizeClass = calculateWindowSizeClass(this).widthSizeClass
-//                TestScreen()
                 MainScreen(widthSizeClass, viewModel)
             }
         }
@@ -128,13 +132,13 @@ class MainActivity: ComponentActivity() {
 
 @Composable
 private fun MainScreen(widthSizeClass: WindowWidthSizeClass, viewModel: HyliConnectViewModel) {
-    val currentSelect = remember { mutableStateOf(0) }
+    val currentSelect = viewModel.currentSelect
     val navController = rememberNavController()
     when (widthSizeClass) {
-        WindowWidthSizeClass.Compact -> { CompactScreen(viewModel,navController,currentSelect) }
-        WindowWidthSizeClass.Medium -> { MediumScreen(viewModel,navController,currentSelect) }
-        WindowWidthSizeClass.Expanded -> { ExpandedScreen(viewModel,navController,currentSelect) }
-        else -> { CompactScreen(viewModel,navController,currentSelect) }
+        WindowWidthSizeClass.Compact -> { CompactScreen(viewModel,navController) }
+        WindowWidthSizeClass.Medium -> { MediumScreen(viewModel,navController) }
+        WindowWidthSizeClass.Expanded -> { MediumScreen(viewModel,navController) }
+        else -> { CompactScreen(viewModel,navController) }
     }
 }
 

@@ -47,8 +47,8 @@
     <string name="page_settings_version">版本</string>
     <string name="page_settings_other">其他</string>
     <string name="page_about_source_code">开源地址 (GitHub)</string>
-    <string name="page_about_homepage">主页</string>
-    <string name="page_about_license">AGPL-3.0 开源协议</string>
+    <string name="page_about_homepage">官方网站</string>
+    <string name="page_about_license">AGPL-3.0 开源许可证</string>
     <string name="page_about_donate">捐赠</string>
     <string name="page_about_feedback">反馈</string>
     <string name="page_about_changelog">更新日志</string>

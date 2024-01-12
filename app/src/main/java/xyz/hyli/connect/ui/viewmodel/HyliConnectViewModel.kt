@@ -54,6 +54,7 @@ class HyliConnectViewModel: ViewModel() {
         }
     }
     val localBroadcastManager = mutableStateOf<LocalBroadcastManager?>(null)
+    val currentSelect = mutableStateOf(0)
     val applicationState = mutableStateOf("error")
     val permissionState = mutableStateOf(false)
     val nsdDeviceMap = mutableStateMapOf<String,DeviceInfo>()

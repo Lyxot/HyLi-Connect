@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,7 +20,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -58,165 +58,174 @@ import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostController, currentSelect: MutableState<Int>) {
+fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostController, paddingValues: PaddingValues = PaddingValues(0.dp)) {
     val context = LocalContext.current
-    PrefsScreen(dataStore = PreferencesDataStore.dataStore,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 12.dp)) {
-        prefsItem {
-            Row(modifier = Modifier
-                .fillMaxWidth()) {
-                Text(text = stringResource(id = R.string.page_settings),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 28.sp,
-                    lineHeight = 34.sp,
-                    letterSpacing = 0.sp)
+    val currentSelect = viewModel.currentSelect
+    Column(modifier = Modifier.padding(paddingValues)) {
+        PrefsScreen(dataStore = PreferencesDataStore.dataStore,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp)) {
+            prefsItem {
+                Row(modifier = Modifier
+                    .fillMaxWidth()) {
+                    Text(text = stringResource(id = R.string.page_settings),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 28.sp,
+                        lineHeight = 34.sp,
+                        letterSpacing = 0.sp)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
             }
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-        prefsGroup(getString(context, R.string.page_settings_basic)) {
-            prefsItem {
-                EditTextPref(
-                    title = stringResource(id = R.string.page_settings_nickname),
-                    dialogTitle = stringResource(id = R.string.page_settings_nickname),
-                    dialogMessage = stringResource(id = R.string.page_settings_nickname_dialog_message),
-                    key = "nickname",
-                    displayValueAtEnd = true
-            ) }
-            prefsItem {
-                val iconList = mutableListOf<@Composable (() -> Unit)?>()
-                listOf(
-                    LineAwesomeIcons.MobileAltSolid,
-                    LineAwesomeIcons.TvSolid,
-                    CssGgIcons.AppleWatch,
-                    LineAwesomeIcons.DesktopSolid,
-                    LineAwesomeIcons.DesktopSolid,
-                    CssGgIcons.Laptop,
-                    CssGgIcons.GlobeAlt
-                ).forEach {
-                    iconList.add {
-                        Icon(
-                            imageVector = it,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp)
+            prefsGroup(getString(context, R.string.page_settings_basic)) {
+                prefsItem {
+                    EditTextPref(
+                        title = stringResource(id = R.string.page_settings_nickname),
+                        dialogTitle = stringResource(id = R.string.page_settings_nickname),
+                        dialogMessage = stringResource(id = R.string.page_settings_nickname_dialog_message),
+                        key = "nickname",
+                        displayValueAtEnd = true
+                    ) }
+                prefsItem {
+                    val iconList = mutableListOf<@Composable (() -> Unit)?>()
+                    listOf(
+                        LineAwesomeIcons.MobileAltSolid,
+                        LineAwesomeIcons.TvSolid,
+                        CssGgIcons.AppleWatch,
+                        LineAwesomeIcons.DesktopSolid,
+                        LineAwesomeIcons.DesktopSolid,
+                        CssGgIcons.Laptop,
+                        CssGgIcons.GlobeAlt
+                    ).forEach {
+                        iconList.add {
+                            Icon(
+                                imageVector = it,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                    ListPref(
+                        title = stringResource(id = R.string.page_settings_device_type),
+                        key = "platform",
+                        displayValueAtEnd = true,
+                        entries = listOf("Android Phone", "Android TV", "Android Wear", "Windows", "Linux", "Mac", "Web"),
+                        icons = iconList
+                    )
+                }
+                prefsItem {
+                    EditIntPref(
+                        title = stringResource(id = R.string.page_settings_server_port),
+                        dialogTitle = stringResource(id = R.string.page_settings_server_port),
+                        dialogMessage = stringResource(id = R.string.page_settings_server_port_dialog_message),
+                        valueRange = 1024..65535,
+                        key = "server_port",
+                        displayValueAtEnd = true
+                    )
+                }
+            }
+            prefsGroup(getString(context, R.string.page_settings_functions)) {
+                prefsItem {
+                    SwitchPref(key = "is_stream", title = stringResource(id = R.string.page_settings_stream))
+                }
+                prefsItem {
+                    if (PreferencesDataStore.is_stream.asFlow()
+                            .collectAsState(initial = false).value == true
+                    ) {
+                        DropDownPref(
+                            title = stringResource(id = R.string.page_settings_stream_method),
+                            summary = stringResource(id =  R.string.page_settings_stream_method_summary),
+                            key = "stream_method",
+                            displayValueAtEnd = true,
+                            entries = listOf("Shizuku", "Root")
+                        )
+                        DropDownPref(
+                            title = stringResource(id =  R.string.page_settings_refuse_fullscreen_method),
+                            summary = stringResource(id = R.string.page_settings_refuse_fullscreen_method_summary),
+                            key = "refuse_fullscreen_method",
+                            displayValueAtEnd = true,
+                            entries = if (Build.VERSION_CODES.S <= Build.VERSION.SDK_INT) {
+                                listOf("Xposed", "Shizuku")
+                            } else {
+                                listOf("Xposed")
+                            }
                         )
                     }
                 }
-                ListPref(
-                    title = stringResource(id = R.string.page_settings_device_type),
-                    key = "platform",
-                    displayValueAtEnd = true,
-                    entries = listOf("Android Phone", "Android TV", "Android Wear", "Windows", "Linux", "Mac", "Web"),
-                    icons = iconList
-                )
-            }
-            prefsItem {
-                EditIntPref(
-                    title = stringResource(id = R.string.page_settings_server_port),
-                    dialogTitle = stringResource(id = R.string.page_settings_server_port),
-                    dialogMessage = stringResource(id = R.string.page_settings_server_port_dialog_message),
-                    valueRange = 1024..65535,
-                    key = "server_port",
-                    displayValueAtEnd = true
-                )
-            }
-        }
-        prefsGroup(getString(context, R.string.page_settings_functions)) {
-            prefsItem {
-                SwitchPref(key = "is_stream", title = stringResource(id = R.string.page_settings_stream))
-            }
-            prefsItem {
-                if (PreferencesDataStore.is_stream.asFlow()
-                        .collectAsState(initial = false).value == true
-                ) {
-                    DropDownPref(
-                        title = stringResource(id = R.string.page_settings_stream_method),
-                        summary = stringResource(id =  R.string.page_settings_stream_method_summary),
-                        key = "stream_method",
-                        displayValueAtEnd = true,
-                        entries = listOf("Shizuku", "Root")
-                    )
-                    DropDownPref(
-                        title = stringResource(id =  R.string.page_settings_refuse_fullscreen_method),
-                        summary = stringResource(id = R.string.page_settings_refuse_fullscreen_method_summary),
-                        key = "refuse_fullscreen_method",
-                        displayValueAtEnd = true,
-                        entries = if (Build.VERSION_CODES.S <= Build.VERSION.SDK_INT) {
-                            listOf("Xposed", "Shizuku")
-                        } else {
-                            listOf("Xposed")
-                        }
+                prefsItem {
+                    SwitchPref(
+                        key = "notification_forward",
+                        title = stringResource(id =  R.string.page_settings_notification_forward),
+                        summary = stringResource(id = R.string.page_settings_notification_forward_summary)
                     )
                 }
             }
-            prefsItem {
-                SwitchPref(
-                    key = "notification_forward",
-                    title = stringResource(id =  R.string.page_settings_notification_forward),
-                    summary = stringResource(id = R.string.page_settings_notification_forward_summary)
-                )
-            }
-        }
-        prefsGroup(getString(context, R.string.page_settings_other)) {
-            prefsItem {
-                Spacer(modifier = Modifier.height(12.dp))
-                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            prefsGroup(getString(context, R.string.page_settings_other)) {
+                prefsItem {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
 //                    implementation 'com.google.accompanist:accompanist-drawablepainter:0.32.0'
 //                    val icon = context.packageManager.getApplicationIcon(BuildConfig.APPLICATION_ID)
 //                    Icon(painter = DrawablePainter(icon), contentDescription = null, modifier = Modifier.size(144.dp), tint = Color.Unspecified)
-                    Box {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_launcher_background),
-                            contentDescription = null,
-                            modifier = Modifier.clip(CircleShape).size(144.dp),
-                            tint = Color.Unspecified
-                        )
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = null,
-                            modifier = Modifier.size(144.dp),
-                            tint = Color.Unspecified
-                        )
+                        Box {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_launcher_background),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .size(144.dp),
+                                tint = Color.Unspecified
+                            )
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                contentDescription = null,
+                                modifier = Modifier.size(144.dp),
+                                tint = Color.Unspecified
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(text = stringResource(id = R.string.app_name),
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 34.sp,
+                            lineHeight = 40.sp,
+                            letterSpacing = 0.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(text = stringResource(id = R.string.page_settings_version) + ": " + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")")
+                        Text(text = stringResource(id = R.string.author), style = HyliConnectTypography.bodyLarge)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(modifier = Modifier
+                            .clickable { context.startActivity(Intent(context, AboutPage::class.java)) }
+                            .padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(24.dp))
+                            Text(text = stringResource(id = R.string.page_settings_about) + " " + stringResource(id = R.string.app_name), modifier = Modifier.padding(horizontal = 6.dp))
+                        }
+                        Row(modifier = Modifier
+                            .padding(start = 4.dp)
+                            .clickable {
+                                context.startActivity(Intent().apply {
+                                    action = Intent.ACTION_VIEW
+                                    data = Uri.parse(getString(context, R.string.url_github))
+                                })
+                            },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                LineAwesomeIcons.Github,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Text(text = "A-JiuA/HyliConnect", modifier = Modifier.padding(horizontal = 6.dp))
+                            Icon(
+                                CssGgIcons.CornerRightUp,
+                                contentDescription = null,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(text = stringResource(id = R.string.app_name),
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 34.sp,
-                        lineHeight = 40.sp,
-                        letterSpacing = 0.sp)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(text = stringResource(id = R.string.page_settings_version) + ": " + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")")
-                    Text(text = stringResource(id = R.string.author), style = HyliConnectTypography.bodyLarge)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(modifier = Modifier.clickable { context.startActivity(Intent(context, AboutPage::class.java)) }.padding(vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(24.dp))
-                        Text(text = stringResource(id = R.string.page_settings_about) + " " + stringResource(id = R.string.app_name), modifier = Modifier.padding(horizontal = 6.dp))
-                    }
-                    Row(modifier = Modifier
-                        .padding(start = 4.dp)
-                        .clickable { context.startActivity(Intent().apply {
-                            action = Intent.ACTION_VIEW
-                            data = Uri.parse(getString(context, R.string.url_github))
-                        }) },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            LineAwesomeIcons.Github,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Text(text = "A-JiuA/HyliConnect", modifier = Modifier.padding(horizontal = 6.dp))
-                        Icon(
-                            CssGgIcons.CornerRightUp,
-                            contentDescription = null,
-                            modifier = Modifier.size(12.dp)
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(72.dp))
                 }
-                Spacer(modifier = Modifier.height(144.dp))
             }
         }
     }
