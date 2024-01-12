@@ -1,6 +1,5 @@
 package xyz.hyli.connect.datastore
 
-import android.util.Log
 import kotlinx.coroutines.runBlocking
 import xyz.hyli.connect.BuildConfig
 import java.util.UUID.randomUUID
@@ -46,7 +45,6 @@ object PreferencesDataStore : DataStoreOwner("preferences") {
 
     fun getConfigMap(refresh: Boolean = false): MutableMap<String, Any> {
         if (isInit.not() || configMap.isEmpty() || refresh) init()
-        Log.i("PreferencesDataStore", configMap.toString())
         return configMap
     }
 }
