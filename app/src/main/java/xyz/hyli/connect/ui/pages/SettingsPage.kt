@@ -216,7 +216,7 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                                 contentDescription = null,
                                 modifier = Modifier.size(24.dp)
                             )
-                            Text(text = "A-JiuA/HyliConnect", modifier = Modifier.padding(horizontal = 6.dp))
+                            Text(text = "Lyxot/HyliConnect", modifier = Modifier.padding(horizontal = 6.dp))
                             Icon(
                                 CssGgIcons.CornerRightUp,
                                 contentDescription = null,
