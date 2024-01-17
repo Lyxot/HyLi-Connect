@@ -3,11 +3,11 @@ package xyz.hyli.connect.socket.utils
 import android.util.Log
 import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
+import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.COMMAND_CONNECT
-import xyz.hyli.connect.socket.SocketData
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.util.UUID.randomUUID
@@ -15,27 +15,27 @@ import kotlin.concurrent.thread
 
 object SocketUtils {
     fun closeConnection(ip: String) {
-        SocketData.socketMap[ip]?.close()
-        SocketData.deviceInfoMap.remove(SocketData.uuidMap[ip] ?: "")
-        SocketData.uuidMap.remove(ip)
-        SocketData.socketMap.remove(ip)
-        SocketData.inputStreamMap.remove(ip)
-        SocketData.outputStreamMap.remove(ip)
-        SocketData.connectionMap.remove(ip)
+        HyliConnect.socketMap[ip]?.close()
+        HyliConnect.deviceInfoMap.remove(HyliConnect.uuidMap[ip] ?: "")
+        HyliConnect.uuidMap.remove(ip)
+        HyliConnect.socketMap.remove(ip)
+        HyliConnect.inputStreamMap.remove(ip)
+        HyliConnect.outputStreamMap.remove(ip)
+        HyliConnect.connectionMap.remove(ip)
     }
     fun closeAllConnection() {
-        SocketData.socketMap.forEach {
+        HyliConnect.socketMap.forEach {
             it.value.close()
         }
-        SocketData.uuidMap.clear()
-        SocketData.socketMap.clear()
-        SocketData.inputStreamMap.clear()
-        SocketData.outputStreamMap.clear()
-        SocketData.connectionMap.clear()
-        SocketData.deviceInfoMap.clear()
+        HyliConnect.uuidMap.clear()
+        HyliConnect.socketMap.clear()
+        HyliConnect.inputStreamMap.clear()
+        HyliConnect.outputStreamMap.clear()
+        HyliConnect.connectionMap.clear()
+        HyliConnect.deviceInfoMap.clear()
     }
     fun acceptConnection(ip: String, data: JSONObject) {
-        SocketData.uuidMap[ip] = data.getString("uuid") ?: ""
+        HyliConnect.uuidMap[ip] = data.getString("uuid") ?: ""
         val messageJson = JSONObject()
         val messageData = JSONObject()
         messageJson["message_type"] = "response"
@@ -48,7 +48,7 @@ object SocketUtils {
         messageData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
         messageJson["data"] = messageData
         messageJson["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
-        SocketData.deviceInfoMap[data.getString("uuid") ?: ""] = DeviceInfo(
+        HyliConnect.deviceInfoMap[data.getString("uuid") ?: ""] = DeviceInfo(
             data.getIntValue("api_version"),
             data.getIntValue("app_version"),
             data.getString("app_version_name") ?: "",
@@ -99,10 +99,10 @@ object SocketUtils {
         messageData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
         messageJson["data"] = messageData
         messageJson["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
-        while ( SocketData.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800 ) {
+        while ( HyliConnect.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800 ) {
             Thread.sleep(20)
         }
-        if ( SocketData.socketMap[IPAddress] == null ) {
+        if ( HyliConnect.socketMap[IPAddress] == null ) {
             Log.e("SocketUtils", "Connect timeout")
             return
         }
@@ -112,7 +112,7 @@ object SocketUtils {
         messageJson["message_id"] = randomUUID().toString()
         messageJson["status"] = status
         try {
-            val outputStream = SocketData.outputStreamMap[ip]
+            val outputStream = HyliConnect.outputStreamMap[ip]
             if (outputStream != null) {
                 val writerPrinter = PrintWriter(OutputStreamWriter(outputStream), true)
                 writerPrinter.println(messageJson.toString())

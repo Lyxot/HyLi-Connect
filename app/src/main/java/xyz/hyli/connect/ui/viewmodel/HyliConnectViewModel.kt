@@ -11,12 +11,11 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.hook.utils.HookTest
-import xyz.hyli.connect.socket.SocketData
-import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.utils.PermissionUtils
 
 class HyliConnectViewModel: ViewModel() {
@@ -25,20 +24,20 @@ class HyliConnectViewModel: ViewModel() {
             delay(1000)
             while (true) {
                 try {
-                    SocketData.uuidMap.forEach {
-                        if ( nsdDeviceMap.containsKey(it.value) && SocketData.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
-                            connectedDeviceMap[it.value] = SocketData.deviceInfoMap[it.value]!!
+                    HyliConnect.uuidMap.forEach {
+                        if ( nsdDeviceMap.containsKey(it.value) && HyliConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
+                            connectedDeviceMap[it.value] = HyliConnect.deviceInfoMap[it.value]!!
                             nsdDeviceMap.remove(it.value)
                             connectDeviceVisibilityMap[it.value]!!.value = false
-                        } else if ( SocketData.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
-                            connectedDeviceMap[it.value] = SocketData.deviceInfoMap[it.value]!!
+                        } else if ( HyliConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
+                            connectedDeviceMap[it.value] = HyliConnect.deviceInfoMap[it.value]!!
                             connectDeviceVisibilityMap[it.value]!!.value = false
                         }
                     }
                 } catch (_: Exception) { }
                 try {
                     connectedDeviceMap.keys.toMutableList().forEach {
-                        if ( SocketData.deviceInfoMap.containsKey(it).not() ) {
+                        if ( HyliConnect.deviceInfoMap.containsKey(it).not() ) {
                             connectDeviceVisibilityMap[it]!!.value = false
                             delay(500)
                             connectedDeviceMap.remove(it)
@@ -94,8 +93,8 @@ class HyliConnectViewModel: ViewModel() {
     fun updateApplicationState(): String {
         val serviceStateList: MutableList<String> = mutableListOf()
         serviceMap.keys.forEach {
-            if ( HyliConnectState.serviceStateMap.containsKey(it) ) {
-                serviceStateList.add(HyliConnectState.serviceStateMap[it]!!.state)
+            if ( HyliConnect.serviceStateMap.containsKey(it) ) {
+                serviceStateList.add(HyliConnect.serviceStateMap[it]!!.state)
             } else {
 //                HyliConnectState.serviceStateMap[it] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(serviceMap[it]!!)))
                 serviceStateList.add("stopped")
@@ -114,8 +113,8 @@ class HyliConnectViewModel: ViewModel() {
         checkPermission(context)
         var state1 = true
         keyPermissionList.forEach {
-            if ( HyliConnectState.permissionStateMap[it] != true && permissionMap.containsKey(it) ) {
-                HyliConnectState.permissionStateMap[it] = false
+            if ( HyliConnect.permissionStateMap[it] != true && permissionMap.containsKey(it) ) {
+                HyliConnect.permissionStateMap[it] = false
                 state1 = false
             }
         }
@@ -127,18 +126,18 @@ class HyliConnectViewModel: ViewModel() {
         keyPermissionList = mutableListOf(
             "Overlay"
         )
-        HyliConnectState.permissionStateMap["Overlay"] = PermissionUtils.checkOverlayPermission(context)
+        HyliConnect.permissionStateMap["Overlay"] = PermissionUtils.checkOverlayPermission(context)
         val configMap = PreferencesDataStore.getConfigMap(true)
         if (configMap["is_stream"] == true) {
             keyPermissionList.add(configMap["stream_method"].toString())
             keyPermissionList.add(configMap["refuse_fullscreen_method"].toString())
             if (configMap["refuse_fullscreen_method"] == "Xposed") {
-                HyliConnectState.permissionStateMap["Xposed"] = HookTest().checkXposed()
+                HyliConnect.permissionStateMap["Xposed"] = HookTest().checkXposed()
             }
         }
         if (configMap["notification_forward"] == true) {
             keyPermissionList.add("NotificationListener")
-            HyliConnectState.permissionStateMap["NotificationListener"] = PermissionUtils.checkNotificationListenerPermission(context)
+            HyliConnect.permissionStateMap["NotificationListener"] = PermissionUtils.checkNotificationListenerPermission(context)
         }
     }
 }

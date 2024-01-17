@@ -74,12 +74,12 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
+import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.socket.SERVICE_TYPE
-import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
@@ -107,7 +107,7 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
     nsdDeviceMap = viewModel.nsdDeviceMap
     connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
     connectedDeviceMap = viewModel.connectedDeviceMap
-    HyliConnectState.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
+    HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
         ServiceState("running", stringResource(R.string.state_service_running, stringResource(R.string.service_socket_service)))
     } else {
         ServiceState("stopped", stringResource(R.string.state_service_stopped, stringResource(R.string.service_socket_service)))
@@ -284,7 +284,7 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                 }, style = HyliConnectTypography.titleLarge)
                                 if ( applicationState.value != "stopped" ) {
                                     if ( applicationState.value == "error" ) {
-                                        HyliConnectState.serviceStateMap.forEach {
+                                        HyliConnect.serviceStateMap.forEach {
                                             if ( it.value.state == "error" ) {
                                                 it.value.message?.let { it1 ->
                                                     Text(
@@ -337,7 +337,7 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                     }
                                     Text(text = UUID.value ?:"", style = HyliConnectTypography.bodySmall, color = HyliConnectColorScheme().outline)
                                 } else {
-                                    HyliConnectState.serviceStateMap.forEach {
+                                    HyliConnect.serviceStateMap.forEach {
                                         if ( it.value.state != "running" ) {
                                             it.value.message?.let { it1 ->
                                                 Text(
@@ -365,7 +365,7 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                 disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
                             )) {
                             Column(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
-                                HyliConnectState.permissionStateMap.forEach {
+                                HyliConnect.permissionStateMap.forEach {
                                     if (it.value.not() && it.key in viewModel.keyPermissionList && it.key in viewModel.permissionMap.keys) {
                                         Row(modifier = Modifier.padding(horizontal = 12.dp)) {
                                             Icon(Icons.Default.Close, contentDescription = null)

@@ -5,6 +5,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.alibaba.fastjson2.JSONArray
 import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
+import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.socket.utils.SocketUtils
@@ -83,11 +84,11 @@ object MessageHandler {
                     SocketUtils.closeConnection(ip)
                 }
             }
-        } else if (uuid in SocketData.uuidMap.values) {
+        } else if (uuid in HyliConnect.uuidMap.values) {
             when (command) {
                 COMMAND_CLIENT_LIST -> {
                     val clientList = JSONArray()
-                    SocketData.uuidMap.forEach { (key, value) ->
+                    HyliConnect.uuidMap.forEach { (key, value) ->
                         val clientInfo = JSONObject()
                         clientInfo["uuid"] = value
                         clientInfo["ip_address"] = key
@@ -130,7 +131,7 @@ object MessageHandler {
             COMMAND_CONNECT -> {
                 val status = messageJson.getString("status") ?: ""
                 if (status == "accept") {
-                    SocketData.uuidMap[ip] = uuid
+                    HyliConnect.uuidMap[ip] = uuid
                     val ip_address = ip.substring(1, ip.length).split(":")[0]
                     val port = ip.substring(1, ip.length).split(":").last().toInt()
                     val deviceInfo = DeviceInfo(
@@ -143,7 +144,7 @@ object MessageHandler {
                         mutableListOf(ip_address),
                         port
                     )
-                    SocketData.deviceInfoMap[uuid] = deviceInfo
+                    HyliConnect.deviceInfoMap[uuid] = deviceInfo
                     SocketUtils.sendHeartbeat(ip)
                 } else if (status == "reject") {
                     SocketUtils.closeConnection(ip)
@@ -174,10 +175,10 @@ object MessageHandler {
         messageJson: JSONObject,
         broadcastManager: LocalBroadcastManager? = null
     ) {
-        SocketData.connectionMap[ip] = System.currentTimeMillis()
+        HyliConnect.connectionMap[ip] = System.currentTimeMillis()
         Thread.sleep(3000)
-        if (System.currentTimeMillis() - SocketData.connectionMap[ip]!! >= 3000 || SocketData.connectionMap.containsKey(ip).not() || SocketData.connectionMap[ip] == null) {
-            if ( SocketData.uuidMap.containsKey(ip) ) {
+        if (System.currentTimeMillis() - HyliConnect.connectionMap[ip]!! >= 3000 || HyliConnect.connectionMap.containsKey(ip).not() || HyliConnect.connectionMap[ip] == null) {
+            if ( HyliConnect.uuidMap.containsKey(ip) ) {
                 try {
                     SocketUtils.sendHeartbeat(ip)
                 } catch (e: Exception) {
