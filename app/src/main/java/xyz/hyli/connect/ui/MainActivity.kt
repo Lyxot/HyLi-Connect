@@ -34,13 +34,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 import xyz.hyli.connect.BuildConfig
+import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.service.SocketService
 import xyz.hyli.connect.ui.navigation.CompactScreen
 import xyz.hyli.connect.ui.navigation.MediumScreen
-import xyz.hyli.connect.ui.state.HyliConnectState
 import xyz.hyli.connect.ui.theme.HyliConnectTheme
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModelFactory
@@ -68,7 +68,7 @@ class MainActivity: ComponentActivity() {
             appList = async { PackageUtils.GetAppList(packageManager) }
         }
 
-        HyliConnectState.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(this, "xyz.hyli.connect.service.SocketService")) {
+        HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(this, "xyz.hyli.connect.service.SocketService")) {
             ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_socket_service)))
         } else {
             ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_service)))
@@ -84,7 +84,7 @@ class MainActivity: ComponentActivity() {
             }
         }
         try {
-            HyliConnectState.permissionStateMap["Shizuku"] = checkShizukuPermission()
+            HyliConnect.permissionStateMap["Shizuku"] = checkShizukuPermission()
         } catch (_: Exception) { }
 
         MainScope().launch {
