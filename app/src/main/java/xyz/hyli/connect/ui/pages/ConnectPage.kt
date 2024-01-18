@@ -2,9 +2,11 @@ package xyz.hyli.connect.ui.pages
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -73,6 +75,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import rikka.shizuku.Shizuku
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
@@ -85,9 +88,11 @@ import xyz.hyli.connect.ui.theme.HyliConnectTypography
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 import xyz.hyli.connect.utils.NetworkUtils
 import xyz.hyli.connect.utils.ServiceUtils
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
+private var shizukuPermissionFuture = CompletableFuture<Boolean>()
 private val mNsdManagerState = mutableStateOf<NsdManager?>(null)
 private lateinit var applicationState: MutableState<String>
 private lateinit var permissionState: MutableState<Boolean>
@@ -112,6 +117,9 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
     } else {
         ServiceState("stopped", stringResource(R.string.state_service_stopped, stringResource(R.string.service_socket_service)))
     }
+    try {
+        HyliConnect.permissionStateMap["Shizuku"] = checkShizukuPermission(context)
+    } catch (_: Exception) { }
 
     val configMap = remember { PreferencesDataStore.getConfigMap(true)}
     val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = configMap["nickname"].toString())
@@ -603,6 +611,36 @@ fun EmptyDeviceCard() {
             }
         }
     }
+}
+private fun checkShizukuPermission(context: Context): Boolean {
+    var toast: Toast? = null
+    val b = if (!Shizuku.pingBinder()) {
+        toast = Toast.makeText(context, "Shizuku is not available", Toast.LENGTH_LONG)
+        false
+    } else if (Shizuku.isPreV11()) {
+        toast = Toast.makeText(context, "Shizuku < 11 is not supported!", Toast.LENGTH_LONG)
+        false
+    } else if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+        true
+    } else if (Shizuku.shouldShowRequestPermissionRationale()) {
+        toast = Toast.makeText(
+            context,
+            "You denied the permission for Shizuku. Please enable it in app.",
+            Toast.LENGTH_LONG
+        )
+        false
+    } else {
+        Shizuku.requestPermission(HyliConnect.SHIZUKU_CODE)
+
+        val result = shizukuPermissionFuture.get()
+        shizukuPermissionFuture = CompletableFuture<Boolean>()
+
+        result
+    }
+    if ( PreferencesDataStore.getConfigMap(true)["is_stream"] == true && "Shizuku" in PreferencesDataStore.getConfigMap()["app_stream_method"] as String ) {
+        toast?.show()
+    }
+    return b
 }
 
 @Preview(showBackground = true)

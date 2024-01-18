@@ -13,6 +13,7 @@ import rikka.shizuku.Shizuku
 import rikka.sui.Sui
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.ServiceState
+import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.service.ControlService
 import java.io.InputStream
 import java.io.OutputStream
@@ -25,7 +26,11 @@ open class HyliConnect : Application() {
     private val onRequestPermissionResultListener =
         Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
             if (requestCode == SHIZUKU_CODE && grantResult == PackageManager.PERMISSION_GRANTED) {
-                initShizuku()
+                try {
+                    if ( PreferencesDataStore.getConfigMap(true)["app_stream_method"].toString().contains("Shizuku") ) {
+                        initShizuku()
+                    }
+                } catch (_: Exception) { }
             }
         }
 
@@ -33,7 +38,11 @@ open class HyliConnect : Application() {
         if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
             Shizuku.requestPermission(SHIZUKU_CODE)
         } else {
-            initShizuku()
+            try {
+                if ( PreferencesDataStore.getConfigMap(true)["app_stream_method"].toString().contains("Shizuku") ) {
+                    initShizuku()
+                }
+            } catch (_: Exception) { }
         }
     }
 
