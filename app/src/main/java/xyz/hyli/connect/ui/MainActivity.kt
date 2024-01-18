@@ -44,7 +44,6 @@ import xyz.hyli.connect.utils.ServiceUtils
 import java.util.concurrent.CompletableFuture
 
 class MainActivity: ComponentActivity() {
-    private var shizukuPermissionFuture = CompletableFuture<Boolean>()
     private var appList: Deferred<List<String>>? = null
     private lateinit var viewModel: HyliConnectViewModel
     private lateinit var localBroadcastManager: LocalBroadcastManager
@@ -63,18 +62,9 @@ class MainActivity: ComponentActivity() {
             appList = async { PackageUtils.GetAppList(packageManager) }
         }
 
-        HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(this, "xyz.hyli.connect.service.SocketService")) {
-            ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_socket_service)))
-        } else {
-            ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_service)))
-        }
         viewModel = ViewModelProvider(this, HyliConnectViewModelFactory()).get(HyliConnectViewModel::class.java)
         localBroadcastManager = LocalBroadcastManager.getInstance(this)
         viewModel.localBroadcastManager.value = localBroadcastManager
-
-        try {
-            HyliConnect.permissionStateMap["Shizuku"] = checkShizukuPermission()
-        } catch (_: Exception) { }
 
         MainScope().launch {
             PreferencesDataStore.last_run_version_code.set(BuildConfig.VERSION_CODE)
@@ -86,36 +76,6 @@ class MainActivity: ComponentActivity() {
                 MainScreen(widthSizeClass, viewModel)
             }
         }
-    }
-    private fun checkShizukuPermission(): Boolean {
-        var toast: Toast? = null
-        val b = if (!Shizuku.pingBinder()) {
-            toast = Toast.makeText(this, "Shizuku is not available", Toast.LENGTH_LONG)
-            false
-        } else if (Shizuku.isPreV11()) {
-            toast = Toast.makeText(this, "Shizuku < 11 is not supported!", Toast.LENGTH_LONG)
-            false
-        } else if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-            true
-        } else if (Shizuku.shouldShowRequestPermissionRationale()) {
-            toast = Toast.makeText(
-                this,
-                "You denied the permission for Shizuku. Please enable it in app.",
-                Toast.LENGTH_LONG
-            )
-            false
-        } else {
-            Shizuku.requestPermission(HyliConnect.SHIZUKU_CODE)
-
-            val result = shizukuPermissionFuture.get()
-            shizukuPermissionFuture = CompletableFuture<Boolean>()
-
-            result
-        }
-        if ( PreferencesDataStore.getConfigMap(true)["is_stream"] == true && (PreferencesDataStore.getConfigMap()["stream_method"] == "Shizuku" || PreferencesDataStore.getConfigMap()["refuse_fullscreen_method"] == "Shizuku")) {
-            toast?.show()
-        }
-        return b
     }
 }
 

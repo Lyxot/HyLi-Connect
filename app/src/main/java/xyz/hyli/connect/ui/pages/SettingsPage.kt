@@ -45,6 +45,7 @@ import compose.icons.lineawesomeicons.Github
 import compose.icons.lineawesomeicons.MobileAltSolid
 import compose.icons.lineawesomeicons.TvSolid
 import xyz.hyli.connect.BuildConfig
+import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.composeprefs3.PrefsScreen
 import xyz.hyli.connect.composeprefs3.prefs.DropDownPref
@@ -133,21 +134,19 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                             .collectAsState(initial = false).value == true
                     ) {
                         DropDownPref(
-                            title = stringResource(id = R.string.page_settings_stream_method),
-                            summary = stringResource(id =  R.string.page_settings_stream_method_summary),
-                            key = "stream_method",
-                            displayValueAtEnd = true,
-                            entries = listOf("Shizuku", "Root")
-                        )
-                        DropDownPref(
-                            title = stringResource(id =  R.string.page_settings_refuse_fullscreen_method),
-                            summary = stringResource(id = R.string.page_settings_refuse_fullscreen_method_summary),
-                            key = "refuse_fullscreen_method",
+                            title = stringResource(id =  R.string.page_settings_app_stream_method),
+                            summary = stringResource(id = R.string.page_settings_app_stream_method_summary),
+                            key = "app_stream_method",
                             displayValueAtEnd = true,
                             entries = if (Build.VERSION_CODES.S <= Build.VERSION.SDK_INT || BuildConfig.DEBUG) {
-                                listOf("Xposed", "Shizuku")
+                                listOf("Root + Xposed", "Shizuku + Xposed", "Shizuku")
                             } else {
-                                listOf("Xposed")
+                                listOf("Root + Xposed", "Shizuku + Xposed")
+                            },
+                            onValueChange = {
+                                if (it.contains("Shizuku") ) {
+                                    HyliConnect.me.initShizuku()
+                                }
                             }
                         )
                     }
@@ -194,7 +193,14 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                         Text(text = stringResource(id = R.string.author), style = HyliConnectTypography.bodyLarge)
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(modifier = Modifier
-                            .clickable { context.startActivity(Intent(context, AboutPage::class.java)) }
+                            .clickable {
+                                context.startActivity(
+                                    Intent(
+                                        context,
+                                        AboutPage::class.java
+                                    )
+                                )
+                            }
                             .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
