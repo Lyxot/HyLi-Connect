@@ -23,16 +23,21 @@ class ShellUtils private constructor() {
         private const val COMMAND_SH = "sh"
         private const val COMMAND_EXIT = "exit\n"
         private const val COMMAND_LINE_END = "\n"
-        fun execCommand(command: String, actor: String): CommandResult {
-            return execCommand(arrayOf(command), actor)
+        fun execCommand(command: String, isRoot: Boolean): CommandResult {
+            return execCommand(arrayOf(command), isRoot, false)
+        }
+
+        fun execCommandWithShizuku(command: String, isRoot: Boolean): CommandResult {
+            return execCommand(arrayOf(command), isRoot, true)
         }
 
         private fun execCommand(
             commands: Array<String>?,
-            actor: String
+            isRoot: Boolean,
+            useShizuku: Boolean
         ): CommandResult {
             var result = -1
-            if (commands.isNullOrEmpty()) {
+            if (commands == null || commands.isEmpty()) {
                 return CommandResult(result, null, null)
             }
             var process: Process? = null
@@ -43,7 +48,7 @@ class ShellUtils private constructor() {
             var os: DataOutputStream? = null
             try {
                 process = Runtime.getRuntime().exec(
-                    if (actor == "Root") COMMAND_SU else COMMAND_SH
+                    if (isRoot) COMMAND_SU else COMMAND_SH
                 )
                 os = DataOutputStream(process.outputStream)
                 for (command in commands) {

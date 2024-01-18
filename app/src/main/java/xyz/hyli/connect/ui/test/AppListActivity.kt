@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.widget.ListView
 import androidx.activity.ComponentActivity
 import androidx.core.view.WindowCompat
+import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
+import xyz.hyli.connect.service.ControlService
 import xyz.hyli.connect.utils.PackageUtils
 import xyz.hyli.connect.utils.ShellUtils
 import xyz.hyli.connect.utils.VirtualDisplayUtils
@@ -25,7 +27,9 @@ class AppListActivity : ComponentActivity() {
             val packageName = appList[position]
             val mainActivityName = PackageUtils.GetMainActivityName(packageManager, packageName)
             val displayID = VirtualDisplayUtils(this).createDisplay(packageName, 720, 1440, this.resources.displayMetrics.densityDpi)
-            ShellUtils.execCommand("am start --display $displayID -n $packageName/$mainActivityName", "Root")
+            HyliConnect.me.getControlService()
+                ?.execShell("am start --display $displayID -n $packageName/$mainActivityName", false)
+//            ShellUtils.execCommand("am start --display $displayID -n $packageName/$mainActivityName", false)
             val intent = Intent(this, DisplayActivity::class.java)
             intent.putExtra("displayID", displayID)
             startActivity(intent)

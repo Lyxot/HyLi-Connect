@@ -144,7 +144,7 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                             summary = stringResource(id = R.string.page_settings_refuse_fullscreen_method_summary),
                             key = "refuse_fullscreen_method",
                             displayValueAtEnd = true,
-                            entries = if (Build.VERSION_CODES.S <= Build.VERSION.SDK_INT) {
+                            entries = if (Build.VERSION_CODES.S <= Build.VERSION.SDK_INT || BuildConfig.DEBUG) {
                                 listOf("Xposed", "Shizuku")
                             } else {
                                 listOf("Xposed")
