@@ -8,18 +8,10 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
@@ -33,6 +25,9 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
+import rikka.shizuku.Shizuku.OnBinderDeadListener
+import rikka.shizuku.Shizuku.OnBinderReceivedListener
+import rikka.shizuku.Shizuku.OnRequestPermissionResultListener
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
@@ -49,11 +44,11 @@ import xyz.hyli.connect.utils.ServiceUtils
 import java.util.concurrent.CompletableFuture
 
 class MainActivity: ComponentActivity() {
-    private val SHIZUKU_CODE = 0x3CE9A
     private var shizukuPermissionFuture = CompletableFuture<Boolean>()
     private var appList: Deferred<List<String>>? = null
     private lateinit var viewModel: HyliConnectViewModel
     private lateinit var localBroadcastManager: LocalBroadcastManager
+
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,12 +72,6 @@ class MainActivity: ComponentActivity() {
         localBroadcastManager = LocalBroadcastManager.getInstance(this)
         viewModel.localBroadcastManager.value = localBroadcastManager
 
-        Shizuku.addRequestPermissionResultListener { requestCode, grantResult ->
-            if (requestCode == SHIZUKU_CODE) {
-                val granted = grantResult == PackageManager.PERMISSION_GRANTED
-                shizukuPermissionFuture.complete(granted)
-            }
-        }
         try {
             HyliConnect.permissionStateMap["Shizuku"] = checkShizukuPermission()
         } catch (_: Exception) { }
@@ -116,7 +105,7 @@ class MainActivity: ComponentActivity() {
             )
             false
         } else {
-            Shizuku.requestPermission(SHIZUKU_CODE)
+            Shizuku.requestPermission(HyliConnect.SHIZUKU_CODE)
 
             val result = shizukuPermissionFuture.get()
             shizukuPermissionFuture = CompletableFuture<Boolean>()

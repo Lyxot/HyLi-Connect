@@ -98,32 +98,4 @@ class TestActivity : AppCompatActivity() {
             }
         }
     }
-
-    private fun checkShizukuPermission(): Boolean {
-        val b = if (!Shizuku.pingBinder()) {
-            Toast.makeText(this, "Shizuku is not available", Toast.LENGTH_LONG).show()
-            false
-        } else if (Shizuku.isPreV11()) {
-            Toast.makeText(this, "Shizuku < 11 is not supported!", Toast.LENGTH_LONG).show()
-            false
-        } else if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-            true
-        } else if (Shizuku.shouldShowRequestPermissionRationale()) {
-            Toast.makeText(
-                this,
-                "You denied the permission for Shizuku. Please enable it in app.",
-                Toast.LENGTH_LONG
-            ).show()
-            false
-        } else {
-            Shizuku.requestPermission(SHIZUKU_CODE)
-
-            val result = shizukuPermissionFuture.get()
-            shizukuPermissionFuture = CompletableFuture<Boolean>()
-
-            result
-        }
-
-        return b
-    }
 }
