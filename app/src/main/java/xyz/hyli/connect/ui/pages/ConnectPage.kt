@@ -59,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getString
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -112,14 +113,6 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
     nsdDeviceMap = viewModel.nsdDeviceMap
     connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
     connectedDeviceMap = viewModel.connectedDeviceMap
-    HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
-        ServiceState("running", stringResource(R.string.state_service_running, stringResource(R.string.service_socket_service)))
-    } else {
-        ServiceState("stopped", stringResource(R.string.state_service_stopped, stringResource(R.string.service_socket_service)))
-    }
-    try {
-        HyliConnect.permissionStateMap["Shizuku"] = checkShizukuPermission(context)
-    } catch (_: Exception) { }
 
     val configMap = remember { PreferencesDataStore.getConfigMap(true)}
     val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = configMap["nickname"].toString())
@@ -209,8 +202,20 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
         }
     }
     DisposableEffect(Unit) {
-        applicationState.value = viewModel.updateApplicationState()
-        permissionState.value = viewModel.updatePermissionState(context)
+        MainScope().launch {
+            try {
+                HyliConnect.permissionStateMap["Shizuku"] = checkShizukuPermission(context)
+            } catch (_: Exception) { }
+            try {
+                HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
+                    ServiceState("running", context.getString(R.string.state_service_running, context.getString(R.string.service_socket_service)))
+                } else {
+                    ServiceState("stopped", context.getString(R.string.state_service_stopped, context.getString(R.string.service_socket_service)))
+                }
+            } catch (_: Exception) { }
+            applicationState.value = viewModel.updateApplicationState()
+            permissionState.value = viewModel.updatePermissionState(context)
+        }
         localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
             putExtra("command", "reboot_nsd_service")
         })
@@ -615,17 +620,17 @@ fun EmptyDeviceCard() {
 private fun checkShizukuPermission(context: Context): Boolean {
     var toast: Toast? = null
     val b = if (!Shizuku.pingBinder()) {
-        toast = Toast.makeText(context, "Shizuku is not available", Toast.LENGTH_LONG)
+        toast = Toast.makeText(context, getString(context, R.string.toast_shizuku_not_available), Toast.LENGTH_LONG)
         false
     } else if (Shizuku.isPreV11()) {
-        toast = Toast.makeText(context, "Shizuku < 11 is not supported!", Toast.LENGTH_LONG)
+        toast = Toast.makeText(context, getString(context, R.string.toast_shizuku_not_support), Toast.LENGTH_LONG)
         false
     } else if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
         true
     } else if (Shizuku.shouldShowRequestPermissionRationale()) {
         toast = Toast.makeText(
             context,
-            "You denied the permission for Shizuku. Please enable it in app.",
+            getString(context, R.string.toast_shizuku_denied),
             Toast.LENGTH_LONG
         )
         false
