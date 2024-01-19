@@ -56,8 +56,6 @@ class MainActivity: ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
 
-        startForegroundService(Intent(this, SocketService::class.java))
-
         GlobalScope.launch(Dispatchers.IO) {
             appList = async { PackageUtils.GetAppList(packageManager) }
         }
