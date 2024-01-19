@@ -3,6 +3,7 @@ package xyz.hyli.connect
 import android.app.Application
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
@@ -15,6 +16,7 @@ import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.service.ControlService
+import xyz.hyli.connect.service.SocketService
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
@@ -70,7 +72,7 @@ open class HyliConnect : Application() {
     }
     companion object {
         lateinit var me: HyliConnect
-        val SHIZUKU_CODE = 0x3CE9A
+        const val SHIZUKU_CODE = 0x3CE9A
 
         // service name, state
         lateinit var serviceStateMap: MutableMap<String, ServiceState>
@@ -100,6 +102,7 @@ open class HyliConnect : Application() {
         deviceInfoMap = mutableMapOf()
         me = this
         super.onCreate()
+        startForegroundService(Intent(this, SocketService::class.java))
 
         Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
         Shizuku.addRequestPermissionResultListener(onRequestPermissionResultListener)
