@@ -32,7 +32,6 @@ import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.MessageHandler
 import xyz.hyli.connect.socket.SERVICE_TYPE
 import xyz.hyli.connect.socket.utils.SocketUtils
-import xyz.hyli.connect.ui.dialog.RequestConnectionActivity
 import xyz.hyli.connect.ui.test.TestActivity
 import xyz.hyli.connect.utils.NetworkUtils
 import java.io.IOException
@@ -60,33 +59,6 @@ class SocketService : Service() {
                         if (ip != null) {
                             startClient(ip, port)
                             SocketUtils.connect(ip, port)
-                        }
-                    }
-                }
-            } else if ( action == "xyz.hyli.connect.service.SocketService.action.CONNECT_REQUEST" ) {
-                val command = intent.getStringExtra("command")
-                val ip = intent.getStringExtra("ip")
-                val nickname = intent.getStringExtra("nickname")
-                val uuid = intent.getStringExtra("uuid")
-                val api_version = intent.getIntExtra("api_version", 0)
-                val app_version = intent.getIntExtra("app_version", 0)
-                val app_version_name = intent.getStringExtra("app_version_name")
-                val platform = intent.getStringExtra("platform")
-                if ( command.isNullOrEmpty().not() && ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() && api_version != 0 && app_version != 0 && app_version_name.isNullOrEmpty().not() && platform.isNullOrEmpty().not() ) {
-                    if ( command == "connect" ) {
-                        if ( HyliConnect.uuidMap.containsKey(ip).not() ) {
-                            context.startActivity(Intent(context, RequestConnectionActivity::class.java)
-                                .apply {
-                                    putExtra("ip", ip)
-                                    putExtra("nickname", nickname)
-                                    putExtra("uuid", uuid)
-                                    putExtra("api_version", api_version)
-                                    putExtra("app_version", app_version)
-                                    putExtra("app_version_name", app_version_name)
-                                    putExtra("platform", platform)
-                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                            )
                         }
                     }
                 }
@@ -119,7 +91,6 @@ class SocketService : Service() {
         checkConnection()
         val filter = IntentFilter()
         filter.addAction("xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT")
-        filter.addAction("xyz.hyli.connect.service.SocketService.action.CONNECT_REQUEST")
         filter.addAction("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER")
         localBroadcastManager = LocalBroadcastManager.getInstance(this)
         localBroadcastManager.registerReceiver(broadcastReceiver, filter)
