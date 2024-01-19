@@ -9,6 +9,7 @@ import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.socket.utils.SocketUtils
+import xyz.hyli.connect.ui.dialog.RequestConnectionActivity
 import xyz.hyli.connect.utils.PackageUtils
 
 object MessageHandler {
@@ -67,17 +68,22 @@ object MessageHandler {
                     responseData["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
                     responseData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
 
-                    val intent = Intent("xyz.hyli.connect.service.SocketService.action.CONNECT_REQUEST").apply {
-                        putExtra("command", "connect")
-                        putExtra("ip", ip)
-                        putExtra("nickname", data.getString("nickname")?:"")
-                        putExtra("uuid", uuid)
-                        putExtra("api_version", data.getIntValue("api_version"))
-                        putExtra("app_version", data.getIntValue("app_version"))
-                        putExtra("app_version_name", data.getString("app_version_name")?:"")
-                        putExtra("platform", data.getString("platform")?:"")
+                    if ( HyliConnect.uuidMap.containsKey(ip).not() ) {
+                         HyliConnect().getContext().let {
+                            it.startActivity(Intent(it, RequestConnectionActivity::class.java)
+                                .apply {
+                                    putExtra("ip", ip)
+                                    putExtra("nickname", data.getString("nickname")?:"")
+                                    putExtra("uuid", uuid)
+                                    putExtra("api_version", data.getIntValue("api_version"))
+                                    putExtra("app_version", data.getIntValue("app_version"))
+                                    putExtra("app_version_name", data.getString("app_version_name")?:"")
+                                    putExtra("platform", data.getString("platform")?:"")
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                            )
+                        }
                     }
-                    broadcastManager?.sendBroadcast(intent)
                 }
 
                 COMMAND_DISCONNECT -> {
