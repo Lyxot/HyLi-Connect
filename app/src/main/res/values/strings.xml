@@ -62,4 +62,7 @@
     <string name="page_about_feedback">Feedbacks</string>
     <string name="page_about_changelog">Changelog</string>
     <string name="page_about_license_notice">License notices</string>
+    <string name="toast_shizuku_not_available">Shizuku is not available</string>
+    <string name="toast_shizuku_not_support">Shizuku &lt; 11 is not supported</string>
+    <string name="toast_shizuku_denied">You denied the permission for Shizuku. Please enable it in app.</string>
 </resources>

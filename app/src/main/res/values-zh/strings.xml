@@ -51,4 +51,7 @@
     <string name="page_about_feedback">反馈</string>
     <string name="page_about_changelog">更新日志</string>
     <string name="page_about_license_notice">许可证信息</string>
+    <string name="toast_shizuku_not_available">未获得Shizuku权限</string>
+    <string name="toast_shizuku_not_support">Shizuku版本过低，请升级到v12以上</string>
+    <string name="toast_shizuku_denied">您拒绝了Shizuku授权，请前往Shizuku App授权</string>
 </resources>
