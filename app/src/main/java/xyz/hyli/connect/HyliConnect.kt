@@ -20,6 +20,7 @@ import xyz.hyli.connect.service.SocketService
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
+import java.util.concurrent.ConcurrentHashMap
 
 
 open class HyliConnect : Application() {
@@ -75,31 +76,31 @@ open class HyliConnect : Application() {
         const val SHIZUKU_CODE = 0x3CE9A
 
         // service name, state
-        lateinit var serviceStateMap: MutableMap<String, ServiceState>
-        lateinit var permissionStateMap: MutableMap<String, Boolean>
+        lateinit var serviceStateMap: ConcurrentHashMap<String, ServiceState>
+        lateinit var permissionStateMap: ConcurrentHashMap<String, Boolean>
 
         // ip: data
-        lateinit var uuidMap: MutableMap<String, String>
-        lateinit var socketMap: MutableMap<String, Socket>
-        lateinit var inputStreamMap: MutableMap<String, InputStream>
-        lateinit var outputStreamMap: MutableMap<String, OutputStream>
-        lateinit var connectionMap: MutableMap<String, Long>
+        lateinit var uuidMap: ConcurrentHashMap<String, String>
+        lateinit var socketMap: ConcurrentHashMap<String, Socket>
+        lateinit var inputStreamMap: ConcurrentHashMap<String, InputStream>
+        lateinit var outputStreamMap: ConcurrentHashMap<String, OutputStream>
+        lateinit var connectionMap: ConcurrentHashMap<String, Long>
         // uuid: deviceInfo
-        lateinit var deviceInfoMap: MutableMap<String, DeviceInfo>
+        lateinit var deviceInfoMap: ConcurrentHashMap<String, DeviceInfo>
 
         init {
             Sui.init(BuildConfig.APPLICATION_ID)
         }
     }
     override fun onCreate() {
-        serviceStateMap = mutableMapOf()
-        permissionStateMap = mutableMapOf()
-        uuidMap = mutableMapOf()
-        socketMap = mutableMapOf()
-        inputStreamMap = mutableMapOf()
-        outputStreamMap = mutableMapOf()
-        connectionMap = mutableMapOf()
-        deviceInfoMap = mutableMapOf()
+        serviceStateMap = ConcurrentHashMap()
+        permissionStateMap = ConcurrentHashMap()
+        uuidMap = ConcurrentHashMap()
+        socketMap = ConcurrentHashMap()
+        inputStreamMap = ConcurrentHashMap()
+        outputStreamMap = ConcurrentHashMap()
+        connectionMap = ConcurrentHashMap()
+        deviceInfoMap = ConcurrentHashMap()
         me = this
         super.onCreate()
         startForegroundService(Intent(this, SocketService::class.java))
