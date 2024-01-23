@@ -18,6 +18,7 @@ object SocketUtils {
         HyliConnect.socketMap.remove(ip)
         HyliConnect.inputStreamMap.remove(ip)
         HyliConnect.outputStreamMap.remove(ip)
+        HyliConnect.blockingQueueMap.remove(ip)
         HyliConnect.connectionMap.remove(ip)
     }
     fun closeAllConnection() {
@@ -129,13 +130,18 @@ object SocketUtils {
             .setSTATUS(SocketMessage.STATUS.SUCCESS)
         thread { sendMessage(ip, messageBody) }
     }
-    fun sendMessage(ip: String, messageBody: SocketMessage.Body.Builder) {
+    fun sendMessage(ip: String, messageBody: SocketMessage.Body.Builder, dropTime: Long = 0) {
+        HyliConnect.blockingQueueMap[ip]?.put(Pair(messageBody, dropTime))
+    }
+    fun sendQueueMessage(ip: String, messageBody: SocketMessage.Body.Builder) {
         var message: SocketMessage.Message
         messageBody.build().let {
             message = SocketMessage.Message.newBuilder()
-                .setHeader(SocketMessage.Header.newBuilder()
+                .setHeader(
+                    SocketMessage.Header.newBuilder()
 //                    .setLength(it.serializedSize)
-                    .build())
+                        .build()
+                )
                 .setBody(it)
                 .build()
         }

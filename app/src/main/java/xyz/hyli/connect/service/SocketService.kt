@@ -37,6 +37,7 @@ import xyz.hyli.connect.utils.NetworkUtils
 import java.io.IOException
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.concurrent.LinkedBlockingQueue
 
 class SocketService : Service() {
     private var serverPort: Int = 15372
@@ -154,6 +155,27 @@ class SocketService : Service() {
 
                             HyliConnect.inputStreamMap[IPAddress] = inputStream
                             HyliConnect.outputStreamMap[IPAddress] = outputStream
+                            HyliConnect.blockingQueueMap[IPAddress] = LinkedBlockingQueue()
+                            GlobalScope.launch(context = Dispatchers.IO) {
+                                while (true) {
+                                    try {
+                                        val pair = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
+                                        val dropTime = pair.second
+                                        if ( dropTime != null && dropTime != 0L ) {
+                                            if (dropTime < System.currentTimeMillis()) {
+                                                Log.i(TAG, "Drop message: $IPAddress ${pair.first}")
+                                                continue
+                                            }
+                                        }
+                                        SocketUtils.sendQueueMessage(IPAddress, pair.first)
+                                    } catch (e: Exception) {
+                                        if (!HyliConnect.socketMap.containsKey(IPAddress)) {
+                                            break
+                                        }
+                                    }
+                                }
+                            }
+
                             SocketUtils.sendHeartbeat(IPAddress)
                             // Authorization timeout
                             GlobalScope.launch(context = Dispatchers.IO) {
@@ -206,6 +228,27 @@ class SocketService : Service() {
 
                 HyliConnect.inputStreamMap[IPAddress] = inputStream
                 HyliConnect.outputStreamMap[IPAddress] = outputStream
+                HyliConnect.blockingQueueMap[IPAddress] = LinkedBlockingQueue()
+                GlobalScope.launch(context = Dispatchers.IO) {
+                    while (true) {
+                        try {
+                            val pair = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
+                            val dropTime = pair.second
+                            if ( dropTime != null && dropTime != 0L ) {
+                                if (dropTime < System.currentTimeMillis()) {
+                                    Log.i(TAG, "Drop message: $IPAddress ${pair.first}")
+                                    continue
+                                }
+                            }
+                            SocketUtils.sendQueueMessage(IPAddress, pair.first)
+                        } catch (e: Exception) {
+                            if (!HyliConnect.socketMap.containsKey(IPAddress)) {
+                                break
+                            }
+                        }
+                    }
+                }
+
                 SocketUtils.sendHeartbeat(IPAddress)
 
                 while (true) {
