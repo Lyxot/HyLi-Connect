@@ -1,6 +1,11 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.protobuf'
+}
+
+apply {
+    plugins
 }
 
 android {
@@ -51,6 +56,31 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+    protobuf {
+        protoc {
+            artifact = 'com.google.protobuf:protoc:3.25.2'
+        }
+        generateProtoTasks {
+            all().each { task ->
+                task.builtins {
+                    remove java
+                }
+                task.builtins {
+                    java {}
+                }
+            }
+        }
+    }
+    sourceSets {
+        main {
+            java {
+                srcDir 'src/main/java'
+            }
+            proto {
+                srcDir 'src/main/proto'
+            }
+        }
+    }
 }
 
 dependencies {
@@ -83,6 +113,8 @@ dependencies {
     implementation 'br.com.devsrsouza.compose.icons:css-gg:1.1.0'
     implementation 'androidx.startup:startup-runtime:1.1.1'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+    implementation 'com.google.protobuf:protobuf-java:3.25.2'
+    implementation 'com.google.protobuf:protoc:3.25.2'
 
     def accompanist_version = "0.32.0"
     implementation "com.google.accompanist:accompanist-adaptive:$accompanist_version"
