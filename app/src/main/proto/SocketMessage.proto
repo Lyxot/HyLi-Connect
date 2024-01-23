@@ -1,0 +1,42 @@
+syntax = "proto3";
+package xyz.hyli.connect.proto;
+
+option java_package = "xyz.hyli.connect.proto";
+option java_outer_classname = "SocketMessage";
+option optimize_for = LITE_RUNTIME;
+
+
+message Message {
+  Header header = 1;
+  Body body = 2;
+}
+
+message Body {
+  TYPE type = 1;
+  COMMAND cmd = 2;
+  STATUS STATUS = 3;
+  string uuid = 4;
+  bytes data = 5;
+}
+
+message Header {
+  reserved 1 to 7;
+}
+
+enum TYPE {
+  REQUEST = 0;
+  RESPONSE = 1;
+  BROADCAST = 2;
+  FORWARD = 3;
+  HEARTBEAT = 4;
+}
+enum COMMAND {
+  GET_INFO = 0;
+  CONNECT = 1;
+  DISCONNECT = 2;
+  GET_CLIENTS = 3;
+}
+enum STATUS {
+  SUCCESS = 0;
+  FAILED = 1;
+}

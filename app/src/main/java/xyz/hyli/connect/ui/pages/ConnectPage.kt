@@ -83,7 +83,6 @@ import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
-import xyz.hyli.connect.socket.SERVICE_TYPE
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
@@ -219,7 +218,7 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
         localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
             putExtra("command", "reboot_nsd_service")
         })
-        mNsdManager!!.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener)
+        mNsdManager!!.discoverServices("_hyli-connect._tcp.", NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener)
         onDispose {
             nsdDeviceMap.clear()
             try {
@@ -377,7 +376,9 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                 disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
                                 disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
                             )) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+                            Column(modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp)) {
                                 HyliConnect.permissionStateMap.forEach {
                                     if (it.value.not() && it.key in viewModel.keyPermissionList && it.key in viewModel.permissionMap.keys) {
                                         Row(modifier = Modifier.padding(horizontal = 12.dp)) {

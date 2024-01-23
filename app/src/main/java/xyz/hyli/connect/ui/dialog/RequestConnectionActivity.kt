@@ -10,10 +10,10 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AlertDialog
-import com.alibaba.fastjson2.JSONObject
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import xyz.hyli.connect.R
-import xyz.hyli.connect.socket.utils.SocketUtils
+import xyz.hyli.connect.bean.DeviceInfo
+import xyz.hyli.connect.socket.SocketUtils
 import xyz.hyli.connect.ui.theme.HyliConnectTheme
 
 class RequestConnectionActivity : ComponentActivity() {
@@ -36,21 +36,21 @@ class RequestConnectionActivity : ComponentActivity() {
                 if ((ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() && api_version != 0 && app_version != 0 && app_version_name.isNullOrEmpty().not() && platform.isNullOrEmpty().not())
                     && Settings.canDrawOverlays(this)) {
                     val IP_Address = ip!!.substring(1, ip.length)
-                    val data = JSONObject(
-                        mapOf(
-                            "api_version" to api_version,
-                            "app_version" to app_version,
-                            "app_version_name" to app_version_name,
-                            "platform" to platform,
-                            "nickname" to nickname,
-                            "uuid" to uuid
-                        )
-                    )
                     dialog = MaterialAlertDialogBuilder(this)
                         .setTitle(getString(R.string.dialog_connect_request_title))
                         .setMessage("${getString(R.string.dialog_connect_request_message, nickname, IP_Address)}\n\nUUID: $uuid")
                         .setPositiveButton(getString(R.string.dialog_connect_request_accept)) { dialog, which ->
-                            SocketUtils.acceptConnection(ip, data)
+                            val deviceInfo = DeviceInfo(
+                                api_version,
+                                app_version,
+                                app_version_name ?: "",
+                                platform ?: "",
+                                uuid ?: "",
+                                nickname ?: "",
+                                mutableListOf(ip.substring(1, ip.length).split(":")[0]),
+                                ip.substring(1, ip.length).split(":").last().toInt()
+                            )
+                            SocketUtils.acceptConnection(ip, deviceInfo)
                             dialog.dismiss()
                         }
                         .setNegativeButton(getString(R.string.dialog_connect_request_reject_countdown, 30000 / 1000)) { dialog, which ->

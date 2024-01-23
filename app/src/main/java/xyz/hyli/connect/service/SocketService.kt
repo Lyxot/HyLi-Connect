@@ -28,10 +28,10 @@ import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
+import xyz.hyli.connect.proto.SocketMessage
 import xyz.hyli.connect.socket.API_VERSION
 import xyz.hyli.connect.socket.MessageHandler
-import xyz.hyli.connect.socket.SERVICE_TYPE
-import xyz.hyli.connect.socket.utils.SocketUtils
+import xyz.hyli.connect.socket.SocketUtils
 import xyz.hyli.connect.ui.test.TestActivity
 import xyz.hyli.connect.utils.NetworkUtils
 import java.io.IOException
@@ -58,7 +58,7 @@ class SocketService : Service() {
                     } else if ( command == "start" ) {
                         if (ip != null) {
                             startClient(ip, port)
-                            SocketUtils.connect(ip, port)
+                            SocketUtils.connectRequest(ip, port)
                         }
                     }
                 }
@@ -150,12 +150,10 @@ class SocketService : Service() {
                     GlobalScope.launch(context = Dispatchers.IO) {
                         try {
                             val inputStream = socket.getInputStream()
-                            val bufferedReader = inputStream.bufferedReader()
                             val outputStream = socket.getOutputStream()
 
                             HyliConnect.inputStreamMap[IPAddress] = inputStream
                             HyliConnect.outputStreamMap[IPAddress] = outputStream
-                            socket.keepAlive = true
                             SocketUtils.sendHeartbeat(IPAddress)
                             // Authorization timeout
                             GlobalScope.launch(context = Dispatchers.IO) {
@@ -166,18 +164,18 @@ class SocketService : Service() {
                                 }
                             }
 
-                            var message: String?
-                            try {
-                                while (socket.isConnected) {
-                                    message = bufferedReader.readLine()
-                                    if ( message.isNullOrEmpty().not() ) {
+                            while (true) {
+                                try {
+                                    val message = SocketMessage.Message.parseDelimitedFrom(inputStream)
+                                    if ( message != null ) {
                                         Log.i(TAG, "Receive message: $IPAddress $message")
                                         MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
                                     }
+                                } catch (e: Exception) {
+                                    if (!HyliConnect.socketMap.containsKey(IPAddress)) {
+                                        break
+                                    }
                                 }
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                SocketUtils.closeConnection(IPAddress)
                             }
                         } catch (e: IOException) {
                             Log.e(TAG, "Error: ${e.message}")
@@ -204,26 +202,24 @@ class SocketService : Service() {
             HyliConnect.connectionMap[IPAddress] = System.currentTimeMillis()
             try {
                 val inputStream = socket.getInputStream()
-                val bufferedReader = inputStream.bufferedReader()
                 val outputStream = socket.getOutputStream()
 
                 HyliConnect.inputStreamMap[IPAddress] = inputStream
                 HyliConnect.outputStreamMap[IPAddress] = outputStream
-                socket.keepAlive = true
                 SocketUtils.sendHeartbeat(IPAddress)
 
-                var message: String?
-                try {
-                    while (socket.isConnected) {
-                        message = bufferedReader.readLine()
-                        if ( message.isNullOrEmpty().not() ) {
+                while (true) {
+                    try {
+                        val message = SocketMessage.Message.parseDelimitedFrom(inputStream)
+                        if ( message != null ) {
                             Log.i(TAG, "Receive message: $IPAddress $message")
                             MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
                         }
+                    } catch (e: Exception) {
+                        if (!HyliConnect.socketMap.containsKey(IPAddress)) {
+                            break
+                        }
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    SocketUtils.closeConnection(IPAddress)
                 }
             } catch (e: IOException) {
                 Log.e(TAG, "Error: ${e.message}")
@@ -242,8 +238,7 @@ class SocketService : Service() {
         if ( ::checkConnectionJob.isInitialized.not() ) {
             checkConnectionJob = GlobalScope.launch(context = Dispatchers.Main) {
                 while (true) {
-                    val map = HyliConnect.connectionMap
-                    map.forEach { (ip, time) ->
+                    HyliConnect.connectionMap.forEach { (ip, time) ->
                         if (System.currentTimeMillis() - time > 12000) {
                             SocketUtils.closeConnection(ip)
                             Log.i("SocketService", "Close connection: $ip (timeout)")
@@ -288,7 +283,7 @@ class SocketService : Service() {
         val nickname = configMap["nickname"].toString()
         val mNsdServiceInfo = NsdServiceInfo().apply {
             serviceName = "HyliConnect@$uuid"
-            serviceType = SERVICE_TYPE
+            serviceType = "_hyli-connect._tcp."
             port = serverPort
         }
         mNsdServiceInfo.setAttribute("uuid", uuid)

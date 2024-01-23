@@ -2,167 +2,199 @@ package xyz.hyli.connect.socket
 
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.alibaba.fastjson2.JSONArray
-import com.alibaba.fastjson2.JSONObject
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
-import xyz.hyli.connect.socket.utils.SocketUtils
+import xyz.hyli.connect.proto.ClientListProto
+import xyz.hyli.connect.proto.ConnectProto
+import xyz.hyli.connect.proto.InfoProto
+import xyz.hyli.connect.proto.SocketMessage
 import xyz.hyli.connect.ui.dialog.RequestConnectionActivity
-import xyz.hyli.connect.utils.PackageUtils
 
 object MessageHandler {
     fun messageHandler(
         ip: String,
-        message: String,
+        message: SocketMessage.Message,
         broadcastManager: LocalBroadcastManager? = null
     ) {
-        if (message == "") return
+        if (!message.hasHeader() || !message.hasBody()) return
+        val header = message.header
+        val body = message.body
+//        if (header.length != body.serializedSize) {
+//            Log.e("MessageHandler", "Message length not match")
+//            return
+//        }
 
-        val messageJson = JSONObject.parseObject(message)
-        val messageType = messageJson.getString("message_type") ?: ""
-
-        if (messageType == "") return
-
-        when (messageType) {
-            "request" -> requestHandler(ip, messageJson, broadcastManager)
-            "response" -> responseHandler(ip, messageJson, broadcastManager)
-            "broadcast" -> broadcastHandler(ip, messageJson, broadcastManager)
-            "forward" -> forwardHandler(ip, messageJson, broadcastManager)
-            "heartbeat" -> heartbeatHandler(ip, messageJson, broadcastManager)
+        when (body.type) {
+            SocketMessage.TYPE.REQUEST -> requestHandler(ip, body, broadcastManager)
+            SocketMessage.TYPE.RESPONSE -> responseHandler(ip, body, broadcastManager)
+            SocketMessage.TYPE.BROADCAST -> broadcastHandler(ip, body, broadcastManager)
+            SocketMessage.TYPE.FORWARD -> forwardHandler(ip, body, broadcastManager)
+            SocketMessage.TYPE.HEARTBEAT -> heartbeatHandler(ip, body, broadcastManager)
+            else -> return
         }
     }
 
     private fun requestHandler(
         ip: String,
-        messageJson: JSONObject,
+        messageBody: SocketMessage.Body,
         broadcastManager: LocalBroadcastManager? = null
     ) {
-        val command = messageJson.getString("command") ?: ""
-        val data = messageJson.getJSONObject("data") ?: JSONObject()
-        val uuid = data.getString("uuid") ?: ""
-        if (command == "" || data == JSONObject() || uuid == "") return
+        val command = messageBody.cmd
+        val data = messageBody.data
+        val uuid = messageBody.uuid
+        if (data.isEmpty || uuid.isNullOrEmpty()) return
+        val responseBody = SocketMessage.Body.newBuilder()
+            .setType(SocketMessage.TYPE.RESPONSE)
+            .setCmd(command)
+            .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
 
-        val responseJson = JSONObject()
-        responseJson["message_type"] = "response"
-        responseJson["command"] = command
-        responseJson["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
-        val responseData = JSONObject()
-
-        if (command in SocketConfig.NON_AUTH_COMMAND) {
-            if (command == COMMAND_GET_INFO) {
-                responseData["api_version"] = API_VERSION
-                responseData["app_version"] = BuildConfig.VERSION_CODE
-                responseData["app_version_name"] = BuildConfig.VERSION_NAME
-                responseData["platform"] = PreferencesDataStore.getConfigMap()["platform"].toString()
-                responseData["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
-                responseData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
-                responseJson["data"] = responseData
-                SocketUtils.sendMessage(ip, responseJson)
-                SocketUtils.closeConnection(ip)
-            }
-        } else if (command in SocketConfig.AUTH_COMMAND) {
+        if ( HyliConnect.uuidMap.containsKey(ip).not() ) {
             when (command) {
-                COMMAND_CONNECT -> {
-                    responseData["uuid"] = PreferencesDataStore.getConfigMap()["uuid"].toString()
-                    responseData["nickname"] = PreferencesDataStore.getConfigMap()["nickname"].toString()
-
-                    if ( HyliConnect.uuidMap.containsKey(ip).not() ) {
-                         HyliConnect().getContext().let {
-                            it.startActivity(Intent(it, RequestConnectionActivity::class.java)
-                                .apply {
-                                    putExtra("ip", ip)
-                                    putExtra("nickname", data.getString("nickname")?:"")
-                                    putExtra("uuid", uuid)
-                                    putExtra("api_version", data.getIntValue("api_version"))
-                                    putExtra("app_version", data.getIntValue("app_version"))
-                                    putExtra("app_version_name", data.getString("app_version_name")?:"")
-                                    putExtra("platform", data.getString("platform")?:"")
-                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                            )
-                        }
+                SocketMessage.COMMAND.GET_INFO -> {
+                    val responseData = InfoProto.Info.newBuilder()
+                        .setApiVersion(API_VERSION)
+                        .setAppVersion(BuildConfig.VERSION_CODE)
+                        .setAppVersionName(BuildConfig.VERSION_NAME)
+                        .setPlatform(PreferencesDataStore.getConfigMap()["platform"].toString())
+                        .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
+                        .setNickname(PreferencesDataStore.getConfigMap()["nickname"].toString())
+                        .build()
+                    responseBody.setData(responseData.toByteString())
+                    SocketUtils.sendMessage(ip, responseBody)
+                }
+                SocketMessage.COMMAND.CONNECT -> {
+                    HyliConnect().getContext().let {
+                        val dataProto = ConnectProto.ConnectRequest.parseFrom(data)
+                        it.startActivity(Intent(it, RequestConnectionActivity::class.java)
+                            .apply {
+                                putExtra("ip", ip)
+                                putExtra("nickname", dataProto.nickname)
+                                putExtra("uuid", dataProto.uuid)
+                                putExtra("api_version", dataProto.apiVersion)
+                                putExtra("app_version", dataProto.appVersion)
+                                putExtra("app_version_name", dataProto.appVersionName)
+                                putExtra("platform", dataProto.platform)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                        )
                     }
                 }
-
-                COMMAND_DISCONNECT -> {
+                else -> {
+                    return
+                }
+            }
+        } else {
+            when (command) {
+                SocketMessage.COMMAND.GET_INFO -> {
+                    val clientList = ClientListProto.ClientList.newBuilder()
+                    HyliConnect.uuidMap.forEach {
+                        clientList.addClients(
+                            ClientListProto.Client.newBuilder()
+                                .setUuid(it.value)
+                                .setIp(it.key)
+                                .setPort(HyliConnect.deviceInfoMap[it.value]?.port ?: 0)
+                                .build()
+                        )
+                    }
+                    val responseData = InfoProto.Info.newBuilder()
+                        .setApiVersion(API_VERSION)
+                        .setAppVersion(BuildConfig.VERSION_CODE)
+                        .setAppVersionName(BuildConfig.VERSION_NAME)
+                        .setPlatform(PreferencesDataStore.getConfigMap()["platform"].toString())
+                        .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
+                        .setNickname(PreferencesDataStore.getConfigMap()["nickname"].toString())
+                        .setClientList(clientList.build())
+                        .build()
+                    responseBody.setData(responseData.toByteString())
+                    SocketUtils.sendMessage(ip, responseBody)
+                }
+                SocketMessage.COMMAND.DISCONNECT -> {
                     SocketUtils.closeConnection(ip)
                 }
-            }
-        } else if (uuid in HyliConnect.uuidMap.values) {
-            when (command) {
-                COMMAND_CLIENT_LIST -> {
-                    val clientList = JSONArray()
-                    HyliConnect.uuidMap.forEach { (key, value) ->
-                        val clientInfo = JSONObject()
-                        clientInfo["uuid"] = value
-                        clientInfo["ip_address"] = key
-                        clientList.add(clientInfo)
+                SocketMessage.COMMAND.GET_CLIENTS -> {
+                    val clientList = ClientListProto.ClientList.newBuilder()
+                    HyliConnect.uuidMap.forEach {
+                        clientList.addClients(
+                            ClientListProto.Client.newBuilder()
+                                .setUuid(it.value)
+                                .setIp(it.key)
+                                .setPort(HyliConnect.deviceInfoMap[it.value]?.port ?: 0)
+                                .build()
+                        )
                     }
-                    responseData["client_list"] = clientList
-                    responseJson["data"] = responseData
-                    SocketUtils.sendMessage(ip, responseJson)
+                    responseBody.setData(clientList.build().toByteString())
+                    SocketUtils.sendMessage(ip, responseBody)
                 }
-
-                COMMAND_APP_LIST -> {
-                    val appList = JSONObject()
-                    PackageUtils.appNameMap.forEach { (key, value) ->
-                        val appInfo = JSONObject()
-                        appInfo["name"] = value
-                        appInfo["width"] = PackageUtils.appWidthMap[key]
-                        appInfo["height"] = PackageUtils.appHeightMap[key]
-                        appInfo["icon"] = PackageUtils.appIconByteMap[key]
-                        appList[key] = value
-                    }
-                    responseData["app_list"] = appList
-                    responseJson["data"] = responseData
-                    SocketUtils.sendMessage(ip, responseJson)
+                else -> {
+                    return
                 }
             }
         }
+//        if (uuid in HyliConnect.uuidMap.values) {
+//            when (command) {
+//                COMMAND_APP_LIST -> {
+//                    val appList = JSONObject()
+//                    PackageUtils.appNameMap.forEach { (key, value) ->
+//                        val appInfo = JSONObject()
+//                        appInfo["name"] = value
+//                        appInfo["width"] = PackageUtils.appWidthMap[key]
+//                        appInfo["height"] = PackageUtils.appHeightMap[key]
+//                        appInfo["icon"] = PackageUtils.appIconByteMap[key]
+//                        appList[key] = value
+//                    }
+//                    responseData["app_list"] = appList
+//                    responseJson["data"] = responseData
+//                    SocketUtils.sendMessage(ip, responseJson)
+//                }
+//            }
+//        }
     }
 
     private fun responseHandler(
         ip: String,
-        messageJson: JSONObject,
+        messageBody: SocketMessage.Body,
         broadcastManager: LocalBroadcastManager? = null
     ) {
-        val command = messageJson.getString("command") ?: ""
-        val data = messageJson.getJSONObject("data") ?: JSONObject()
-        val uuid = data.getString("uuid") ?: ""
-        if (command == "" || data == JSONObject() || uuid == "") return
+        val command = messageBody.cmd
+        val data = messageBody.data
+        val uuid = messageBody.uuid
+        if (data.isEmpty || uuid.isNullOrEmpty()) return
 
         when (command) {
-            COMMAND_CONNECT -> {
-                val status = messageJson.getString("status") ?: ""
-                if (status == "accept") {
+            SocketMessage.COMMAND.CONNECT -> {
+                val dataProto = ConnectProto.ConnectResponse.parseFrom(data)
+                val success = dataProto.success
+                if (success) {
                     HyliConnect.uuidMap[ip] = uuid
                     val ip_address = ip.substring(1, ip.length).split(":")[0]
                     val port = ip.substring(1, ip.length).split(":").last().toInt()
                     val deviceInfo = DeviceInfo(
-                        data.getIntValue("api_version"),
-                        data.getIntValue("app_version"),
-                        data.getString("app_version_name") ?: "",
-                        data.getString("platform") ?: "",
+                        dataProto.info.apiVersion,
+                        dataProto.info.appVersion,
+                        dataProto.info.appVersionName,
+                        dataProto.info.platform,
                         uuid,
-                        data.getString("nickname") ?: "",
+                        dataProto.info.nickname,
                         mutableListOf(ip_address),
                         port
                     )
                     HyliConnect.deviceInfoMap[uuid] = deviceInfo
                     SocketUtils.sendHeartbeat(ip)
-                } else if (status == "reject") {
+                } else {
                     SocketUtils.closeConnection(ip)
                 }
             }
+            else -> {
+                return
+            }
         }
-
     }
 
     private fun broadcastHandler(
         ip: String,
-        messageJson: JSONObject,
+        messageBody: SocketMessage.Body,
         broadcastManager: LocalBroadcastManager? = null
     ) {
 
@@ -170,7 +202,7 @@ object MessageHandler {
 
     private fun forwardHandler(
         ip: String,
-        messageJson: JSONObject,
+        messageBody: SocketMessage.Body,
         broadcastManager: LocalBroadcastManager? = null
     ) {
 
@@ -178,19 +210,13 @@ object MessageHandler {
 
     private fun heartbeatHandler(
         ip: String,
-        messageJson: JSONObject,
+        messageBody: SocketMessage.Body,
         broadcastManager: LocalBroadcastManager? = null
     ) {
         HyliConnect.connectionMap[ip] = System.currentTimeMillis()
         Thread.sleep(3000)
-        if (System.currentTimeMillis() - HyliConnect.connectionMap[ip]!! >= 3000 || HyliConnect.connectionMap.containsKey(ip).not() || HyliConnect.connectionMap[ip] == null) {
-            if ( HyliConnect.uuidMap.containsKey(ip) ) {
-                try {
-                    SocketUtils.sendHeartbeat(ip)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
+        if (System.currentTimeMillis() - HyliConnect.connectionMap[ip]!! >= 3000 && HyliConnect.socketMap.containsKey(ip)) {
+            SocketUtils.sendHeartbeat(ip)
         }
     }
 }
