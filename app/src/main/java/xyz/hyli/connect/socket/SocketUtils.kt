@@ -54,7 +54,7 @@ object SocketUtils {
             .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
             .setSTATUS(SocketMessage.STATUS.SUCCESS)
             .setData(messageData.toByteString())
-        thread { sendMessage(ip, messageBody) }
+        sendMessage(ip, messageBody)
     }
     fun rejectConnection(ip: String) {
         val messageData = ConnectProto.ConnectResponse.newBuilder()
@@ -66,16 +66,12 @@ object SocketUtils {
             .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
             .setSTATUS(SocketMessage.STATUS.FAILED)
             .setData(messageData.toByteString())
-        thread {
-            sendMessage(ip, messageBody)
-            closeConnection(ip)
-        }
+        sendMessage(ip, messageBody, onMessageSend = { closeConnection(ip) })
     }
     fun sendHeartbeat(ip: String) {
         val messageBody = SocketMessage.Body.newBuilder()
             .setType(SocketMessage.TYPE.HEARTBEAT)
-            .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
-        thread { sendMessage(ip, messageBody) }
+        sendMessage(ip, messageBody)
     }
     fun getInfoRequest(ip: String) {
         val messageBody = SocketMessage.Body.newBuilder()
@@ -83,7 +79,7 @@ object SocketUtils {
             .setCmd(SocketMessage.COMMAND.GET_INFO)
             .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
             .setSTATUS(SocketMessage.STATUS.SUCCESS)
-        thread { sendMessage(ip, messageBody) }
+        sendMessage(ip, messageBody)
     }
     fun connectRequest(ip: String, port: Int) {
         val t = System.currentTimeMillis()
@@ -109,7 +105,7 @@ object SocketUtils {
             Log.e("SocketUtils", "Connect timeout")
             return
         }
-        thread { sendMessage(IPAddress, messageBody) }
+        sendMessage(IPAddress, messageBody)
     }
     fun disconnectRequest(ip: String) {
         val messageBody = SocketMessage.Body.newBuilder()
@@ -117,10 +113,7 @@ object SocketUtils {
             .setCmd(SocketMessage.COMMAND.DISCONNECT)
             .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
             .setSTATUS(SocketMessage.STATUS.SUCCESS)
-        thread {
-            sendMessage(ip, messageBody)
-            closeConnection(ip)
-        }
+        sendMessage(ip, messageBody, onMessageSend = { closeConnection(ip) })
     }
     fun getClientsRequest(ip: String) {
         val messageBody = SocketMessage.Body.newBuilder()
@@ -128,12 +121,12 @@ object SocketUtils {
             .setCmd(SocketMessage.COMMAND.GET_CLIENTS)
             .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
             .setSTATUS(SocketMessage.STATUS.SUCCESS)
-        thread { sendMessage(ip, messageBody) }
+        sendMessage(ip, messageBody)
     }
-    fun sendMessage(ip: String, messageBody: SocketMessage.Body.Builder, dropTime: Long = 0) {
-        HyliConnect.blockingQueueMap[ip]?.put(Pair(messageBody, dropTime))
+    fun sendMessage(ip: String, messageBody: SocketMessage.Body.Builder, dropTime: Long = 0, onMessageSend: (() -> Unit) = { }) {
+        HyliConnect.blockingQueueMap[ip]?.put(listOf(messageBody, dropTime, onMessageSend))
     }
-    fun sendQueueMessage(ip: String, messageBody: SocketMessage.Body.Builder) {
+    fun sendQueueMessage(ip: String, messageBody: SocketMessage.Body.Builder, onMessageSend: (() -> Unit) = { }) {
         var message: SocketMessage.Message
         messageBody.build().let {
             message = SocketMessage.Message.newBuilder()
@@ -147,6 +140,7 @@ object SocketUtils {
         }
         try {
             message.writeDelimitedTo(HyliConnect.outputStreamMap[ip])
+            onMessageSend()
             Log.i("SocketUtils", "Send message: $ip $message")
         } catch (e: Exception) {
             Log.e("SocketUtils", "Send message error: $ip ${e.message}")

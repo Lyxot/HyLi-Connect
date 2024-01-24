@@ -91,7 +91,7 @@ open class HyliConnect : Application() {
         lateinit var deviceInfoMap: ConcurrentHashMap<String, DeviceInfo>
 
         // ip: blockingQueue
-        lateinit var blockingQueueMap: ConcurrentHashMap<String, BlockingQueue<Pair<SocketMessage.Body.Builder, Long?>>>
+        lateinit var blockingQueueMap: ConcurrentHashMap<String, BlockingQueue<List<Any>>>
 
         init {
             Sui.init(BuildConfig.APPLICATION_ID)

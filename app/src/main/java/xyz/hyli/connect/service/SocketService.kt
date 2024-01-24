@@ -159,15 +159,13 @@ class SocketService : Service() {
                             GlobalScope.launch(context = Dispatchers.IO) {
                                 while (true) {
                                     try {
-                                        val pair = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
-                                        val dropTime = pair.second
-                                        if ( dropTime != null && dropTime != 0L ) {
-                                            if (dropTime < System.currentTimeMillis()) {
-                                                Log.i(TAG, "Drop message: $IPAddress ${pair.first}")
-                                                continue
-                                            }
+                                        val list = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
+                                        val dropTime = list[1] as Long
+                                        if ( dropTime != 0L && dropTime < System.currentTimeMillis() ) {
+                                            Log.i(TAG, "Drop message: $IPAddress ${list[0]}")
+                                        } else {
+                                            SocketUtils.sendQueueMessage(IPAddress, list[0] as SocketMessage.Body.Builder, list[2] as (() -> Unit))
                                         }
-                                        SocketUtils.sendQueueMessage(IPAddress, pair.first)
                                     } catch (e: Exception) {
                                         if (!HyliConnect.socketMap.containsKey(IPAddress)) {
                                             break
@@ -180,7 +178,7 @@ class SocketService : Service() {
                             // Authorization timeout
                             GlobalScope.launch(context = Dispatchers.IO) {
                                 Thread.sleep(30000)
-                                if ( HyliConnect.uuidMap.containsKey(IPAddress).not() ) {
+                                if ( HyliConnect.uuidMap.containsKey(IPAddress).not() && HyliConnect.socketMap.containsKey(IPAddress) ) {
                                     Log.i(TAG, "Authorization timeout: $IPAddress")
                                     SocketUtils.closeConnection(IPAddress)
                                 }
@@ -190,8 +188,10 @@ class SocketService : Service() {
                                 try {
                                     val message = SocketMessage.Message.parseDelimitedFrom(inputStream)
                                     if ( message != null ) {
-                                        Log.i(TAG, "Receive message: $IPAddress $message")
-                                        MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
+                                        GlobalScope.launch(context = Dispatchers.IO) {
+                                            Log.i(TAG, "Receive message: $IPAddress $message")
+                                            MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
+                                        }
                                     }
                                 } catch (e: Exception) {
                                     if (!HyliConnect.socketMap.containsKey(IPAddress)) {
@@ -232,15 +232,13 @@ class SocketService : Service() {
                 GlobalScope.launch(context = Dispatchers.IO) {
                     while (true) {
                         try {
-                            val pair = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
-                            val dropTime = pair.second
-                            if ( dropTime != null && dropTime != 0L ) {
-                                if (dropTime < System.currentTimeMillis()) {
-                                    Log.i(TAG, "Drop message: $IPAddress ${pair.first}")
-                                    continue
-                                }
+                            val list = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
+                            val dropTime = list[1] as Long
+                            if ( dropTime != 0L && dropTime < System.currentTimeMillis() ) {
+                                Log.i(TAG, "Drop message: $IPAddress ${list[0]}")
+                            } else {
+                                SocketUtils.sendQueueMessage(IPAddress, list[0] as SocketMessage.Body.Builder, list[2] as (() -> Unit))
                             }
-                            SocketUtils.sendQueueMessage(IPAddress, pair.first)
                         } catch (e: Exception) {
                             if (!HyliConnect.socketMap.containsKey(IPAddress)) {
                                 break
@@ -255,8 +253,10 @@ class SocketService : Service() {
                     try {
                         val message = SocketMessage.Message.parseDelimitedFrom(inputStream)
                         if ( message != null ) {
-                            Log.i(TAG, "Receive message: $IPAddress $message")
-                            MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
+                            GlobalScope.launch(context = Dispatchers.IO) {
+                                Log.i(TAG, "Receive message: $IPAddress $message")
+                                MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
+                            }
                         }
                     } catch (e: Exception) {
                         if (!HyliConnect.socketMap.containsKey(IPAddress)) {
