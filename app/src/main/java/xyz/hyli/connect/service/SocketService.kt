@@ -157,7 +157,7 @@ class SocketService : Service() {
                             HyliConnect.outputStreamMap[IPAddress] = outputStream
                             HyliConnect.blockingQueueMap[IPAddress] = LinkedBlockingQueue()
                             GlobalScope.launch(context = Dispatchers.IO) {
-                                while (true) {
+                                while (HyliConnect.socketMap.containsKey(IPAddress)) {
                                     try {
                                         val list = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
                                         val dropTime = list[1] as Long
@@ -184,7 +184,7 @@ class SocketService : Service() {
                                 }
                             }
 
-                            while (true) {
+                            while (HyliConnect.socketMap.containsKey(IPAddress)) {
                                 try {
                                     val message = SocketMessage.Message.parseDelimitedFrom(inputStream)
                                     if ( message != null ) {
@@ -230,7 +230,7 @@ class SocketService : Service() {
                 HyliConnect.outputStreamMap[IPAddress] = outputStream
                 HyliConnect.blockingQueueMap[IPAddress] = LinkedBlockingQueue()
                 GlobalScope.launch(context = Dispatchers.IO) {
-                    while (true) {
+                    while (HyliConnect.socketMap.containsKey(IPAddress)) {
                         try {
                             val list = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
                             val dropTime = list[1] as Long
@@ -249,7 +249,7 @@ class SocketService : Service() {
 
                 SocketUtils.sendHeartbeat(IPAddress)
 
-                while (true) {
+                while (HyliConnect.socketMap.containsKey(IPAddress)) {
                     try {
                         val message = SocketMessage.Message.parseDelimitedFrom(inputStream)
                         if ( message != null ) {
