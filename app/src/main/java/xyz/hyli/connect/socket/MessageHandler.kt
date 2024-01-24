@@ -215,8 +215,12 @@ object MessageHandler {
     ) {
         HyliConnect.connectionMap[ip] = System.currentTimeMillis()
         Thread.sleep(3000)
-        if (System.currentTimeMillis() - HyliConnect.connectionMap[ip]!! >= 3000 && HyliConnect.socketMap.containsKey(ip)) {
-            SocketUtils.sendHeartbeat(ip)
+        try {
+            if (System.currentTimeMillis() - HyliConnect.connectionMap[ip]!! >= 3000 && HyliConnect.socketMap.containsKey(ip)) {
+                SocketUtils.sendHeartbeat(ip)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }
