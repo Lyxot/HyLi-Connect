@@ -3,6 +3,9 @@ name: Android CI
 on:
   push:
     branches: [ main ]
+    tags: [ v* ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -26,18 +29,28 @@ jobs:
           cache: 'gradle'
       - name: Retrieve version
         run: |
-          echo VERSION=$(echo ${{ github.event.head_commit.id }} | head -c 10) >> $GITHUB_ENV
+          if [ ${{ github.ref_type}} == "tag" ]; then
+            echo VERSION=$(echo ${{ github.ref }} | sed -e 's/refs\/tags\/v//g')
+            echo VERSION=$(echo ${{ github.ref }} | sed -e 's/refs\/tags\/v//g') >> $GITHUB_ENV
+          else
+            echo VERSION=$(echo ${{ github.event.head_commit.id }} | head -c 7)
+            echo VERSION=$(echo ${{ github.event.head_commit.id }} | head -c 7) >> $GITHUB_ENV
+          fi
       - name: Build with Gradle
+        env: 
+          VERSION: ${{ env.VERSION }}
+          RELEASE_KEY: ${{ secrets.RELEASE_KEY }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_KEY_STORE_PASSWORD: ${{ secrets.RELEASE_KEY_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
         run: |
-          chmod +x gradlew
-          ./gradlew -PappVerName=${{ env.VERSION }} build
+          bash .ci/build.sh
       - name: Upload built apk
         if: success()
         uses: actions/upload-artifact@v3
         with:
           name: snapshot
           path: |
-              app/build/outputs/apk
-              app/build/outputs/mapping
-              app/release
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/release/*.json
       
