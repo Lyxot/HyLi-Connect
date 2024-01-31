@@ -13,6 +13,7 @@ import org.lsposed.hiddenapibypass.HiddenApiBypass
 import rikka.shizuku.Shizuku
 import rikka.sui.Sui
 import xyz.hyli.connect.bean.DeviceInfo
+import xyz.hyli.connect.bean.MessageQueue
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.proto.SocketMessage
@@ -91,7 +92,7 @@ open class HyliConnect : Application() {
         lateinit var deviceInfoMap: ConcurrentHashMap<String, DeviceInfo>
 
         // ip: blockingQueue
-        lateinit var blockingQueueMap: ConcurrentHashMap<String, BlockingQueue<List<Any>>>
+        lateinit var blockingQueueMap: ConcurrentHashMap<String, BlockingQueue<MessageQueue>>
 
         init {
             Sui.init(BuildConfig.APPLICATION_ID)
