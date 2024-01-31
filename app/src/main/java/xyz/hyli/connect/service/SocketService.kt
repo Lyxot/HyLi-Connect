@@ -81,7 +81,6 @@ class SocketService : Service() {
     private lateinit var checkConnectionJob: Job
     private lateinit var configMap: MutableMap<String, Any>
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate() {
         super.onCreate()
         setForeground()
@@ -142,7 +141,7 @@ class SocketService : Service() {
             GlobalScope.launch(context = Dispatchers.IO) {
                 serverSocket = ServerSocket(serverPort)
                 Log.i(TAG, "Start server: $serverSocket")
-                while (true) {
+                while (serverSocket != null) {
                     val socket = serverSocket!!.accept()
                     val IPAddress = socket.remoteSocketAddress.toString()
                     Log.i(TAG, "Accept connection: $IPAddress")
@@ -159,12 +158,11 @@ class SocketService : Service() {
                             GlobalScope.launch(context = Dispatchers.IO) {
                                 while (HyliConnect.socketMap.containsKey(IPAddress)) {
                                     try {
-                                        val list = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
-                                        val dropTime = list[1] as Long
-                                        if ( dropTime != 0L && dropTime < System.currentTimeMillis() ) {
-                                            Log.i(TAG, "Drop message: $IPAddress ${list[0]}")
+                                        val mq = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
+                                        if ( mq.dropTime != 0L && mq.dropTime < System.currentTimeMillis() ) {
+                                            Log.i(TAG, "Drop message: $IPAddress ${mq.messageBody}")
                                         } else {
-                                            SocketUtils.sendQueueMessage(IPAddress, list[0] as SocketMessage.Body.Builder, list[2] as (() -> Unit))
+                                            SocketUtils.sendQueueMessage(IPAddress, mq.messageBody, mq.onMessageSend)
                                         }
                                     } catch (e: Exception) {
                                         if (!HyliConnect.socketMap.containsKey(IPAddress)) {
@@ -232,12 +230,11 @@ class SocketService : Service() {
                 GlobalScope.launch(context = Dispatchers.IO) {
                     while (HyliConnect.socketMap.containsKey(IPAddress)) {
                         try {
-                            val list = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
-                            val dropTime = list[1] as Long
-                            if ( dropTime != 0L && dropTime < System.currentTimeMillis() ) {
-                                Log.i(TAG, "Drop message: $IPAddress ${list[0]}")
+                            val mq = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
+                            if ( mq.dropTime != 0L && mq.dropTime < System.currentTimeMillis() ) {
+                                Log.i(TAG, "Drop message: $IPAddress ${mq.messageBody}")
                             } else {
-                                SocketUtils.sendQueueMessage(IPAddress, list[0] as SocketMessage.Body.Builder, list[2] as (() -> Unit))
+                                SocketUtils.sendQueueMessage(IPAddress, mq.messageBody, mq.onMessageSend)
                             }
                         } catch (e: Exception) {
                             if (!HyliConnect.socketMap.containsKey(IPAddress)) {
@@ -274,6 +271,8 @@ class SocketService : Service() {
     }
     private fun stopSocket() {
         SocketUtils.closeAllConnection()
+        serverSocket!!.close()
+        serverSocket = null
         HyliConnect.serviceStateMap["SocketServer"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_server)))
     }
     @OptIn(DelicateCoroutinesApi::class)

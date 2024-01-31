@@ -4,6 +4,7 @@ import android.util.Log
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.bean.DeviceInfo
+import xyz.hyli.connect.bean.MessageQueue
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.proto.ConnectProto
 import xyz.hyli.connect.proto.InfoProto
@@ -124,7 +125,13 @@ object SocketUtils {
         sendMessage(ip, messageBody)
     }
     fun sendMessage(ip: String, messageBody: SocketMessage.Body.Builder, dropTime: Long = 0, onMessageSend: (() -> Unit) = { }) {
-        HyliConnect.blockingQueueMap[ip]?.put(listOf(messageBody, dropTime, onMessageSend))
+        HyliConnect.blockingQueueMap[ip]?.put(
+            MessageQueue(
+                messageBody,
+                dropTime,
+                onMessageSend
+            )
+        )
     }
     fun sendQueueMessage(ip: String, messageBody: SocketMessage.Body.Builder, onMessageSend: (() -> Unit) = { }) {
         var message: SocketMessage.Message
