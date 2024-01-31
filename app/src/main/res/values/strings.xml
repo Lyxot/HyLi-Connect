@@ -42,7 +42,7 @@
     <string name="page_settings_server_port_dialog_message">Please enter the server port (1024–65535)</string>
     <string name="page_settings_stream">App streaming</string>
     <string name="page_settings_app_stream_method">Working method</string>
-    <string name="page_settings_app_stream_method_summary">Permission required for app streaming and preventing apps from popping out to full screen\n* Shizuku only mode: Only supports Android 12+\n* May cause problems such as screen flickering, freezing, etc. This feature is recommended to be enabled only when there is no Xposed or Xposed blocking fails.</string>
+    <string name="page_settings_app_stream_method_summary">Permission required for app streaming and preventing apps from popping out to full screen\n* Shizuku only mode: Only supports Android 12+\n* May cause problems such as screen flickering, freezing, etc.\n* This feature is recommended to be enabled only when there is no Xposed or Xposed blocking fails</string>
     <string name="page_settings_notification_forward">Notification forward</string>
     <string name="page_settings_notification_forward_summary">Forward notifications to connected devices.If app streaming is enabled, notifications can be turned on a connected device</string>
     <string name="page_settings_basic">Basic</string>
@@ -65,4 +65,9 @@
     <string name="toast_shizuku_not_available">Shizuku is not available</string>
     <string name="toast_shizuku_not_support">Shizuku &lt; 11 is not supported</string>
     <string name="toast_shizuku_denied">You denied the permission for Shizuku. Please enable it in app.</string>
+    <string name="page_settings_connect_to_myself">Allow to connect to myself</string>
+    <string name="page_settings_connect">Connect</string>
+    <string name="page_settings_nsd_service">Network discovery service</string>
+    <string name="page_settings_nsd_service_summary">Allow devices on the same LAN to discover your devices</string>
+    <string name="state_application_rebooting">Rebooting</string>
 </resources>

@@ -94,7 +94,11 @@ class HyliConnectViewModel: ViewModel() {
         val serviceStateList: MutableList<String> = mutableListOf()
         serviceMap.keys.forEach {
             if ( HyliConnect.serviceStateMap.containsKey(it) ) {
-                serviceStateList.add(HyliConnect.serviceStateMap[it]!!.state)
+                if ( it == "NsdService" && PreferencesDataStore.getConfigMap(true)["nsd_service"] == false ) {
+                    serviceStateList.add("running")
+                } else {
+                    serviceStateList.add(HyliConnect.serviceStateMap[it]!!.state)
+                }
             } else {
 //                HyliConnectState.serviceStateMap[it] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(serviceMap[it]!!)))
                 serviceStateList.add("stopped")
