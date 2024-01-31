@@ -125,6 +125,15 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                     )
                 }
             }
+            prefsGroup(getString(context, R.string.page_settings_connect)) {
+                prefsItem {
+                    SwitchPref(
+                        key = "nsd_service",
+                        title = stringResource(id = R.string.page_settings_nsd_service),
+                        summary = stringResource(id = R.string.page_settings_nsd_service_summary)
+                    )
+                }
+            }
             prefsGroup(getString(context, R.string.page_settings_functions)) {
                 prefsItem {
                     SwitchPref(key = "is_stream", title = stringResource(id = R.string.page_settings_stream))
@@ -160,6 +169,14 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                 }
             }
             prefsGroup(getString(context, R.string.page_settings_other)) {
+                prefsItem {
+                    SwitchPref(
+                        key = "connect_to_myself",
+                        title = stringResource(id = R.string.page_settings_connect_to_myself)
+                    )
+                }
+            }
+            prefsGroup(getString(context, R.string.page_settings_about)) {
                 prefsItem {
                     Spacer(modifier = Modifier.height(12.dp))
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
