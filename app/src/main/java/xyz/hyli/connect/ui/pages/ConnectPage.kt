@@ -39,6 +39,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.Icon
@@ -141,7 +143,7 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             val ip_address = String(attributes["ip_addr"] ?: byteArrayOf())
 
             // Filter out self
-            if ( uuid == UUID.value && BuildConfig.DEBUG.not() ) {
+            if ( uuid == UUID.value && BuildConfig.DEBUG.not() && configMap["connect_to_myself"] == false ) {
                 return
             }
             // Filter out connected
@@ -288,12 +290,35 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                 .padding(6.dp))
                             Column(modifier = Modifier.padding(start = 12.dp),
                                 verticalArrangement = Arrangement.Center) {
-                                Text(text = when(applicationState.value) {
-                                    "running" -> { stringResource(id = R.string.state_application_running) }
-                                    "error" -> { stringResource(id = R.string.state_application_error) }
-                                    "stopped" -> { stringResource(id = R.string.state_application_stopped) }
-                                    else -> { "" }
-                                }, style = HyliConnectTypography.titleLarge)
+                                Row {
+                                    Text(text = when(applicationState.value) {
+                                        "running" -> { stringResource(id = R.string.state_application_running) }
+                                        "error" -> { stringResource(id = R.string.state_application_error) }
+                                        "stopped" -> { stringResource(id = R.string.state_application_stopped) }
+                                        else -> { "" }
+                                    }, style = HyliConnectTypography.titleLarge)
+                                    Icon(
+                                        Icons.Default.Refresh,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .padding(start = 12.dp)
+                                            .align(Alignment.CenterVertically)
+                                            .clickable {
+                                                localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
+                                                    putExtra("command", "reboot_service")
+                                                })
+                                                Toast.makeText(context, getString(context, R.string.state_application_rebooting), Toast.LENGTH_SHORT).show()
+                                                MainScope().launch {
+                                                    delay(1000)
+                                                    HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
+                                                        ServiceState("running", context.getString(R.string.state_service_running, context.getString(R.string.service_socket_service)))
+                                                    } else {
+                                                        ServiceState("stopped", context.getString(R.string.state_service_stopped, context.getString(R.string.service_socket_service)))
+                                                    }
+                                                }
+                                            }
+                                    )
+                                }
                                 if ( applicationState.value != "stopped" ) {
                                     if ( applicationState.value == "error" ) {
                                         HyliConnect.serviceStateMap.forEach {
