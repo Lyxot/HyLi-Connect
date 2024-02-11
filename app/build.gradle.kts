@@ -4,7 +4,10 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.protobuf")
+    id("org.lsposed.lsplugin.jgit") version "1.1"
 }
+
+val commitCount = jgit.repo()?.commitCount("refs/remotes/origin/main") ?: 0
 
 android {
     namespace = "xyz.hyli.connect"
@@ -14,7 +17,8 @@ android {
         applicationId = "xyz.hyli.connect"
         minSdk = 26
         targetSdk = 33
-        versionCode = 10000
+        val majorCode = 1
+        versionCode = majorCode * 10000 + commitCount
         val releaseVersionName = "1.0.0"
         versionName = if ( System.getenv("VERSION") != null ) {
             System.getenv("VERSION")
