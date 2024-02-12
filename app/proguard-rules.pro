@@ -28,6 +28,12 @@
 -keep class xyz.hyli.connect.hook.utils.HookShellUtils { *; }
 -keep class xyz.hyli.connect.hook.** { *; }
 
+-keep class xyz.hyli.connect.proto.** { *; }
+
+-keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
+  <fields>;
+}
+
 -keep class * implements android.os.IInterface {*;}
 
 -keepclassmembers class * implements java.io.Serializable {
@@ -45,4 +51,7 @@
 }
 -keep class * implements android.os.Parcelable {
   public static final android.os.Parcelable$Creator *;
+}
+-keepclassmembers class * implements android.os.Parcelable {
+    public static final ** CREATOR;
 }
