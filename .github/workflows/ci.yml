@@ -27,6 +27,11 @@ jobs:
           distribution: 'temurin'
           java-version: 21
           cache: 'gradle'
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-home-cache-cleanup: true
+          cache-overwrite-existing: true
       - name: Retrieve version
         run: |
           if [ ${{ github.ref_type}} == "tag" ]; then
@@ -51,6 +56,12 @@ jobs:
         with:
           name: snapshot
           path: |
-            app/build/outputs/apk/release/*.apk
-            app/build/outputs/apk/release/*.json
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/apk/release/output-metadata.json
+      - name: Upload mappings
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mappings
+          path: app/build/outputs/mapping/release/
       
