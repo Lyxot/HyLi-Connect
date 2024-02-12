@@ -12,6 +12,7 @@ jobs:
   build:
     runs-on: macos-14
     env:
+      ANDROID_KEYSTORE_FILE: '${{ github.workspace }}/release-key.jks'
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: true
@@ -27,11 +28,6 @@ jobs:
           distribution: 'temurin'
           java-version: 21
           cache: 'gradle'
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
-        with:
-          gradle-home-cache-cleanup: true
-          cache-overwrite-existing: true
       - name: Retrieve version
         run: |
           if [ ${{ github.ref_type}} == "tag" ]; then
@@ -41,27 +37,49 @@ jobs:
             echo VERSION=$(echo ${{ github.event.head_commit.id }} | head -c 7)
             echo VERSION=$(echo ${{ github.event.head_commit.id }} | head -c 7) >> $GITHUB_ENV
           fi
-      - name: Build with Gradle
-        env: 
+          git fetch
+          echo CODE=$(git rev-list --count origin/main) >> $GITHUB_ENV
+      - name: Prepare for building
+        run: |
+          chmod +x gradlew
+          base64 --decode <<< "${{ secrets.RELEASE_KEY }}" > "${{ env.ANDROID_KEYSTORE_FILE }}"
+      - name: Setup Gradle & Build APK
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-home-cache-cleanup: true
+          cache-overwrite-existing: true
+          arguments: assembleRelease
+        env:
           VERSION: ${{ env.VERSION }}
-          RELEASE_KEY: ${{ secrets.RELEASE_KEY }}
+          CODE: ${{ env.CODE }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
           RELEASE_KEY_STORE_PASSWORD: ${{ secrets.RELEASE_KEY_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+      - name: Rename apk
         run: |
-          bash .ci/build.sh
+          python3 .ci/rename_apk.py
       - name: Upload built apk
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: snapshot
+          name: apk
           path: |
-            app/build/outputs/apk/release/app-release.apk
-            app/build/outputs/apk/release/output-metadata.json
+            app/build/outputs/apk/release/*.apk
+      - name: Upload signature
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signature_v4
+          path: |
+            app/build/outputs/apk/release/*.idsig
       - name: Upload mappings
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: mappings
           path: app/build/outputs/mapping/release/
+      - name: Setup Debug Session
+        if: success() != true
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 15
       

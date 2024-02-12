@@ -7,7 +7,11 @@ plugins {
     id("org.lsposed.lsplugin.jgit") version "1.1"
 }
 
-val commitCount = jgit.repo()?.commitCount("refs/remotes/origin/main") ?: 0
+val commitCount = if (System.getenv("CI") != null) {
+    System.getenv("CODE")?.toInt() ?: 0
+} else {
+    jgit.repo()?.commitCount("refs/remotes/origin/main") ?: 0
+}
 
 android {
     namespace = "xyz.hyli.connect"
@@ -32,24 +36,31 @@ android {
         }
         ndk {
             // 设置支持的SO库架构
-            abiFilters += listOf("arm64-v8a", "x86_64", "x86")
+            abiFilters += listOf("arm64-v8a", "x86_64")
         }
     }
 
-    val keystoreFile = System.getenv("ANDROID_KEYSTORE_FILE")
     signingConfigs {
         getByName("debug") {
             storeFile = file("debug-key.jks")
             storePassword = "androiddebug"
             keyAlias = "key0"
             keyPassword = "androiddebug"
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true
         }
-        if (keystoreFile != null) {
+        if (System.getenv("CI") != null) {
             create("release") {
-                storeFile = file(keystoreFile)
+                storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
                 storePassword = System.getenv("RELEASE_KEY_STORE_PASSWORD")
                 keyAlias = System.getenv("RELEASE_KEY_ALIAS")
                 keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+                enableV4Signing = true
             }
         }
     }
@@ -58,7 +69,7 @@ android {
             isShrinkResources = true
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            if (keystoreFile != null) {
+            if (System.getenv("CI") != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
