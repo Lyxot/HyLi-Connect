@@ -133,8 +133,18 @@ class HyliConnectViewModel: ViewModel() {
         HyliConnect.permissionStateMap["Overlay"] = PermissionUtils.checkOverlayPermission(context)
         val configMap = PreferencesDataStore.getConfigMap(true)
         if (configMap["is_stream"] == true) {
-            listOf("Root", "Xposed", "Shizuku").forEach {
-                if (configMap["app_stream_method"].toString().contains(it)) { keyPermissionList.add(it) }
+            when (configMap["app_stream_method"]) {
+                0 -> {
+                    keyPermissionList.add("Xposed")
+                    keyPermissionList.add("Root")
+                }
+                1 -> {
+                    keyPermissionList.add("Xposed")
+                    keyPermissionList.add("Shizuku")
+                }
+                2 -> {
+                    keyPermissionList.add("Shizuku")
+                }
             }
             if (keyPermissionList.contains("Xposed") ) {
                 HyliConnect.permissionStateMap["Xposed"] = HookTest().checkXposed()

@@ -48,7 +48,7 @@ import xyz.hyli.connect.ui.theme.HyliConnectTypography
  * @param dialogBackgroundColor Background color of the Dialog
  * @param textColor Text colour of the [title] and [summary]
  * @param enabled If false, this Pref cannot be clicked and the Dialog cannot be shown.
- * @param entries List of keys to values for entries that should be shown in the Dialog.
+ * @param entries Map of keys to values for entries that should be store in the database and shown in the dialog.
  * @param icons List of icons to be shown at the end of each entry
  */
 @ExperimentalComposeUiApi
@@ -64,7 +64,7 @@ fun MultiSelectListPref(
     dialogBackgroundColor: Color = HyliConnectColorScheme().surface,
     textColor: Color = HyliConnectColorScheme().onBackground,
     enabled: Boolean = true,
-    entries: List<String> = listOf(),
+    entries: LinkedHashMap<String, String> = linkedMapOf(),
     icons: List<@Composable (() -> Unit)?> = List(entries.size) { null }
 ) {
 
@@ -78,12 +78,12 @@ fun MultiSelectListPref(
     var selected = defaultValue
     prefs?.get(selectionKey)?.also { selected = it } // starting value if it exists in datastore
 
-    fun edit(isSelected: Boolean, current: String) = run {
+    fun edit(isSelected: Boolean, current: Pair<String, String>) = run {
         scope.launch {
             try {
                 val result = when (!isSelected) {
-                    true -> selected + current
-                    false -> selected - current
+                    true -> selected + current.first
+                    false -> selected - current.first
                 }
                 datastore.edit { preferences ->
                     preferences[selectionKey] = result
@@ -116,8 +116,9 @@ fun MultiSelectListPref(
                 Column {
                     Text(modifier = Modifier.padding(vertical = 16.dp), text = title, style = HyliConnectTypography.titleLarge)
                     LazyColumn {
-                        items(entries) { current ->
-                            val isSelected = selected.contains(current)
+                        val entriesList = entries.toList()
+                        items(entriesList) { current ->
+                            val isSelected = selected.contains(current.first)
                             val onSelectionChanged = {
                                 edit(isSelected, current)
                             }
@@ -136,13 +137,13 @@ fun MultiSelectListPref(
                                     colors = CheckboxDefaults.colors(checkedColor = HyliConnectColorScheme().primary)
                                 )
                                 Text(
-                                    text = current,
+                                    text = current.second,
                                     style = HyliConnectTypography.bodyMedium,
                                     color = textColor
                                 )
                                 if (icons.isNotEmpty() && icons.size == entries.size) {
                                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                                        icons[entries.indexOf(current)]?.invoke()
+                                        icons[entriesList.indexOf(current)]?.invoke()
                                     }
                                 }
                             }

@@ -56,6 +56,7 @@ import xyz.hyli.connect.composeprefs3.prefs.SwitchPref
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
+import java.util.LinkedHashMap
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -110,7 +111,7 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                         title = stringResource(id = R.string.page_settings_device_type),
                         key = "platform",
                         displayValueAtEnd = true,
-                        entries = listOf("Android Phone", "Android TV", "Android Wear", "Windows", "Linux", "Mac", "Web"),
+                        entries = PreferencesDataStore.platformMap,
                         icons = iconList
                     )
                 }
@@ -148,9 +149,12 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                             key = "app_stream_method",
                             displayValueAtEnd = true,
                             entries = if (Build.VERSION_CODES.S <= Build.VERSION.SDK_INT || BuildConfig.DEBUG) {
-                                listOf("Root + Xposed", "Shizuku + Xposed", "Shizuku")
+                                PreferencesDataStore.appStreamMethodMap
                             } else {
-                                listOf("Root + Xposed", "Shizuku + Xposed")
+                                linkedMapOf(
+                                    0 to "Root + Xposed",
+                                    1 to "Shizuku + Xposed"
+                                )
                             },
                             onValueChange = {
                                 if (it.contains("Shizuku") ) {
