@@ -31,7 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
@@ -54,7 +54,7 @@ import xyz.hyli.connect.ui.theme.HyliConnectTypography
  * @param selectionColor Colour of the radiobutton of the selected item
  * @param buttonColor Colour of the cancel button
  * @param enabled If false, this Pref cannot be clicked and the Dialog cannot be shown.
- * @param entries List of keys to values for entries that should be shown in the Dialog.
+ * @param entries Map of keys to values for entries that should be store in the database and shown in the dialog.
  * @param icons List of icons to be shown at the end of each entry
  */
 @ExperimentalComposeUiApi
@@ -74,27 +74,27 @@ fun ListPref(
     selectionColor: Color = HyliConnectColorScheme().primary,
     buttonColor: Color = HyliConnectColorScheme().primary,
     enabled: Boolean = true,
-    entries: List<String> = listOf(),
+    entries: LinkedHashMap<Int, String> = linkedMapOf(),
     icons: List<@Composable (() -> Unit)?> = List(entries.size) { null }
 ) {
 
     var showDialog by rememberSaveable { mutableStateOf(false) }
-    val selectionKey = stringPreferencesKey(key)
+    val selectionKey = intPreferencesKey(key)
     val scope = rememberCoroutineScope()
 
     val datastore = LocalPrefsDataStore.current
     val prefs by remember { datastore.data }.collectAsState(initial = null)
 
     var selected = defaultValue
-    prefs?.get(selectionKey)?.also { selected = it } // starting value if it exists in datastore
+    prefs?.get(selectionKey)?.also { selected = entries[it] } // starting value if it exists in datastore
 
-    fun edit(current: String) = run {
+    fun edit(current: Pair<Int, String>) = run {
         scope.launch {
             try {
                 datastore.edit { preferences ->
-                    preferences[selectionKey] = current
+                    preferences[selectionKey] = current.first
                 }
-                onValueChange?.invoke(current)
+                onValueChange?.invoke(current.second)
                 showDialog = false
             } catch (e: Exception) {
                 Log.e("ListPref", "Could not write pref $key to database. ${e.printStackTrace()}")
@@ -120,12 +120,13 @@ fun ListPref(
         AlertDialog(
             onDismissRequest = { showDialog = false },
             text = {
-                Column() {
+                Column {
                     Text(modifier = Modifier.padding(vertical = 16.dp), text = title, style = HyliConnectTypography.titleLarge)
                     LazyColumn {
-                        items(entries) { current ->
+                        val entriesList = entries.toList()
+                        items(entriesList) { current ->
 
-                            val isSelected = selected == current
+                            val isSelected = selected == current.second
                             val onSelected = {
                                 edit(current)
                             }
@@ -144,13 +145,13 @@ fun ListPref(
                                     colors = RadioButtonDefaults.colors(selectedColor = selectionColor)
                                 )
                                 Text(
-                                    text = current,
+                                    text = current.second,
                                     style = HyliConnectTypography.bodyMedium,
                                     color = textColor
                                 )
                                 if (icons.isNotEmpty() && icons.size == entries.size) {
                                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                                        icons[entries.indexOf(current)]?.invoke()
+                                        icons[entriesList.indexOf(current)]?.invoke()
                                     }
                                 }
                             }

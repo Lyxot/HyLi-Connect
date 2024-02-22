@@ -668,7 +668,7 @@ private fun checkShizukuPermission(context: Context): Boolean {
 
         result
     }
-    if ( PreferencesDataStore.getConfigMap(true)["is_stream"] == true && "Shizuku" in PreferencesDataStore.getConfigMap()["app_stream_method"] as String ) {
+    if ( PreferencesDataStore.getConfigMap(true)["is_stream"] == true && PreferencesDataStore.getConfigMap()["app_stream_method"] in 1..2 ) {
         toast?.show()
     }
     return b

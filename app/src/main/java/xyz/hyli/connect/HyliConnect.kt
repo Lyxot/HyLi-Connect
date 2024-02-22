@@ -33,7 +33,7 @@ open class HyliConnect : Application() {
         Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
             if (requestCode == SHIZUKU_CODE && grantResult == PackageManager.PERMISSION_GRANTED) {
                 try {
-                    if ( PreferencesDataStore.getConfigMap(true)["app_stream_method"].toString().contains("Shizuku") ) {
+                    if ( PreferencesDataStore.getConfigMap(true)["app_stream_method"] in 1..2 ) {
                         initShizuku()
                     }
                 } catch (_: Exception) { }
@@ -45,7 +45,7 @@ open class HyliConnect : Application() {
             Shizuku.requestPermission(SHIZUKU_CODE)
         } else {
             try {
-                if ( PreferencesDataStore.getConfigMap(true)["app_stream_method"].toString().contains("Shizuku") ) {
+                if ( PreferencesDataStore.getConfigMap(true)["app_stream_method"] in 1..2 ) {
                     initShizuku()
                 }
             } catch (_: Exception) { }

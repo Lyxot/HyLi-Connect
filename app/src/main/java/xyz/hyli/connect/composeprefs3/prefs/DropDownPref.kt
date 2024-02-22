@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
@@ -42,7 +42,7 @@ import xyz.hyli.connect.ui.theme.HyliConnectTypography
  * @param dropdownBackgroundColor Color of the dropdown menu
  * @param textColor Text colour of the [title] and [summary]
  * @param enabled If false, this Pref cannot be clicked and the dropdown menu will not show.
- * @param entries List of keys to values for entries that should be shown in the DropDown.
+ * @param entries Map of keys to values for entries that should be store in the database and shown in the dropdown menu.
  * @param icons List of icons to be shown at the end of each entry
  */
 @Composable
@@ -58,28 +58,28 @@ fun DropDownPref(
     dropdownBackgroundColor: Color? = null,
     textColor: Color = HyliConnectColorScheme().onBackground,
     enabled: Boolean = true,
-    entries: List<String> = listOf(),
+    entries: LinkedHashMap<Int, String> = linkedMapOf(),
     icons: List<@Composable (() -> Unit)?> = List(entries.size) { null }
 ) {
 
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val selectionKey = stringPreferencesKey(key)
+    val selectionKey = intPreferencesKey(key)
     val scope = rememberCoroutineScope()
 
     val datastore = LocalPrefsDataStore.current
     val prefs by remember { datastore.data }.collectAsState(initial = null)
 
     var value = defaultValue
-    prefs?.get(selectionKey)?.also { value = it } // starting value if it exists in datastore
+    prefs?.get(selectionKey)?.also { value = entries[it] } // starting value if it exists in datastore
 
-    fun edit(item: String) = run {
+    fun edit(item: Pair<Int, String>) = run {
         scope.launch {
             try {
                 datastore.edit { preferences ->
-                    preferences[selectionKey] = item
+                    preferences[selectionKey] = item.first
                 }
                 expanded = false
-                onValueChange?.invoke(item)
+                onValueChange?.invoke(item.second)
             } catch (e: Exception) {
                 Log.e("DropDownPref", "Could not write pref $key to database. ${e.printStackTrace()}")
             }
@@ -112,19 +112,19 @@ fun DropDownPref(
                 onDismissRequest = { expanded = false },
                 modifier = if (dropdownBackgroundColor != null) Modifier.background(dropdownBackgroundColor) else Modifier
             ) {
-                entries.forEach { item ->
+                entries.toList().forEachIndexed { index, item ->
                     DropdownMenuItem(
                         onClick = {
                             edit(item)
                         },
                         text = {
                             Text(
-                                text = item,
+                                text = item.second,
                                 style = HyliConnectTypography.bodyLarge
                             )
                             if (icons.isNotEmpty() && icons.size == entries.size) {
                                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                                    icons[entries.indexOf(item)]?.invoke()
+                                    icons[index]?.invoke()
                                 }
                             }
                         }
