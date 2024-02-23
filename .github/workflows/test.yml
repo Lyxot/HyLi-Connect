@@ -1,0 +1,106 @@
+name: Test
+
+on:
+  workflow_call:
+    secrets:
+      RELEASE_KEY:
+        required: true
+      RELEASE_KEY_PASSWORD:
+        required: true
+      RELEASE_KEY_STORE_PASSWORD:
+        required: true
+      RELEASE_KEY_ALIAS:
+        required: true
+
+jobs:
+  instrumentation-tests:
+    name: Instrumentation tests
+    runs-on: ${{ matrix.os }}
+    env:
+      JAVA_TOOL_OPTIONS: -Xmx4g -XX:+UseParallelGC
+      ANDROID_KEYSTORE_FILE: '${{ github.workspace }}/release-key.jks'
+    strategy:
+      fail-fast: false  # Allow tests to continue on other devices if they fail on one device.
+      matrix:
+        os: [ macos-13 ]
+        target: [ google_apis ]
+        arch: [ x86_64 ]
+        api-level: [ 26, 30, 34 ]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          submodules: 'recursive'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+      - name: Gradle cache
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-home-cache-cleanup: true
+          cache-overwrite-existing: true
+          cache-read-only: false
+      - name: Prepare for building
+        run: |
+          git fetch
+          echo VERSION=$(echo $(git rev-parse HEAD) | head -c 7) >> $GITHUB_ENV
+          echo CODE=$(git rev-list --count HEAD) >> $GITHUB_ENV
+          chmod +x gradlew
+          base64 --decode <<< "${{ secrets.RELEASE_KEY }}" > "${{ env.ANDROID_KEYSTORE_FILE }}"
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}-${{ matrix.os }}-${{ matrix.target }}
+
+      - name: create AVD && Generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          avd-name: test-${{ matrix.api-level }}-${{ matrix.target }}-${{ matrix.arch }}
+          api-level: ${{ matrix.api-level }}
+          force-avd-creation: false
+          disable-animations: true
+          disable-spellchecker: true
+          ram-size: 4096M
+          target: ${{ matrix.target }}
+          arch: ${{ matrix.arch }}
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          VERSION: ${{ env.VERSION }}
+          CODE: ${{ env.CODE }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_KEY_STORE_PASSWORD: ${{ secrets.RELEASE_KEY_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+        with:
+          avd-name: test-${{ matrix.api-level }}-${{ matrix.target }}-${{ matrix.arch }}
+          api-level: ${{ matrix.api-level }}
+          force-avd-creation: false
+          disable-animations: true
+          disable-spellchecker: true
+          ram-size: 4096M
+          target: ${{ matrix.target }}
+          arch: ${{ matrix.arch }}
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: ./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.notPackage=com.kevalpatel2106.benchmark.macro
+
+      - name: Upload test results Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-test-report-avd-${{ matrix.api-level }}-${{ matrix.target }}-${{ matrix.arch }}
+          path: |
+            build/screenshots/**/*
+            build/androidTest-results/*
+            **/build/reports/androidTest/**/*
+            build/reports/*
+          if-no-files-found: warn

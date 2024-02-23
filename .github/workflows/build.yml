@@ -1,0 +1,93 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      RELEASE_KEY:
+        required: true
+      RELEASE_KEY_PASSWORD:
+        required: true
+      RELEASE_KEY_STORE_PASSWORD:
+        required: true
+      RELEASE_KEY_ALIAS:
+        required: true
+
+jobs:
+  build:
+    runs-on: macos-14
+    env:
+      ANDROID_KEYSTORE_FILE: '${{ github.workspace }}/release-key.jks'
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: true
+      CCACHE_MAXSIZE: 1G
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          submodules: 'recursive'
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v2
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+      - name: Retrieve version
+        run: |
+          git fetch
+          if [ ${{ github.ref_type == 'tag' || startsWith(github.ref_name, 'release') }} == true ]; then
+            export version=$(git describe --tags --abbrev=0 | sed 's/v//')
+          else
+            export version=$(echo $(git rev-parse HEAD) | head -c 7)
+          fi
+          echo VERSION=$version >> $GITHUB_ENV
+          echo VERSION=$version
+
+          export code=$(git rev-list --count HEAD)
+          echo CODE=$code >> $GITHUB_ENV
+          echo CODE=$code
+      - name: Prepare for building
+        run: |
+          chmod +x gradlew
+          base64 --decode <<< "${{ secrets.RELEASE_KEY }}" > "${{ env.ANDROID_KEYSTORE_FILE }}"
+      - name: Setup Gradle & Build APK
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-home-cache-cleanup: true
+          cache-overwrite-existing: true
+          cache-read-only: false
+          arguments: assembleRelease
+        env:
+          VERSION: ${{ env.VERSION }}
+          CODE: ${{ env.CODE }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_KEY_STORE_PASSWORD: ${{ secrets.RELEASE_KEY_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+      - name: Upload built apk
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: |
+            app/build/outputs/apk/release/*.apk
+      - name: Upload signature
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signature_v4
+          path: |
+            app/build/outputs/apk/release/*.idsig
+      - name: Upload mappings
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mappings
+          path: app/build/outputs/mapping/release/
+      - name: Setup Debug Session
+        if: success() != true
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 15
+      
