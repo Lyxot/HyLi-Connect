@@ -23,11 +23,10 @@ android {
         targetSdk = 33
         val majorCode = 1
         versionCode = majorCode * 10000 + commitCount
-        val releaseVersionName = "1.0.0"
         versionName = if ( System.getenv("VERSION") != null ) {
             System.getenv("VERSION")
         } else {
-            releaseVersionName
+            "undefined"
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -71,6 +70,13 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             if (System.getenv("CI") != null) {
                 signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
+    android.applicationVariants.all {
+        outputs.all {
+            if (this is com.android.build.gradle.internal.api.ApkVariantOutputImpl) {
+                this.outputFileName = "Hyli-Connect_${versionName}(${versionCode}).apk"
             }
         }
     }
