@@ -1,6 +1,5 @@
 package xyz.hyli.connect.ui.navigation
 
-
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -60,7 +59,11 @@ fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                 }
             )
             NavigationBarItem(
-                icon = { Icon(FontAwesomeIcons.Solid.TabletAlt, contentDescription = null, modifier = Modifier.size(24.dp)) },
+                icon = { Icon(
+                    FontAwesomeIcons.Solid.TabletAlt,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                ) },
                 label = { Text(stringResource(id = R.string.page_devices)) },
                 selected = currentSelect.value == 1,
                 onClick = {
@@ -87,11 +90,14 @@ fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             )
         }
     }, content = { innerPadding ->
-        AnimatedNavHost(navController = navController, startDestination = "connectScreen",
+        AnimatedNavHost(
+            navController = navController,
+            startDestination = "connectScreen",
             enterTransition = { fadeIn(animationSpec = tween(400)) },
             exitTransition = { fadeOut(animationSpec = tween(400)) },
             popEnterTransition = { fadeIn(animationSpec = tween(400)) },
-            popExitTransition = { fadeOut(animationSpec = tween(400)) }) {
+            popExitTransition = { fadeOut(animationSpec = tween(400)) }
+        ) {
             composable("connectScreen") { ConnectScreen(viewModel, navController, innerPadding) }
             composable("devicesScreen") { DevicesScreen(viewModel, navController, innerPadding) }
             composable("settingsScreen") { SettingsScreen(viewModel, navController, innerPadding) }
@@ -122,7 +128,11 @@ fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
             )
             NavigationRailItem(
                 modifier = Modifier.padding(vertical = 8.dp),
-                icon = { Icon(FontAwesomeIcons.Solid.TabletAlt, contentDescription = null, modifier = Modifier.size(24.dp)) },
+                icon = { Icon(
+                    FontAwesomeIcons.Solid.TabletAlt,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                ) },
                 label = { Text(stringResource(id = R.string.page_devices)) },
                 selected = currentSelect.value == 1,
                 onClick = {
@@ -150,13 +160,17 @@ fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
             )
             Spacer(modifier = Modifier.weight(1f))
         }
-        Scaffold(modifier = Modifier.fillMaxSize(),
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
             content = { innerPadding ->
-                AnimatedNavHost(navController = navController, startDestination = "connectScreen",
+                AnimatedNavHost(
+                    navController = navController,
+                    startDestination = "connectScreen",
                     enterTransition = { fadeIn(animationSpec = tween(400)) },
                     exitTransition = { fadeOut(animationSpec = tween(400)) },
                     popEnterTransition = { fadeIn(animationSpec = tween(400)) },
-                    popExitTransition = { fadeOut(animationSpec = tween(400)) }) {
+                    popExitTransition = { fadeOut(animationSpec = tween(400)) }
+                ) {
                     composable("connectScreen") { ConnectScreen(viewModel, navController, innerPadding) }
                     composable("devicesScreen") { DevicesScreen(viewModel, navController, innerPadding) }
                     composable("settingsScreen") { SettingsScreen(viewModel, navController, innerPadding) }
@@ -189,7 +203,11 @@ fun ExpandedScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
             )
             NavigationDrawerItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                icon = { Icon(FontAwesomeIcons.Solid.TabletAlt, contentDescription = null, modifier = Modifier.size(24.dp)) },
+                icon = { Icon(
+                    FontAwesomeIcons.Solid.TabletAlt,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                ) },
                 label = { Text(stringResource(id = R.string.page_devices)) },
                 selected = currentSelect.value == 1,
                 onClick = {
@@ -217,13 +235,17 @@ fun ExpandedScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
             )
             Spacer(modifier = Modifier.weight(1f))
         }
-        Scaffold(modifier = Modifier.fillMaxSize(),
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
             content = { innerPadding ->
-                AnimatedNavHost(navController = navController, startDestination = "connectScreen",
+                AnimatedNavHost(
+                    navController = navController,
+                    startDestination = "connectScreen",
                     enterTransition = { fadeIn(animationSpec = tween(400)) },
                     exitTransition = { fadeOut(animationSpec = tween(400)) },
                     popEnterTransition = { fadeIn(animationSpec = tween(400)) },
-                    popExitTransition = { fadeOut(animationSpec = tween(400)) }) {
+                    popExitTransition = { fadeOut(animationSpec = tween(400)) }
+                ) {
                     composable("connectScreen") { ConnectScreen(viewModel, navController, innerPadding) }
                     composable("devicesScreen") { DevicesScreen(viewModel, navController, innerPadding) }
                     composable("settingsScreen") { SettingsScreen(viewModel, navController, innerPadding) }

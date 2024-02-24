@@ -16,7 +16,6 @@ import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.MessageQueue
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
-import xyz.hyli.connect.proto.SocketMessage
 import xyz.hyli.connect.service.ControlService
 import xyz.hyli.connect.service.SocketService
 import java.io.InputStream
@@ -25,7 +24,6 @@ import java.net.Socket
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.ConcurrentHashMap
 
-
 open class HyliConnect : Application() {
     val isRunning = MutableLiveData(false)
     private var controlService: IControlService? = null
@@ -33,7 +31,7 @@ open class HyliConnect : Application() {
         Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
             if (requestCode == SHIZUKU_CODE && grantResult == PackageManager.PERMISSION_GRANTED) {
                 try {
-                    if ( PreferencesDataStore.getConfigMap(true)["app_stream_method"] in 1..2 ) {
+                    if (PreferencesDataStore.getConfigMap(true)["app_stream_method"] in 1..2) {
                         initShizuku()
                     }
                 } catch (_: Exception) { }
@@ -45,7 +43,7 @@ open class HyliConnect : Application() {
             Shizuku.requestPermission(SHIZUKU_CODE)
         } else {
             try {
-                if ( PreferencesDataStore.getConfigMap(true)["app_stream_method"] in 1..2 ) {
+                if (PreferencesDataStore.getConfigMap(true)["app_stream_method"] in 1..2) {
                     initShizuku()
                 }
             } catch (_: Exception) { }
@@ -88,6 +86,7 @@ open class HyliConnect : Application() {
         lateinit var inputStreamMap: ConcurrentHashMap<String, InputStream>
         lateinit var outputStreamMap: ConcurrentHashMap<String, OutputStream>
         lateinit var connectionMap: ConcurrentHashMap<String, Long>
+
         // uuid: deviceInfo
         lateinit var deviceInfoMap: ConcurrentHashMap<String, DeviceInfo>
 

@@ -40,15 +40,14 @@ fun PrefsScreen(
         Column {
             Spacer(modifier = Modifier.height(12.dp))
             LazyColumn(modifier = modifier.fillMaxSize()) {
-
                 items(prefsScope.prefsItems.size) { index ->
                     prefsScope.getPrefsItem(index)()
 
-                    if (dividerThickness != 0.dp
-                        && index != prefsScope.prefsItems.size - 1
-                        && !prefsScope.headerIndexes.contains(index)
-                        && !prefsScope.headerIndexes.contains(index + 1)
-                        && !prefsScope.footerIndexes.contains(index)
+                    if (dividerThickness != 0.dp &&
+                        index != prefsScope.prefsItems.size - 1 &&
+                        !prefsScope.headerIndexes.contains(index) &&
+                        !prefsScope.headerIndexes.contains(index + 1) &&
+                        !prefsScope.footerIndexes.contains(index)
                     ) {
                         Divider(
                             thickness = dividerThickness,

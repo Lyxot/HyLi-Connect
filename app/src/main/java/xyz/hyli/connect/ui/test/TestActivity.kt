@@ -9,7 +9,6 @@ import android.util.Log
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -27,7 +26,6 @@ import xyz.hyli.connect.utils.NetworkUtils
 import xyz.hyli.connect.utils.PackageUtils
 import java.util.concurrent.CompletableFuture
 
-
 class TestActivity : AppCompatActivity() {
     private val SHIZUKU_CODE = 0xCA07A
     private var shizukuPermissionFuture = CompletableFuture<Boolean>()
@@ -36,7 +34,7 @@ class TestActivity : AppCompatActivity() {
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var localBroadcastManager: LocalBroadcastManager
     var UUID: Deferred<String>? = null
-    var IP_ADDRESS: Deferred<Map<String,String>>? = null
+    var IP_ADDRESS: Deferred<Map<String, String>>? = null
     var NICKNAME: Deferred<String>? = null
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -64,7 +62,7 @@ class TestActivity : AppCompatActivity() {
 //                runOnUiThread { linearLayout.addView(TextView(this@TestActivity).apply { text = response }) }
 //            }
 //        }
-        connectButton.setOnClickListener{
+        connectButton.setOnClickListener {
             val ip = editText.text.toString()
             GlobalScope.launch(Dispatchers.IO) {
                 val intent = Intent("xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT")

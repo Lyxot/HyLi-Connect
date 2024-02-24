@@ -34,8 +34,11 @@ class ServiceManager {
     fun getInputManager(): InputManager? {
         if (inputManager == null) {
             val inputManagerServer = getService("input", "android.hardware.input.IInputManager")
-            if (inputManagerServer == null) return null
-            else inputManager = InputManager(inputManagerServer)
+            if (inputManagerServer == null) {
+                return null
+            } else {
+                inputManager = InputManager(inputManagerServer)
+            }
         }
         return inputManager
     }
@@ -46,6 +49,4 @@ class ServiceManager {
         }
         return windowManager
     }
-
-
 }

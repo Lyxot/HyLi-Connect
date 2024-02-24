@@ -18,18 +18,18 @@ import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.hook.utils.HookTest
 import xyz.hyli.connect.utils.PermissionUtils
 
-class HyliConnectViewModel: ViewModel() {
+class HyliConnectViewModel : ViewModel() {
     init {
         viewModelScope.launch(context = Dispatchers.Main) {
             delay(1000)
             while (true) {
                 try {
                     HyliConnect.uuidMap.forEach {
-                        if ( nsdDeviceMap.containsKey(it.value) && HyliConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
+                        if (nsdDeviceMap.containsKey(it.value) && HyliConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not()) {
                             connectedDeviceMap[it.value] = HyliConnect.deviceInfoMap[it.value]!!
                             nsdDeviceMap.remove(it.value)
                             connectDeviceVisibilityMap[it.value]!!.value = false
-                        } else if ( HyliConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not() ) {
+                        } else if (HyliConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not()) {
                             connectedDeviceMap[it.value] = HyliConnect.deviceInfoMap[it.value]!!
                             connectDeviceVisibilityMap[it.value]!!.value = false
                         }
@@ -37,7 +37,7 @@ class HyliConnectViewModel: ViewModel() {
                 } catch (_: Exception) { }
                 try {
                     connectedDeviceMap.keys.toMutableList().forEach {
-                        if ( HyliConnect.deviceInfoMap.containsKey(it).not() ) {
+                        if (HyliConnect.deviceInfoMap.containsKey(it).not()) {
                             connectDeviceVisibilityMap[it]!!.value = false
                             delay(500)
                             connectedDeviceMap.remove(it)
@@ -56,7 +56,7 @@ class HyliConnectViewModel: ViewModel() {
     val currentSelect = mutableStateOf(0)
     val applicationState = mutableStateOf("error")
     val permissionState = mutableStateOf(false)
-    val nsdDeviceMap = mutableStateMapOf<String,DeviceInfo>()
+    val nsdDeviceMap = mutableStateMapOf<String, DeviceInfo>()
     val connectDeviceVisibilityMap = mutableStateMapOf<String, MutableState<Boolean>>()
     val connectedDeviceMap = mutableStateMapOf<String, DeviceInfo>()
 
@@ -93,8 +93,8 @@ class HyliConnectViewModel: ViewModel() {
     fun updateApplicationState(): String {
         val serviceStateList: MutableList<String> = mutableListOf()
         serviceMap.keys.forEach {
-            if ( HyliConnect.serviceStateMap.containsKey(it) ) {
-                if ( it == "NsdService" && PreferencesDataStore.getConfigMap(true)["nsd_service"] == false ) {
+            if (HyliConnect.serviceStateMap.containsKey(it)) {
+                if (it == "NsdService" && PreferencesDataStore.getConfigMap(true)["nsd_service"] == false) {
                     serviceStateList.add("running")
                 } else {
                     serviceStateList.add(HyliConnect.serviceStateMap[it]!!.state)
@@ -104,9 +104,9 @@ class HyliConnectViewModel: ViewModel() {
                 serviceStateList.add("stopped")
             }
         }
-        if ( serviceStateList.contains("stopped") ) {
+        if (serviceStateList.contains("stopped")) {
             applicationState.value = "stopped"
-        } else if ( serviceStateList.contains("error") ) {
+        } else if (serviceStateList.contains("error")) {
             applicationState.value = "error"
         } else {
             applicationState.value = "running"
@@ -117,7 +117,7 @@ class HyliConnectViewModel: ViewModel() {
         checkPermission(context)
         var state1 = true
         keyPermissionList.forEach {
-            if ( HyliConnect.permissionStateMap[it] != true && permissionMap.containsKey(it) ) {
+            if (HyliConnect.permissionStateMap[it] != true && permissionMap.containsKey(it)) {
                 HyliConnect.permissionStateMap[it] = false
                 state1 = false
             }
@@ -146,7 +146,7 @@ class HyliConnectViewModel: ViewModel() {
                     keyPermissionList.add("Shizuku")
                 }
             }
-            if (keyPermissionList.contains("Xposed") ) {
+            if (keyPermissionList.contains("Xposed")) {
                 HyliConnect.permissionStateMap["Xposed"] = HookTest().checkXposed()
             }
         }
@@ -157,7 +157,7 @@ class HyliConnectViewModel: ViewModel() {
     }
 }
 
-class HyliConnectViewModelFactory(): ViewModelProvider.Factory {
+class HyliConnectViewModelFactory() : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return HyliConnectViewModel() as T
     }

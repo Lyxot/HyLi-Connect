@@ -32,7 +32,9 @@ class WindowManager(private val manager: IInterface) {
                 // display parameter added since this commit:
                 // https://android.googlesource.com/platform/frameworks/base/+/35fa3c26adcb5f6577849fd0df5228b1f67cf2c6%5E%21/#F1
                 cls.getMethod(
-                    "watchRotation", IRotationWatcher::class.java, Int::class.javaPrimitiveType
+                    "watchRotation",
+                    IRotationWatcher::class.java,
+                    Int::class.javaPrimitiveType
                 ).invoke(manager, rotationWatcher, 0)
             }
         } catch (e: Exception) {

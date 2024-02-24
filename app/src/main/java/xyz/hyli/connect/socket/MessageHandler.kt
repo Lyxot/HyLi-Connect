@@ -50,7 +50,7 @@ object MessageHandler {
             .setCmd(command)
             .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
 
-        if ( HyliConnect.uuidMap.containsKey(ip).not() ) {
+        if (HyliConnect.uuidMap.containsKey(ip).not()) {
             when (command) {
                 SocketMessage.COMMAND.GET_INFO -> {
                     val responseData = InfoProto.Info.newBuilder()
@@ -67,17 +67,18 @@ object MessageHandler {
                 SocketMessage.COMMAND.CONNECT -> {
                     HyliConnect().getContext().let {
                         val dataProto = ConnectProto.ConnectRequest.parseFrom(data)
-                        it.startActivity(Intent(it, RequestConnectionActivity::class.java)
-                            .apply {
-                                putExtra("ip", ip)
-                                putExtra("nickname", dataProto.nickname)
-                                putExtra("uuid", dataProto.uuid)
-                                putExtra("api_version", dataProto.apiVersion)
-                                putExtra("app_version", dataProto.appVersion)
-                                putExtra("app_version_name", dataProto.appVersionName)
-                                putExtra("platform", dataProto.platform)
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            }
+                        it.startActivity(
+                            Intent(it, RequestConnectionActivity::class.java)
+                                .apply {
+                                    putExtra("ip", ip)
+                                    putExtra("nickname", dataProto.nickname)
+                                    putExtra("uuid", dataProto.uuid)
+                                    putExtra("api_version", dataProto.apiVersion)
+                                    putExtra("app_version", dataProto.appVersion)
+                                    putExtra("app_version_name", dataProto.appVersionName)
+                                    putExtra("platform", dataProto.platform)
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
                         )
                     }
                 }
@@ -197,7 +198,6 @@ object MessageHandler {
         messageBody: SocketMessage.Body,
         broadcastManager: LocalBroadcastManager? = null
     ) {
-
     }
 
     private fun forwardHandler(
@@ -205,7 +205,6 @@ object MessageHandler {
         messageBody: SocketMessage.Body,
         broadcastManager: LocalBroadcastManager? = null
     ) {
-
     }
 
     private fun heartbeatHandler(

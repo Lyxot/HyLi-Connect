@@ -37,19 +37,21 @@ object PreferencesDataStore : DataStoreOwner("preferences") {
 
     private fun refresh() {
         runBlocking {
-            if ( uuid.get().isNullOrEmpty() ) uuid.set(randomUUID().toString())
-            if ( nickname.get().isNullOrEmpty() ) nickname.set(Build.BRAND + " " + Build.MODEL)
-            if ( platform.get() == null || platform.get() !in 0..6 ) platform.set(0)
-            if ( server_port.get() == null || server_port.get() !in 1024..65535 ) server_port.set(15732)
-            if ( nsd_service.get() == null ) nsd_service.set(true)
-            if ( is_stream.get() == null ) is_stream.set(false)
-            if ( app_stream_method.get() == null
-                || ((Build.VERSION_CODES.S <= Build.VERSION.SDK_INT || BuildConfig.DEBUG) && app_stream_method.get() !in 0..2)
-                || ((Build.VERSION_CODES.S > Build.VERSION.SDK_INT || !BuildConfig.DEBUG) && app_stream_method.get() !in 0..1)) {
+            if (uuid.get().isNullOrEmpty()) uuid.set(randomUUID().toString())
+            if (nickname.get().isNullOrEmpty()) nickname.set(Build.BRAND + " " + Build.MODEL)
+            if (platform.get() == null || platform.get() !in 0..6) platform.set(0)
+            if (server_port.get() == null || server_port.get() !in 1024..65535) server_port.set(15732)
+            if (nsd_service.get() == null) nsd_service.set(true)
+            if (is_stream.get() == null) is_stream.set(false)
+            if (
+                app_stream_method.get() == null ||
+                ((Build.VERSION_CODES.S <= Build.VERSION.SDK_INT || BuildConfig.DEBUG) && app_stream_method.get() !in 0..2) ||
+                ((Build.VERSION_CODES.S > Build.VERSION.SDK_INT || !BuildConfig.DEBUG) && app_stream_method.get() !in 0..1)
+            ) {
                 app_stream_method.set(1)
             }
-            if ( notification_forward.get() == null ) notification_forward.set(false)
-            if ( connect_to_myself.get() == null ) connect_to_myself.set(false)
+            if (notification_forward.get() == null) notification_forward.set(false)
+            if (connect_to_myself.get() == null) connect_to_myself.set(false)
 
             configMap["uuid"] = uuid.get()!!
             configMap["nickname"] = nickname.get()!!

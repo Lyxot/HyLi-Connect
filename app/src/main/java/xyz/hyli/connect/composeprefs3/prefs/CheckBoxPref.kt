@@ -42,7 +42,6 @@ fun CheckBoxPref(
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null
 ) {
-
     val selectionKey = booleanPreferencesKey(key)
     val scope = rememberCoroutineScope()
 

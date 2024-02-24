@@ -56,26 +56,37 @@ import xyz.hyli.connect.composeprefs3.prefs.SwitchPref
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
-import java.util.LinkedHashMap
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostController, paddingValues: PaddingValues = PaddingValues(0.dp)) {
+fun SettingsScreen(
+    viewModel: HyliConnectViewModel,
+    navController: NavHostController,
+    paddingValues: PaddingValues = PaddingValues(
+        0.dp
+    )
+) {
     val context = LocalContext.current
     val currentSelect = viewModel.currentSelect
     Column(modifier = Modifier.padding(paddingValues)) {
-        PrefsScreen(dataStore = PreferencesDataStore.dataStore,
+        PrefsScreen(
+            dataStore = PreferencesDataStore.dataStore,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 12.dp)) {
+                .padding(horizontal = 12.dp)
+        ) {
             prefsItem {
-                Row(modifier = Modifier
-                    .fillMaxWidth()) {
-                    Text(text = stringResource(id = R.string.page_settings),
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.page_settings),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 28.sp,
                         lineHeight = 34.sp,
-                        letterSpacing = 0.sp)
+                        letterSpacing = 0.sp
+                    )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -87,7 +98,8 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                         dialogMessage = stringResource(id = R.string.page_settings_nickname_dialog_message),
                         key = "nickname",
                         displayValueAtEnd = true
-                    ) }
+                    )
+                }
                 prefsItem {
                     val iconList = mutableListOf<@Composable (() -> Unit)?>()
                     listOf(
@@ -144,7 +156,7 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                             .collectAsState(initial = false).value == true
                     ) {
                         DropDownPref(
-                            title = stringResource(id =  R.string.page_settings_app_stream_method),
+                            title = stringResource(id = R.string.page_settings_app_stream_method),
                             summary = stringResource(id = R.string.page_settings_app_stream_method_summary),
                             key = "app_stream_method",
                             displayValueAtEnd = true,
@@ -157,7 +169,7 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                                 )
                             },
                             onValueChange = {
-                                if (it.contains("Shizuku") ) {
+                                if (it.contains("Shizuku")) {
                                     HyliConnect.me.initShizuku()
                                 }
                             }
@@ -167,7 +179,7 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                 prefsItem {
                     SwitchPref(
                         key = "notification_forward",
-                        title = stringResource(id =  R.string.page_settings_notification_forward),
+                        title = stringResource(id = R.string.page_settings_notification_forward),
                         summary = stringResource(id = R.string.page_settings_notification_forward_summary)
                     )
                 }
@@ -204,38 +216,49 @@ fun SettingsScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(text = stringResource(id = R.string.app_name),
+                        Text(
+                            text = stringResource(id = R.string.app_name),
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 34.sp,
                             lineHeight = 40.sp,
-                            letterSpacing = 0.sp)
+                            letterSpacing = 0.sp
+                        )
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(text = stringResource(id = R.string.page_settings_version) + ": " + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")")
+                        Text(
+                            text = stringResource(id = R.string.page_settings_version) + ": " + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")"
+                        )
                         Text(text = stringResource(id = R.string.author), style = HyliConnectTypography.bodyLarge)
                         Spacer(modifier = Modifier.height(12.dp))
-                        Row(modifier = Modifier
-                            .clickable {
-                                context.startActivity(
-                                    Intent(
-                                        context,
-                                        AboutPage::class.java
+                        Row(
+                            modifier = Modifier
+                                .clickable {
+                                    context.startActivity(
+                                        Intent(
+                                            context,
+                                            AboutPage::class.java
+                                        )
                                     )
-                                )
-                            }
-                            .padding(vertical = 6.dp),
+                                }
+                                .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(24.dp))
-                            Text(text = stringResource(id = R.string.page_settings_about) + " " + stringResource(id = R.string.app_name), modifier = Modifier.padding(horizontal = 6.dp))
+                            Text(
+                                text = stringResource(id = R.string.page_settings_about) + " " + stringResource(id = R.string.app_name),
+                                modifier = Modifier.padding(horizontal = 6.dp)
+                            )
                         }
-                        Row(modifier = Modifier
-                            .padding(start = 4.dp)
-                            .clickable {
-                                context.startActivity(Intent().apply {
-                                    action = Intent.ACTION_VIEW
-                                    data = Uri.parse(getString(context, R.string.url_github))
-                                })
-                            },
+                        Row(
+                            modifier = Modifier
+                                .padding(start = 4.dp)
+                                .clickable {
+                                    context.startActivity(
+                                        Intent().apply {
+                                            action = Intent.ACTION_VIEW
+                                            data = Uri.parse(getString(context, R.string.url_github))
+                                        }
+                                    )
+                                },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(

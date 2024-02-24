@@ -28,7 +28,7 @@ import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
 import xyz.hyli.connect.composeprefs3.roundToDP
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 
-//todo add decimal places as param?
+// todo add decimal places as param?
 
 /**
  * Preference which shows a slider just below the [title]
@@ -60,7 +60,6 @@ fun SliderPref(
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
 ) {
-
     val selectionKey = floatPreferencesKey(key)
     val scope = rememberCoroutineScope()
 
@@ -97,7 +96,6 @@ fun SliderPref(
     Column(
         verticalArrangement = Arrangement.Center,
     ) {
-
         TextPref(
             title = title,
             modifier = modifier,
@@ -110,8 +108,7 @@ fun SliderPref(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
-        )
-        {
+        ) {
             Slider(
                 value = value,
                 onValueChange = { value = it },
@@ -134,8 +131,5 @@ fun SliderPref(
                 )
             }
         }
-
     }
-
-
 }

@@ -61,7 +61,6 @@ fun DropDownPref(
     entries: LinkedHashMap<Int, String> = linkedMapOf(),
     icons: List<@Composable (() -> Unit)?> = List(entries.size) { null }
 ) {
-
     var expanded by rememberSaveable { mutableStateOf(false) }
     val selectionKey = intPreferencesKey(key)
     val scope = rememberCoroutineScope()
@@ -110,7 +109,13 @@ fun DropDownPref(
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                modifier = if (dropdownBackgroundColor != null) Modifier.background(dropdownBackgroundColor) else Modifier
+                modifier = if (dropdownBackgroundColor != null) {
+                    Modifier.background(
+                        dropdownBackgroundColor
+                    )
+                } else {
+                    Modifier
+                }
             ) {
                 entries.toList().forEachIndexed { index, item ->
                     DropdownMenuItem(

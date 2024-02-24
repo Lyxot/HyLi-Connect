@@ -35,6 +35,5 @@ fun GroupHeader(
     }
 }
 
-
 private val StartPadding = 16.dp
 private const val FontSizeMultiplier = 0.85f

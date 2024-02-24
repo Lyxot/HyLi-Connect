@@ -10,16 +10,12 @@ import android.graphics.Canvas
 import android.graphics.PixelFormat
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.os.UserHandle
 import android.util.Base64
-import android.util.Log
-import androidx.annotation.RequiresApi
 import com.github.promeg.pinyinhelper.Pinyin
 import xyz.hyli.connect.BuildConfig
 import java.util.Locale
 import kotlin.concurrent.thread
-
 
 object PackageUtils {
     var packageList: List<String> = listOf()
@@ -29,7 +25,8 @@ object PackageUtils {
     var appHeightMap: MutableMap<String, Int> = mutableMapOf()
     var appVersionMap: MutableMap<String, String> = mutableMapOf()
     var appIconByteMap: MutableMap<String, String> = mutableMapOf()
-    //获取应用列表
+
+    // 获取应用列表
     fun GetAppList(packageManager: PackageManager): List<String> {
         val intent = Intent()
         intent.action = Intent.ACTION_MAIN
@@ -39,8 +36,8 @@ object PackageUtils {
 
         for (info in resolveInfos) {
             val packageName = info.activityInfo.packageName
-            if ( hasInstallThisPackage(packageName, packageManager) ) {
-                if ( packageName != BuildConfig.APPLICATION_ID ) {
+            if (hasInstallThisPackage(packageName, packageManager)) {
+                if (packageName != BuildConfig.APPLICATION_ID) {
                     val appName = info.loadLabel(packageManager).toString()
                     appNameMap[packageName] = appName
                     thread {
@@ -68,7 +65,8 @@ object PackageUtils {
         }
         return stringBuilder.toString().lowercase(Locale.ROOT)
     }
-    //判断是否安装了这个应用
+
+    // 判断是否安装了这个应用
     fun hasInstallThisPackage(packageName: String, packageManager: PackageManager): Boolean {
         return try {
             packageManager.getApplicationInfo(packageName, 0)
@@ -77,7 +75,8 @@ object PackageUtils {
             false
         }
     }
-    //判断某个用户是否安装了这个应用
+
+    // 判断某个用户是否安装了这个应用
     fun hasInstallThisPackageWithUserId(
         packageName: String,
         launcherApps: LauncherApps,
@@ -90,7 +89,8 @@ object PackageUtils {
             false
         }
     }
-    //获取主Activity
+
+    // 获取主Activity
     fun GetMainActivityName(packageManager: PackageManager, packageName: String): String {
         var mainActivityName: String = ""
         val intent = packageManager.getLaunchIntentForPackage(packageName)

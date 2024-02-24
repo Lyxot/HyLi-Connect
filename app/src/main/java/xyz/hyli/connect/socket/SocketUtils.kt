@@ -9,7 +9,6 @@ import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.proto.ConnectProto
 import xyz.hyli.connect.proto.InfoProto
 import xyz.hyli.connect.proto.SocketMessage
-import kotlin.concurrent.thread
 
 object SocketUtils {
     fun closeConnection(ip: String) {
@@ -99,10 +98,10 @@ object SocketUtils {
             .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
             .setSTATUS(SocketMessage.STATUS.SUCCESS)
             .setData(messageData.toByteString())
-        while ( HyliConnect.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800 ) {
+        while (HyliConnect.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800) {
             Thread.sleep(20)
         }
-        if ( HyliConnect.socketMap[IPAddress] == null ) {
+        if (HyliConnect.socketMap[IPAddress] == null) {
             Log.e("SocketUtils", "Connect timeout")
             return
         }
@@ -124,7 +123,13 @@ object SocketUtils {
             .setSTATUS(SocketMessage.STATUS.SUCCESS)
         sendMessage(ip, messageBody)
     }
-    fun sendMessage(ip: String, messageBody: SocketMessage.Body.Builder, dropTime: Long = 0, onMessageSend: (() -> Unit) = { }) {
+    fun sendMessage(
+        ip: String,
+        messageBody: SocketMessage.Body.Builder,
+        dropTime: Long = 0,
+        onMessageSend: (() -> Unit) = {
+        }
+    ) {
         HyliConnect.blockingQueueMap[ip]?.put(
             MessageQueue(
                 messageBody,

@@ -32,7 +32,6 @@ fun PrefsListItem(
     text: @Composable () -> Unit,
     endText: @Composable (() -> Unit)? = null
 ) {
-
     val typography = HyliConnectTypography
 
     val styledText = applyTextStyle(
@@ -89,7 +88,7 @@ private object AnyLine {
     private val IconMinPaddedWidth = 40.dp
     private val ContentPadding = 16.dp
     private val VerticalPadding = 12.dp
-    private val SingleLinePadding = 4.dp //used when no secondary text is supplied
+    private val SingleLinePadding = 4.dp // used when no secondary text is supplied
 
     @Composable
     fun CustomListItem(
