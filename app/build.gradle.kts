@@ -4,6 +4,7 @@ import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
 plugins {
     id("com.android.application")
+    id("com.didiglobal.booster")
     id("org.jetbrains.kotlin.android")
     id("com.google.protobuf")
     id("io.gitlab.arturbosch.detekt")

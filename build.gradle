@@ -1,15 +1,38 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
+    ext.debug = gradle.startParameter.taskNames.any {
+        it.contains('debug') || it.contains('Debug')
+    }
     ext.kotlin_version = '1.9.22'
     ext.protobuf_version = '0.9.4'
+    ext.booster_version = '5.0.0-alpha2'
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/repositories/public' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.protobuf:protobuf-gradle-plugin:$protobuf_version"
+
+        // booster
+        classpath "com.didiglobal.booster:booster-gradle-plugin:$booster_version"
+        if (!debug) {
+//        classpath "com.didiglobal.booster:booster-task-analyser:$booster_version"
+            classpath "com.didiglobal.booster:booster-transform-thread:$booster_version"
+//        classpath "com.didiglobal.booster:booster-task-compression-pngquant:$booster_version"
+//        classpath "io.johnsonlee.booster:booster-pngquant-provider:2.4.0"
+//        classpath "com.didiglobal.booster:booster-task-compression-cwebp:$booster_version"
+            classpath "com.didiglobal.booster:booster-task-compression-processed-res:$booster_version"
+//            classpath "com.didiglobal.booster:booster-transform-r-inline:$booster_version"
+//            classpath "com.didiglobal.booster:booster-transform-br-inline:$booster_version"
+            classpath "com.didiglobal.booster:booster-transform-activity-thread:$booster_version"
+            classpath "com.didiglobal.booster:booster-transform-finalizer-watchdog-daemon:$booster_version"
+            classpath "com.didiglobal.booster:booster-transform-res-check:$booster_version"
+            classpath "com.didiglobal.booster:booster-transform-toast:$booster_version"
+            classpath "com.didiglobal.booster:booster-transform-media-player:$booster_version"
+        }
     }
 }
 plugins {
