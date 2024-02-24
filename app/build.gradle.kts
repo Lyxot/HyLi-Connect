@@ -89,11 +89,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "21"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -134,7 +134,7 @@ android {
 //        baseline = file("$rootDir/.idea/detekt-baseline.xml")
     }
     tasks.withType<Detekt>().configureEach {
-        jvmTarget = "21"
+        jvmTarget = "17"
         reports {
             xml.required = true
             html.required = true
@@ -145,10 +145,10 @@ android {
         basePath = rootDir.absolutePath
     }
     tasks.withType<Detekt>().configureEach {
-        jvmTarget = "21"
+        jvmTarget = "17"
     }
     tasks.withType<DetektCreateBaselineTask>().configureEach {
-        jvmTarget = "21"
+        jvmTarget = "17"
     }
 }
 
