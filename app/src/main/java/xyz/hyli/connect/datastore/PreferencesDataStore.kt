@@ -47,7 +47,7 @@ object PreferencesDataStore : DataStoreOwner("preferences") {
                 || ((Build.VERSION_CODES.S <= Build.VERSION.SDK_INT || BuildConfig.DEBUG) && app_stream_method.get() !in 0..2)
                 || ((Build.VERSION_CODES.S > Build.VERSION.SDK_INT || !BuildConfig.DEBUG) && app_stream_method.get() !in 0..1)) {
                 app_stream_method.set(1)
-            } else
+            }
             if ( notification_forward.get() == null ) notification_forward.set(false)
             if ( connect_to_myself.get() == null ) connect_to_myself.set(false)
 

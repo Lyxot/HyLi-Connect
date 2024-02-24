@@ -16,6 +16,7 @@ jobs:
   instrumentation-tests:
     name: Instrumentation tests
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     env:
       JAVA_TOOL_OPTIONS: -Xmx4g -XX:+UseParallelGC
       ANDROID_KEYSTORE_FILE: '${{ github.workspace }}/release-key.jks'
