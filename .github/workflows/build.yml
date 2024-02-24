@@ -41,12 +41,12 @@ jobs:
           if [ ${{ github.ref_type == 'tag' || startsWith(github.ref_name, 'release') }} == true ]; then
             export version=$(git describe --tags --abbrev=0 | sed 's/v//')
           else
-            export version=$(echo $(git rev-parse HEAD) | head -c 7)
+            export version=$(echo $(git rev-parse --short=8 HEAD))
           fi
           echo VERSION=$version >> $GITHUB_ENV
           echo VERSION=$version
 
-          export code=$(git rev-list --count HEAD)
+          export code=$(git rev-list --count HEAD refs/remotes/origin/canary)
           echo CODE=$code >> $GITHUB_ENV
           echo CODE=$code
       - name: Prepare for building

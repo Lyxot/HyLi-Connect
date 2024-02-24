@@ -4,13 +4,15 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.protobuf")
-    id("org.lsposed.lsplugin.jgit") version "1.1"
 }
 
 val commitCount = if (System.getenv("CI") != null) {
     System.getenv("CODE")?.toInt() ?: 0
 } else {
-    jgit.repo()?.commitCount("refs/remotes/origin/main") ?: 0
+    val cmd = "git rev-list --count HEAD refs/remotes/origin/canary"
+    val proc = Runtime.getRuntime().exec(cmd)
+    proc.waitFor()
+    proc.inputStream.bufferedReader().readText().trim().toInt()
 }
 
 android {
@@ -26,7 +28,10 @@ android {
         versionName = if ( System.getenv("VERSION") != null ) {
             System.getenv("VERSION")
         } else {
-            "undefined"
+            val cmd = "git rev-parse --short=8 HEAD"
+            val proc = Runtime.getRuntime().exec(cmd)
+            proc.waitFor()
+            proc.inputStream.bufferedReader().readText().trim()
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
