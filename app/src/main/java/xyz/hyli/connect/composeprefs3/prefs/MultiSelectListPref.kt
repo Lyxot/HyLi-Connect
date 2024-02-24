@@ -67,7 +67,6 @@ fun MultiSelectListPref(
     entries: LinkedHashMap<String, String> = linkedMapOf(),
     icons: List<@Composable (() -> Unit)?> = List(entries.size) { null }
 ) {
-
     var showDialog by rememberSaveable { mutableStateOf(false) }
     val selectionKey = stringSetPreferencesKey(key)
     val scope = rememberCoroutineScope()
@@ -114,7 +113,11 @@ fun MultiSelectListPref(
             onDismissRequest = { showDialog = false },
             text = {
                 Column {
-                    Text(modifier = Modifier.padding(vertical = 16.dp), text = title, style = HyliConnectTypography.titleLarge)
+                    Text(
+                        modifier = Modifier.padding(vertical = 16.dp),
+                        text = title,
+                        style = HyliConnectTypography.titleLarge
+                    )
                     LazyColumn {
                         val entriesList = entries.toList()
                         items(entriesList) { current ->

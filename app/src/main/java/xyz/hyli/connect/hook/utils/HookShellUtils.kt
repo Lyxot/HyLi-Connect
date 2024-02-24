@@ -6,7 +6,6 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.io.InputStreamReader
 
-
 /**
  * @author Trinea
  * @date 2013-5-16
@@ -78,7 +77,8 @@ class HookShellUtils private constructor() {
          *
          */
         fun execCommand(
-            commands: Array<String>?, isRoot: Boolean,
+            commands: Array<String>?,
+            isRoot: Boolean,
             isNeedResultMsg: Boolean
         ): CommandResult {
             var result = -1
@@ -100,7 +100,6 @@ class HookShellUtils private constructor() {
                     if (command == null) {
                         continue
                     }
-
 
                     // donnot use os.writeBytes(commmand), avoid chinese charset
                     // error
@@ -147,7 +146,8 @@ class HookShellUtils private constructor() {
                 process?.destroy()
             }
             return CommandResult(
-                result, successMsg?.toString(),
+                result,
+                successMsg?.toString(),
                 errorMsg?.toString()
             )
         }

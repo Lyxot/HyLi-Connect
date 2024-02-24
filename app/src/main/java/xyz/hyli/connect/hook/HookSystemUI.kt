@@ -14,22 +14,26 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
  */
 class HookSystemUI : IXposedHookLoadPackage {
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam?) {
-        //只有Android 11上才有
+        // 只有Android 11上才有
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && lpparam?.packageName == "com.android.systemui") {
             val clazz = XposedHelpers.findClass("com.android.systemui.wm.DisplayLayout", lpparam.classLoader)
             var lastObj: Any? = null
-            XposedBridge.hookAllMethods(clazz, "set", object : XC_MethodHook() {
-                override fun beforeHookedMethod(param: MethodHookParam?) {
-                    if (param != null) {
-                        val obj = param.args[0]
-                        if (obj != null) {
-                            lastObj = obj
-                        } else {
-                            param.args[0] = lastObj
+            XposedBridge.hookAllMethods(
+                clazz,
+                "set",
+                object : XC_MethodHook() {
+                    override fun beforeHookedMethod(param: MethodHookParam?) {
+                        if (param != null) {
+                            val obj = param.args[0]
+                            if (obj != null) {
+                                lastObj = obj
+                            } else {
+                                param.args[0] = lastObj
+                            }
                         }
                     }
                 }
-            })
+            )
         }
     }
 }

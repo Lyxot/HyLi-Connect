@@ -77,7 +77,6 @@ fun ListPref(
     entries: LinkedHashMap<Int, String> = linkedMapOf(),
     icons: List<@Composable (() -> Unit)?> = List(entries.size) { null }
 ) {
-
     var showDialog by rememberSaveable { mutableStateOf(false) }
     val selectionKey = intPreferencesKey(key)
     val scope = rememberCoroutineScope()
@@ -121,7 +120,11 @@ fun ListPref(
             onDismissRequest = { showDialog = false },
             text = {
                 Column {
-                    Text(modifier = Modifier.padding(vertical = 16.dp), text = title, style = HyliConnectTypography.titleLarge)
+                    Text(
+                        modifier = Modifier.padding(vertical = 16.dp),
+                        text = title,
+                        style = HyliConnectTypography.titleLarge
+                    )
                     LazyColumn {
                         val entriesList = entries.toList()
                         items(entriesList) { current ->
@@ -165,7 +168,6 @@ fun ListPref(
                 ) {
                     Text("Cancel", style = HyliConnectTypography.bodyLarge, color = buttonColor)
                 }
-
             },
             containerColor = dialogBackgroundColor,
             textContentColor = contentColor,

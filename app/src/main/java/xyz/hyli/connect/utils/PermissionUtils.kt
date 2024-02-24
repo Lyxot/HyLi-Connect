@@ -5,7 +5,7 @@ import android.provider.Settings
 import android.text.TextUtils
 
 object PermissionUtils {
-    //通知使用权限
+    // 通知使用权限
     fun checkNotificationListenerPermission(context: Context): Boolean {
         var enable = false
         val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
@@ -15,12 +15,12 @@ object PermissionUtils {
         return enable
     }
 
-    //悬浮窗权限
+    // 悬浮窗权限
     fun checkOverlayPermission(context: Context): Boolean {
         return Settings.canDrawOverlays(context)
     }
 
-    //无障碍权限
+    // 无障碍权限
     fun isAccessibilitySettingsOn(context: Context): Boolean {
         var accessibilityEnabled = 0
         val service = context.packageName + "/xyz.hyli.connect.service.KeepAliveService"

@@ -30,38 +30,54 @@ import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 
 private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DevicesScreen(viewModel: HyliConnectViewModel, navController: NavHostController, paddingValues: PaddingValues = PaddingValues(0.dp)) {
+fun DevicesScreen(
+    viewModel: HyliConnectViewModel,
+    navController: NavHostController,
+    paddingValues: PaddingValues = PaddingValues(0.dp)
+) {
     val context = LocalContext.current
     val currentSelect = viewModel.currentSelect
     connectedDeviceMap = viewModel.connectedDeviceMap
     Column(modifier = Modifier.padding(paddingValues)) {
-        LazyColumn(modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 12.dp, end = 12.dp)) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 12.dp, end = 12.dp)
+        ) {
             item {
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp)) {
-                    Text(text = stringResource(id = R.string.page_devices),
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.page_devices),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 28.sp,
                         lineHeight = 34.sp,
-                        letterSpacing = 0.sp)
+                        letterSpacing = 0.sp
+                    )
                 }
             }
             item {
                 Spacer(modifier = Modifier.height(12.dp))
             }
             item {
-                Row(modifier = Modifier
-                    .animateItemPlacement(
-                        animationSpec = tween(400)
-                    )
+                Row(
+                    modifier = Modifier
+                        .animateItemPlacement(
+                            animationSpec = tween(400)
+                        )
                 ) {
                     Text(text = stringResource(id = R.string.page_connect_connected_devices))
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier.padding(horizontal = 2.dp).align(Alignment.CenterVertically))
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        modifier = Modifier.padding(horizontal = 2.dp).align(Alignment.CenterVertically)
+                    )
                 }
             }
             items(connectedDeviceMap.values.toList()) { deviceInfo ->

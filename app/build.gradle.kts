@@ -1,9 +1,12 @@
 import com.google.protobuf.gradle.proto
+import io.gitlab.arturbosch.detekt.Detekt
+import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.protobuf")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 val commitCount = if (System.getenv("CI") != null) {
@@ -25,7 +28,7 @@ android {
         targetSdk = 33
         val majorCode = 1
         versionCode = majorCode * 10000 + commitCount
-        versionName = if ( System.getenv("VERSION") != null ) {
+        versionName = if (System.getenv("VERSION") != null) {
             System.getenv("VERSION")
         } else {
             val cmd = "git rev-parse --short=8 HEAD"
@@ -81,7 +84,7 @@ android {
     android.applicationVariants.all {
         outputs.all {
             if (this is com.android.build.gradle.internal.api.ApkVariantOutputImpl) {
-                this.outputFileName = "Hyli-Connect_${versionName}(${versionCode}).apk"
+                this.outputFileName = "Hyli-Connect_$versionName($versionCode).apk"
             }
         }
     }
@@ -124,9 +127,33 @@ android {
             }
         }
     }
+    detekt {
+        buildUponDefaultConfig = true
+        allRules = false
+        config.setFrom("$rootDir/.idea/detekt.yml")
+//        baseline = file("$rootDir/.idea/detekt-baseline.xml")
+    }
+    tasks.withType<Detekt>().configureEach {
+        jvmTarget = "21"
+        reports {
+            xml.required = true
+            html.required = true
+            txt.required = true
+            sarif.required = true
+            md.required = true
+        }
+        basePath = rootDir.absolutePath
+    }
+    tasks.withType<Detekt>().configureEach {
+        jvmTarget = "21"
+    }
+    tasks.withType<DetektCreateBaselineTask>().configureEach {
+        jvmTarget = "21"
+    }
 }
 
 dependencies {
+//    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.5")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.22"))
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")

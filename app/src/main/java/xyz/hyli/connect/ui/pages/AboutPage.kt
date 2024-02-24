@@ -60,15 +60,21 @@ class AboutPage : ComponentActivity() {
                                     .padding(12.dp)
                                     .size(24.dp)
                             )
-                            Text(text = stringResource(id = R.string.page_settings_about) + " " + stringResource(id = R.string.app_name), modifier = Modifier.padding(horizontal = 6.dp))
+                            Text(
+                                text = stringResource(id = R.string.page_settings_about) + " " + stringResource(id = R.string.app_name),
+                                modifier = Modifier.padding(horizontal = 6.dp)
+                            )
                         }
                         var scrollState = rememberScrollState()
-                        Column(modifier = Modifier
-                            .padding(horizontal = 24.dp)
-                            .verticalScroll(scrollState)) {
+                        Column(
+                            modifier = Modifier
+                                .padding(horizontal = 24.dp)
+                                .verticalScroll(scrollState)
+                        ) {
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
+                                    .fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Spacer(modifier = Modifier.height(48.dp))
                                 Box {
@@ -96,7 +102,9 @@ class AboutPage : ComponentActivity() {
                                     letterSpacing = 0.sp
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(text = stringResource(id = R.string.page_settings_version) + ": " + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")")
+                                Text(
+                                    text = stringResource(id = R.string.page_settings_version) + ": " + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")"
+                                )
                                 Text(
                                     text = stringResource(id = R.string.author),
                                     style = HyliConnectTypography.bodyLarge
@@ -106,11 +114,13 @@ class AboutPage : ComponentActivity() {
                                     modifier = Modifier
                                         .padding(top = 6.dp)
                                         .clickable {
-                                            startActivity(Intent().apply {
-                                                action = Intent.ACTION_VIEW
-                                                data =
-                                                    Uri.parse("https://" + getString(R.string.uri_homepage))
-                                            })
+                                            startActivity(
+                                                Intent().apply {
+                                                    action = Intent.ACTION_VIEW
+                                                    data =
+                                                        Uri.parse("https://" + getString(R.string.uri_homepage))
+                                                }
+                                            )
                                         },
                                     style = HyliConnectTypography.bodyLarge
                                 )
@@ -119,31 +129,38 @@ class AboutPage : ComponentActivity() {
                             }
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(text = stringResource(id = R.string.page_about_homepage),
+                                Text(
+                                    text = stringResource(id = R.string.page_about_homepage),
                                     modifier = Modifier
                                         .clickable {
-                                            startActivity(Intent().apply {
-                                                action = Intent.ACTION_VIEW
-                                                data =
-                                                    Uri.parse("https://" + getString(R.string.uri_homepage))
-                                            })
+                                            startActivity(
+                                                Intent().apply {
+                                                    action = Intent.ACTION_VIEW
+                                                    data =
+                                                        Uri.parse("https://" + getString(R.string.uri_homepage))
+                                                }
+                                            )
                                         },
                                     style = HyliConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(text = stringResource(id = R.string.page_about_source_code),
+                                Text(
+                                    text = stringResource(id = R.string.page_about_source_code),
                                     modifier = Modifier
                                         .clickable {
-                                            startActivity(Intent().apply {
-                                                action = Intent.ACTION_VIEW
-                                                data =
-                                                    Uri.parse(getString(R.string.url_github))
-                                            })
+                                            startActivity(
+                                                Intent().apply {
+                                                    action = Intent.ACTION_VIEW
+                                                    data =
+                                                        Uri.parse(getString(R.string.url_github))
+                                                }
+                                            )
                                         },
                                     style = HyliConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(text = stringResource(id = R.string.page_about_donate),
+                                Text(
+                                    text = stringResource(id = R.string.page_about_donate),
                                     modifier = Modifier
                                         .clickable {
                                             /* TODO: donate */
@@ -151,19 +168,23 @@ class AboutPage : ComponentActivity() {
                                     style = HyliConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(text = stringResource(id = R.string.page_about_feedback),
+                                Text(
+                                    text = stringResource(id = R.string.page_about_feedback),
                                     modifier = Modifier
                                         .clickable {
-                                            startActivity(Intent().apply {
-                                                action = Intent.ACTION_VIEW
-                                                data =
-                                                    Uri.parse(getString(R.string.url_github_issues))
-                                            })
+                                            startActivity(
+                                                Intent().apply {
+                                                    action = Intent.ACTION_VIEW
+                                                    data =
+                                                        Uri.parse(getString(R.string.url_github_issues))
+                                                }
+                                            )
                                         },
                                     style = HyliConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(text = stringResource(id = R.string.page_about_changelog),
+                                Text(
+                                    text = stringResource(id = R.string.page_about_changelog),
                                     modifier = Modifier
                                         .clickable {
                                             /* TODO: change log */
@@ -171,19 +192,23 @@ class AboutPage : ComponentActivity() {
                                     style = HyliConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(text = stringResource(id = R.string.page_about_license),
+                                Text(
+                                    text = stringResource(id = R.string.page_about_license),
                                     modifier = Modifier
                                         .clickable {
-                                            startActivity(Intent().apply {
-                                                action = Intent.ACTION_VIEW
-                                                data =
-                                                    Uri.parse(getString(R.string.url_license_agpl3_0))
-                                            })
+                                            startActivity(
+                                                Intent().apply {
+                                                    action = Intent.ACTION_VIEW
+                                                    data =
+                                                        Uri.parse(getString(R.string.url_license_agpl3_0))
+                                                }
+                                            )
                                         },
                                     style = HyliConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(text = stringResource(id = R.string.page_about_license_notice),
+                                Text(
+                                    text = stringResource(id = R.string.page_about_license_notice),
                                     modifier = Modifier
                                         .clickable {
                                             /* TODO: license notice */

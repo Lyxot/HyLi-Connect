@@ -68,7 +68,6 @@ fun EditTextPref(
     textColor: Color = HyliConnectColorScheme().onBackground,
     enabled: Boolean = true,
 ) {
-
     var showDialog by rememberSaveable { mutableStateOf(false) }
     val selectionKey = stringPreferencesKey(key)
     val scope = rememberCoroutineScope()
@@ -76,9 +75,9 @@ fun EditTextPref(
     val datastore = LocalPrefsDataStore.current
     val prefs by remember { datastore.data }.collectAsState(initial = null)
 
-    //value should only change when save button is clicked
+    // value should only change when save button is clicked
     var value by remember { mutableStateOf(defaultValue) }
-    //value of the TextField which changes every time the text is modified
+    // value of the TextField which changes every time the text is modified
     var textVal by remember { mutableStateOf(value) }
 
     var dialogSize by remember { mutableStateOf(Size.Zero) }
@@ -125,7 +124,7 @@ fun EditTextPref(
     )
 
     if (showDialog) {
-        //reset
+        // reset
         LaunchedEffect(null) {
             textVal = value
         }
@@ -150,7 +149,6 @@ fun EditTextPref(
                 )
             },
             confirmButton = {
-
                 TextButton(
                     enabled = textVal != "",
                     modifier = Modifier.padding(end = 16.dp),
@@ -178,7 +176,6 @@ fun EditTextPref(
 
 @Composable
 fun DialogHeader(dialogTitle: String?, dialogMessage: String?) {
-
     Column(modifier = Modifier.padding(16.dp)) {
         dialogTitle.ifNotNullThen {
             Text(

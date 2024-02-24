@@ -34,13 +34,12 @@ fun SwitchPref(
     title: String,
     modifier: Modifier = Modifier,
     summary: String? = null,
-    defaultChecked: Boolean = false,  // only used if it doesn't already exist in the datastore
+    defaultChecked: Boolean = false, // only used if it doesn't already exist in the datastore
     onCheckedChange: ((Boolean) -> Unit)? = null,
     textColor: Color = HyliConnectColorScheme().onBackground,
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null
 ) {
-
     val selectionKey = booleanPreferencesKey(key)
     val scope = rememberCoroutineScope()
 

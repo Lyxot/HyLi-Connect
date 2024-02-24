@@ -25,7 +25,8 @@ class InputManager(private val manager: IInterface) {
                     Int::class.javaPrimitiveType
                 )
             }
-        }catch (e: Exception) {
+        }
+        catch (e: Exception) {
             e.printStackTrace()
         }
         return injectInputEventMethod
@@ -72,7 +73,8 @@ class InputManager(private val manager: IInterface) {
                 getSetDisplayIdMethod()
             method?.invoke(inputEvent, displayId)
             true
-        }catch (e: Exception) {
+        }
+        catch (e: Exception) {
             e.printStackTrace()
             false
         }

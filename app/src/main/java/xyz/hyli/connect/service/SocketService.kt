@@ -11,10 +11,8 @@ import android.content.IntentFilter
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -49,31 +47,31 @@ class SocketService : Service() {
     private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
-            if ( action == "xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT" ) {
+            if (action == "xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT") {
                 val command = intent.getStringExtra("command")
                 val ip = intent.getStringExtra("ip")
                 val port = intent.getIntExtra("port", 0)
-                if ( command.isNullOrEmpty().not() && ip.isNullOrEmpty().not() && port != 0 ) {
-                    if ( command == "stop" ) {
+                if (command.isNullOrEmpty().not() && ip.isNullOrEmpty().not() && port != 0) {
+                    if (command == "stop") {
                         SocketUtils.closeConnection("/$ip:$port")
-                    } else if ( command == "start" ) {
+                    } else if (command == "start") {
                         if (ip != null) {
                             startClient(ip, port)
                             SocketUtils.connectRequest(ip, port)
                         }
                     }
                 }
-            } else if ( action == "xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER" ) {
+            } else if (action == "xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER") {
                 val command = intent.getStringExtra("command")
-                if ( command.isNullOrEmpty().not() ) {
-                    if ( command == "start_service" ) {
+                if (command.isNullOrEmpty().not()) {
+                    if (command == "start_service") {
                         startForegroundService(Intent(this@SocketService, SocketService::class.java))
-                    } else if ( command == "stop_service" ) {
+                    } else if (command == "stop_service") {
                         stopSelf()
-                    } else if ( command == "reboot_service" ) {
+                    } else if (command == "reboot_service") {
                         destroy()
                         init()
-                    } else if ( command == "reboot_nsd_service" ) {
+                    } else if (command == "reboot_nsd_service") {
                         restartNsdService()
                     }
                 }
@@ -113,9 +111,11 @@ class SocketService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         try {
-            localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
-                putExtra("command", "start")
-            })
+            localBroadcastManager.sendBroadcast(
+                Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
+                    putExtra("command", "start")
+                }
+            )
             destroy()
             stopSelf()
             unregisterReceiver(broadcastReceiver)
@@ -133,10 +133,10 @@ class SocketService : Service() {
     @OptIn(DelicateCoroutinesApi::class)
     private fun startServer(port: Int) {
         val TAG = "SocketServer"
-        if ( serverSocket == null ) {
+        if (serverSocket == null) {
             HyliConnect.serviceStateMap["SocketServer"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_server)))
             serverPort = port
-            if ( NetworkUtils.isPortInUse(port) ) {
+            if (NetworkUtils.isPortInUse(port)) {
                 Log.i(TAG, "Port $port is in use")
                 serverPort = NetworkUtils.getAvailablePort()
                 HyliConnect.serviceStateMap["SocketServer"] = ServiceState("error", getString(R.string.state_service_socket_server_port_in_use, port.toString(), serverPort.toString()))
@@ -165,10 +165,14 @@ class SocketService : Service() {
                                     while (HyliConnect.socketMap.containsKey(IPAddress)) {
                                         try {
                                             val mq = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
-                                            if ( mq.dropTime != 0L && mq.dropTime < System.currentTimeMillis() ) {
+                                            if (mq.dropTime != 0L && mq.dropTime < System.currentTimeMillis()) {
                                                 Log.i(TAG, "Drop message: $IPAddress ${mq.messageBody}")
                                             } else {
-                                                SocketUtils.sendQueueMessage(IPAddress, mq.messageBody, mq.onMessageSend)
+                                                SocketUtils.sendQueueMessage(
+                                                    IPAddress,
+                                                    mq.messageBody,
+                                                    mq.onMessageSend
+                                                )
                                             }
                                         } catch (e: Exception) {
                                             if (!HyliConnect.socketMap.containsKey(IPAddress)) {
@@ -182,7 +186,7 @@ class SocketService : Service() {
                                 // Authorization timeout
                                 GlobalScope.launch(context = Dispatchers.IO) {
                                     Thread.sleep(30000)
-                                    if ( HyliConnect.uuidMap.containsKey(IPAddress).not() && HyliConnect.socketMap.containsKey(IPAddress) ) {
+                                    if (HyliConnect.uuidMap.containsKey(IPAddress).not() && HyliConnect.socketMap.containsKey(IPAddress)) {
                                         Log.i(TAG, "Authorization timeout: $IPAddress")
                                         SocketUtils.closeConnection(IPAddress)
                                     }
@@ -191,7 +195,7 @@ class SocketService : Service() {
                                 while (HyliConnect.socketMap.containsKey(IPAddress)) {
                                     try {
                                         val message = SocketMessage.Message.parseDelimitedFrom(inputStream)
-                                        if ( message != null ) {
+                                        if (message != null) {
                                             GlobalScope.launch(context = Dispatchers.IO) {
                                                 Log.i(TAG, "Receive message: $IPAddress $message")
                                                 MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
@@ -209,7 +213,6 @@ class SocketService : Service() {
                                 SocketUtils.closeConnection(IPAddress)
                                 Log.i(TAG, "Close connection: $IPAddress")
                             }
-
                         }
                     }
                 } catch (e: IOException) {
@@ -221,10 +224,11 @@ class SocketService : Service() {
             }
         }
     }
+
     @OptIn(DelicateCoroutinesApi::class)
     private fun startClient(ip: String, port: Int) {
         val TAG = "SocketClient"
-        if ( HyliConnect.socketMap["/$ip:$port"] != null ) return
+        if (HyliConnect.socketMap["/$ip:$port"] != null) return
         GlobalScope.launch(context = Dispatchers.IO) {
             val socket = Socket(ip, port)
             val IPAddress = socket.remoteSocketAddress.toString()
@@ -243,7 +247,7 @@ class SocketService : Service() {
                     while (HyliConnect.socketMap.containsKey(IPAddress)) {
                         try {
                             val mq = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
-                            if ( mq.dropTime != 0L && mq.dropTime < System.currentTimeMillis() ) {
+                            if (mq.dropTime != 0L && mq.dropTime < System.currentTimeMillis()) {
                                 Log.i(TAG, "Drop message: $IPAddress ${mq.messageBody}")
                             } else {
                                 SocketUtils.sendQueueMessage(IPAddress, mq.messageBody, mq.onMessageSend)
@@ -261,7 +265,7 @@ class SocketService : Service() {
                 while (HyliConnect.socketMap.containsKey(IPAddress)) {
                     try {
                         val message = SocketMessage.Message.parseDelimitedFrom(inputStream)
-                        if ( message != null ) {
+                        if (message != null) {
                             GlobalScope.launch(context = Dispatchers.IO) {
                                 Log.i(TAG, "Receive message: $IPAddress $message")
                                 MessageHandler.messageHandler(IPAddress, message, localBroadcastManager)
@@ -291,9 +295,10 @@ class SocketService : Service() {
             e.printStackTrace()
         }
     }
+
     @OptIn(DelicateCoroutinesApi::class)
     private fun checkConnection() {
-        if ( ::checkConnectionJob.isInitialized.not() ) {
+        if (::checkConnectionJob.isInitialized.not()) {
             checkConnectionJob = GlobalScope.launch(context = Dispatchers.Main) {
                 while (true) {
                     HyliConnect.connectionMap.forEach { (ip, time) ->
@@ -319,7 +324,12 @@ class SocketService : Service() {
 
         val pendingIntent: PendingIntent =
             Intent(this, TestActivity::class.java).let { notificationIntent ->
-                PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_ONE_SHOT)
+                PendingIntent.getActivity(
+                    this,
+                    0,
+                    notificationIntent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_ONE_SHOT
+                )
             }
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID.toString())
@@ -332,7 +342,7 @@ class SocketService : Service() {
         startForeground(1, notification)
     }
     private fun registerNsdService() {
-        if ( nsdRunning ) {
+        if (nsdRunning) {
             return
         }
         HyliConnect.serviceStateMap["NsdService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_nsd_service)))
@@ -381,14 +391,14 @@ class SocketService : Service() {
         HyliConnect.serviceStateMap["NsdService"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_nsd_service)))
     }
     private fun unregisterNsdService() {
-        if ( nsdRunning.not() ) {
+        if (nsdRunning.not()) {
             return
         }
         mNsdManager.unregisterService(NsdRegistrationListener)
         HyliConnect.serviceStateMap["NsdService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_nsd_service)))
     }
     private fun restartNsdService() {
-        if ( nsdRunning ) {
+        if (nsdRunning) {
             mNsdManager.unregisterService(NsdRegistrationListener)
             nsdRunning = false
         }

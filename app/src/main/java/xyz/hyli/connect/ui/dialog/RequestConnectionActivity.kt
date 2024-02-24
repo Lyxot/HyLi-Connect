@@ -33,8 +33,9 @@ class RequestConnectionActivity : ComponentActivity() {
 
         setContent {
             HyliConnectTheme {
-                if ((ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() && api_version != 0 && app_version != 0 && app_version_name.isNullOrEmpty().not() && platform.isNullOrEmpty().not())
-                    && Settings.canDrawOverlays(this)) {
+                if ((ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() && api_version != 0 && app_version != 0 && app_version_name.isNullOrEmpty().not() && platform.isNullOrEmpty().not()) &&
+                    Settings.canDrawOverlays(this)
+                ) {
                     val IP_Address = ip!!.substring(1, ip.length)
                     dialog = MaterialAlertDialogBuilder(this)
                         .setTitle(getString(R.string.dialog_connect_request_title))

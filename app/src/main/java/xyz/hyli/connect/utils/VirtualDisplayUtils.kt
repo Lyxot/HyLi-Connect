@@ -1,13 +1,10 @@
 package xyz.hyli.connect.utils
 
 import android.content.Context
-import android.graphics.ImageFormat
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
-import android.media.ImageReader
 import android.util.Log
 import android.view.WindowManager
-
 
 class VirtualDisplayUtils(
     private val context: Context
@@ -18,8 +15,7 @@ class VirtualDisplayUtils(
         var displayMap: MutableMap<Int, VirtualDisplay> = mutableMapOf()
     }
 
-
-    fun createDisplay(packageName:String, width:Int, height:Int, dpi:Int): Int? {
+    fun createDisplay(packageName: String, width: Int, height: Int, dpi: Int): Int? {
         val virtualDisplay: VirtualDisplay
         val windowsLayoutParams = WindowManager.LayoutParams()
         try {
@@ -40,7 +36,7 @@ class VirtualDisplayUtils(
         displayMap.put(virtualDisplay.display.displayId, virtualDisplay)
         return displayID
     }
-    fun resizeDisplay(displayID:Int, width:Int, height:Int, dpi:Int): VirtualDisplay? {
+    fun resizeDisplay(displayID: Int, width: Int, height: Int, dpi: Int): VirtualDisplay? {
         val virtualDisplay = displayMap[displayID] ?: return null
         try {
             virtualDisplay.resize(width, height, dpi)

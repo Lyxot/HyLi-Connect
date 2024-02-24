@@ -1,10 +1,7 @@
 package xyz.hyli.connect.ui
 
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,26 +21,16 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import rikka.shizuku.Shizuku
-import rikka.shizuku.Shizuku.OnBinderDeadListener
-import rikka.shizuku.Shizuku.OnBinderReceivedListener
-import rikka.shizuku.Shizuku.OnRequestPermissionResultListener
 import xyz.hyli.connect.BuildConfig
-import xyz.hyli.connect.HyliConnect
-import xyz.hyli.connect.R
-import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
-import xyz.hyli.connect.service.SocketService
 import xyz.hyli.connect.ui.navigation.CompactScreen
 import xyz.hyli.connect.ui.navigation.MediumScreen
 import xyz.hyli.connect.ui.theme.HyliConnectTheme
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModelFactory
 import xyz.hyli.connect.utils.PackageUtils
-import xyz.hyli.connect.utils.ServiceUtils
-import java.util.concurrent.CompletableFuture
 
-class MainActivity: ComponentActivity() {
+class MainActivity : ComponentActivity() {
     private var appList: Deferred<List<String>>? = null
     private lateinit var viewModel: HyliConnectViewModel
     private lateinit var localBroadcastManager: LocalBroadcastManager
@@ -82,10 +69,10 @@ private fun MainScreen(widthSizeClass: WindowWidthSizeClass, viewModel: HyliConn
     val currentSelect = viewModel.currentSelect
     val navController = rememberNavController()
     when (widthSizeClass) {
-        WindowWidthSizeClass.Compact -> { CompactScreen(viewModel,navController) }
-        WindowWidthSizeClass.Medium -> { MediumScreen(viewModel,navController) }
-        WindowWidthSizeClass.Expanded -> { MediumScreen(viewModel,navController) }
-        else -> { CompactScreen(viewModel,navController) }
+        WindowWidthSizeClass.Compact -> { CompactScreen(viewModel, navController) }
+        WindowWidthSizeClass.Medium -> { MediumScreen(viewModel, navController) }
+        WindowWidthSizeClass.Expanded -> { MediumScreen(viewModel, navController) }
+        else -> { CompactScreen(viewModel, navController) }
     }
 }
 

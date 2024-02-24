@@ -40,7 +40,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.Icon
@@ -99,13 +98,17 @@ private val mNsdManagerState = mutableStateOf<NsdManager?>(null)
 private lateinit var applicationState: MutableState<String>
 private lateinit var permissionState: MutableState<Boolean>
 private lateinit var localBroadcastManager: LocalBroadcastManager
-private lateinit var nsdDeviceMap: MutableMap<String,DeviceInfo>
-private lateinit var connectDeviceVisibilityMap: MutableMap<String,MutableState<Boolean>>
-private lateinit var connectedDeviceMap: MutableMap<String,DeviceInfo>
+private lateinit var nsdDeviceMap: MutableMap<String, DeviceInfo>
+private lateinit var connectDeviceVisibilityMap: MutableMap<String, MutableState<Boolean>>
+private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostController, paddingValues: PaddingValues = PaddingValues(0.dp)) {
+fun ConnectScreen(
+    viewModel: HyliConnectViewModel,
+    navController: NavHostController,
+    paddingValues: PaddingValues = PaddingValues(0.dp)
+) {
     val context = LocalContext.current
     val currentSelect = viewModel.currentSelect
     localBroadcastManager = viewModel.localBroadcastManager.value ?: LocalBroadcastManager.getInstance(context)
@@ -115,7 +118,7 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
     connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
     connectedDeviceMap = viewModel.connectedDeviceMap
 
-    val configMap = remember { PreferencesDataStore.getConfigMap(true)}
+    val configMap = remember { PreferencesDataStore.getConfigMap(true) }
     val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = configMap["nickname"].toString())
     val UUID = PreferencesDataStore.uuid.asFlow().collectAsState(initial = configMap["uuid"].toString())
     val IP_ADDRESS = remember { NetworkUtils.getLocalIPInfo(context) }
@@ -126,11 +129,11 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
     val mResolverListener = object : NsdManager.ResolveListener {
         override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
             // Called when the resolve fails. Use the error code to debug.
-            Log.e("mResolverListener","Resolve failed $errorCode")
+            Log.e("mResolverListener", "Resolve failed $errorCode")
             semaphore.release()
         }
         override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
-            Log.i("mResolverListener","Resolve Succeeded. $serviceInfo")
+            Log.i("mResolverListener", "Resolve Succeeded. $serviceInfo")
             val host = serviceInfo.host.hostAddress ?: ""
             val port = serviceInfo.port
             val attributes = serviceInfo.attributes
@@ -143,19 +146,19 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             val ip_address = String(attributes["ip_addr"] ?: byteArrayOf())
 
             // Filter out self
-            if ( uuid == UUID.value && BuildConfig.DEBUG.not() && configMap["connect_to_myself"] == false ) {
+            if (uuid == UUID.value && BuildConfig.DEBUG.not() && configMap["connect_to_myself"] == false) {
                 return
             }
             // Filter out connected
-            if ( uuid in connectedDeviceMap.keys ) {
+            if (uuid in connectedDeviceMap.keys) {
                 return
             }
-            if ( uuid in nsdDeviceMap.keys ) {
-                if ( host in nsdDeviceMap[uuid]!!.ip_address ) {
+            if (uuid in nsdDeviceMap.keys) {
+                if (host in nsdDeviceMap[uuid]!!.ip_address) {
                     return
                 }
                 val newMap = nsdDeviceMap
-                if ( host == ip_address ) {
+                if (host == ip_address) {
                     newMap[uuid]!!.ip_address.add(0, host)
                 } else {
                     newMap[uuid]!!.ip_address.add(host)
@@ -217,9 +220,13 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             applicationState.value = viewModel.updateApplicationState()
             permissionState.value = viewModel.updatePermissionState(context)
         }
-        localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
-            putExtra("command", "reboot_nsd_service")
-        })
+        localBroadcastManager.sendBroadcast(
+            Intent(
+                "xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER"
+            ).apply {
+                putExtra("command", "reboot_nsd_service")
+            }
+        )
         mNsdManager!!.discoverServices("_hyli-connect._tcp.", NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener)
         onDispose {
             nsdDeviceMap.clear()
@@ -231,72 +238,97 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
         }
     }
     Column(modifier = Modifier.padding(paddingValues)) {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(12.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp)
+        ) {
             Row {
-                Text(text = stringResource(id = R.string.app_name),
+                Text(
+                    text = stringResource(id = R.string.app_name),
                     modifier = Modifier
 //                .padding(16.dp)
                         .fillMaxWidth(),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 34.sp,
                     lineHeight = 40.sp,
-                    letterSpacing = 0.sp)
+                    letterSpacing = 0.sp
+                )
             }
             Spacer(modifier = Modifier.height(12.dp))
             LazyColumn(content = {
                 item {
-                    Card(modifier = Modifier
-                        .padding(6.dp)
-                        .animateItemPlacement(animationSpec = tween(400)),
-                        colors = when(applicationState.value) {
-                            "running" -> { CardColors(
-                                containerColor = HyliConnectColorScheme().secondaryContainer,
-                                contentColor = HyliConnectColorScheme().onSecondaryContainer,
-                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                            ) }
-                            "error" -> { CardColors(
-                                containerColor = Color(0xFFdcb334),
-                                contentColor = HyliConnectColorScheme().onError,
-                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                            ) }
-                            "stopped" -> { CardColors(
-                                containerColor = HyliConnectColorScheme(dynamicColor = false).error,
-                                contentColor = HyliConnectColorScheme(dynamicColor = false).onError,
-                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                            ) }
-                            else -> { CardColors(
-                                containerColor = HyliConnectColorScheme().secondaryContainer,
-                                contentColor = HyliConnectColorScheme().onSecondaryContainer,
-                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                            ) }
+                    Card(
+                        modifier = Modifier
+                            .padding(6.dp)
+                            .animateItemPlacement(animationSpec = tween(400)),
+                        colors = when (applicationState.value) {
+                            "running" -> {
+                                CardColors(
+                                    containerColor = HyliConnectColorScheme().secondaryContainer,
+                                    contentColor = HyliConnectColorScheme().onSecondaryContainer,
+                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                )
+                            }
+                            "error" -> {
+                                CardColors(
+                                    containerColor = Color(0xFFdcb334),
+                                    contentColor = HyliConnectColorScheme().onError,
+                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                )
+                            }
+                            "stopped" -> {
+                                CardColors(
+                                    containerColor = HyliConnectColorScheme(dynamicColor = false).error,
+                                    contentColor = HyliConnectColorScheme(dynamicColor = false).onError,
+                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                )
+                            }
+                            else -> {
+                                CardColors(
+                                    containerColor = HyliConnectColorScheme().secondaryContainer,
+                                    contentColor = HyliConnectColorScheme().onSecondaryContainer,
+                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                )
+                            }
                         }
                     ) {
-                        Row(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(imageVector = when(applicationState.value) {
-                                "running" -> { Icons.Default.Check }
-                                "error" -> { LineAwesomeIcons.QuestionCircleSolid }
-                                "stopped" -> { Icons.Default.Close }
-                                else -> { LineAwesomeIcons.QuestionCircleSolid }
-                            }, contentDescription = null, modifier = Modifier
-                                .size(42.dp)
-                                .padding(6.dp))
-                            Column(modifier = Modifier.padding(start = 12.dp),
-                                verticalArrangement = Arrangement.Center) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = when (applicationState.value) {
+                                    "running" -> { Icons.Default.Check }
+                                    "error" -> { LineAwesomeIcons.QuestionCircleSolid }
+                                    "stopped" -> { Icons.Default.Close }
+                                    else -> { LineAwesomeIcons.QuestionCircleSolid }
+                                },
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(42.dp)
+                                    .padding(6.dp)
+                            )
+                            Column(
+                                modifier = Modifier.padding(start = 12.dp),
+                                verticalArrangement = Arrangement.Center
+                            ) {
                                 Row {
-                                    Text(text = when(applicationState.value) {
-                                        "running" -> { stringResource(id = R.string.state_application_running) }
-                                        "error" -> { stringResource(id = R.string.state_application_error) }
-                                        "stopped" -> { stringResource(id = R.string.state_application_stopped) }
-                                        else -> { "" }
-                                    }, style = HyliConnectTypography.titleLarge)
+                                    Text(
+                                        text = when (applicationState.value) {
+                                            "running" -> { stringResource(id = R.string.state_application_running) }
+                                            "error" -> { stringResource(id = R.string.state_application_error) }
+                                            "stopped" -> { stringResource(id = R.string.state_application_stopped) }
+                                            else -> { "" }
+                                        },
+                                        style = HyliConnectTypography.titleLarge
+                                    )
                                     Icon(
                                         Icons.Default.Refresh,
                                         contentDescription = null,
@@ -304,10 +336,18 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                             .padding(start = 12.dp)
                                             .align(Alignment.CenterVertically)
                                             .clickable {
-                                                localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER").apply {
-                                                    putExtra("command", "reboot_service")
-                                                })
-                                                Toast.makeText(context, getString(context, R.string.state_application_rebooting), Toast.LENGTH_SHORT).show()
+                                                localBroadcastManager.sendBroadcast(
+                                                    Intent(
+                                                        "xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER"
+                                                    ).apply {
+                                                        putExtra("command", "reboot_service")
+                                                    }
+                                                )
+                                                Toast.makeText(
+                                                    context,
+                                                    getString(context, R.string.state_application_rebooting),
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                                 MainScope().launch {
                                                     delay(1000)
                                                     HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
@@ -319,10 +359,10 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                             }
                                     )
                                 }
-                                if ( applicationState.value != "stopped" ) {
-                                    if ( applicationState.value == "error" ) {
+                                if (applicationState.value != "stopped") {
+                                    if (applicationState.value == "error") {
                                         HyliConnect.serviceStateMap.forEach {
-                                            if ( it.value.state == "error" ) {
+                                            if (it.value.state == "error") {
                                                 it.value.message?.let { it1 ->
                                                     Text(
                                                         text = it1,
@@ -335,33 +375,43 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                     }
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Row {
-                                        Text(text = "${stringResource(id = R.string.page_connect_nickname)}: ${NICKNAME.value}")
-                                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier
-                                            .size(24.dp)
-                                            .padding(horizontal = 2.dp)
-                                            .align(Alignment.CenterVertically)
-                                            .clickable {
-                                                currentSelect.value = 2
-                                                navController.navigate("settingsScreen") {
-                                                    popUpTo(navController.graph.findStartDestination().id) {
-                                                        saveState = true
+                                        Text(
+                                            text = "${stringResource(
+                                                id = R.string.page_connect_nickname
+                                            )}: ${NICKNAME.value}"
+                                        )
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .size(24.dp)
+                                                .padding(horizontal = 2.dp)
+                                                .align(Alignment.CenterVertically)
+                                                .clickable {
+                                                    currentSelect.value = 2
+                                                    navController.navigate("settingsScreen") {
+                                                        popUpTo(navController.graph.findStartDestination().id) {
+                                                            saveState = true
+                                                        }
+                                                        launchSingleTop = true
+                                                        restoreState = true
                                                     }
-                                                    launchSingleTop = true
-                                                    restoreState = true
                                                 }
-                                            })
+                                        )
                                     }
                                     Row {
-                                        if ( IP_ADDRESS.isEmpty().not() ) {
+                                        if (IP_ADDRESS.isEmpty().not()) {
                                             Text(text = "IP: ")
                                             Column {
-                                                if ( IP_ADDRESS.containsKey("wlan0") && IP_ADDRESS.containsKey("wlan1") ) {
+                                                if (IP_ADDRESS.containsKey("wlan0") && IP_ADDRESS.containsKey("wlan1")) {
                                                     Text(text = "[ wlan0 ]:\t${IP_ADDRESS["wlan0"]}")
                                                     Text(text = "[ wlan1 ]:\t${IP_ADDRESS["wlan1"]}")
-                                                } else if ( IP_ADDRESS.containsKey("wlan0") && IP_ADDRESS.containsKey("wlan1").not() ) {
+                                                } else if (IP_ADDRESS.containsKey("wlan0") && IP_ADDRESS.containsKey("wlan1").not()) {
                                                     Text(text = "${IP_ADDRESS["wlan0"]}")
-                                                } else if ( IP_ADDRESS.containsKey("wlan0").not() && IP_ADDRESS.containsKey("wlan1").not() && IP_ADDRESS.size == 1 ) {
-                                                    Text(text = "[ ${IP_ADDRESS.keys.first()} ]:${IP_ADDRESS.values.first()}")
+                                                } else if (IP_ADDRESS.containsKey("wlan0").not() && IP_ADDRESS.containsKey("wlan1").not() && IP_ADDRESS.size == 1) {
+                                                    Text(
+                                                        text = "[ ${IP_ADDRESS.keys.first()} ]:${IP_ADDRESS.values.first()}"
+                                                    )
                                                 } else {
                                                     IP_ADDRESS.forEach {
                                                         Text(text = "[ ${it.key} ]:\t${it.value}")
@@ -372,10 +422,14 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                                             Text(text = "IP: 0.0.0.0")
                                         }
                                     }
-                                    Text(text = UUID.value ?:"", style = HyliConnectTypography.bodySmall, color = HyliConnectColorScheme().outline)
+                                    Text(
+                                        text = UUID.value ?: "",
+                                        style = HyliConnectTypography.bodySmall,
+                                        color = HyliConnectColorScheme().outline
+                                    )
                                 } else {
                                     HyliConnect.serviceStateMap.forEach {
-                                        if ( it.value.state != "running" ) {
+                                        if (it.value.state != "running") {
                                             it.value.message?.let { it1 ->
                                                 Text(
                                                     text = it1,
@@ -392,23 +446,32 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                 }
                 item {
                     if (permissionState.value.not()) {
-                        Card(modifier = Modifier
-                            .padding(6.dp)
-                            .animateItemPlacement(animationSpec = tween(400)),
+                        Card(
+                            modifier = Modifier
+                                .padding(6.dp)
+                                .animateItemPlacement(animationSpec = tween(400)),
                             colors = CardColors(
                                 containerColor = Color(0xFFdcb334),
                                 contentColor = HyliConnectColorScheme().onError,
                                 disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
                                 disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                            )) {
-                            Column(modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 12.dp)) {
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp)
+                            ) {
                                 HyliConnect.permissionStateMap.forEach {
                                     if (it.value.not() && it.key in viewModel.keyPermissionList && it.key in viewModel.permissionMap.keys) {
                                         Row(modifier = Modifier.padding(horizontal = 12.dp)) {
                                             Icon(Icons.Default.Close, contentDescription = null)
-                                            Text(stringResource(id = R.string.state_permission_false, stringResource(id = viewModel.permissionMap[it.key]!!)))
+                                            Text(
+                                                stringResource(
+                                                    id = R.string.state_permission_false,
+                                                    stringResource(id = viewModel.permissionMap[it.key]!!)
+                                                )
+                                            )
                                         }
                                     }
                                 }
@@ -417,20 +480,25 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                     }
                 }
                 item {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .animateItemPlacement(animationSpec = tween(400))) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItemPlacement(animationSpec = tween(400))
+                    ) {
                         Text(text = stringResource(id = R.string.page_connect_available_devices))
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier
-                            .padding(horizontal = 2.dp)
-                            .align(Alignment.CenterVertically)
-                            .clickable {
-                                /*TODO(Manual Connect)*/
-                            }
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(horizontal = 2.dp)
+                                .align(Alignment.CenterVertically)
+                                .clickable {
+                                    /*TODO(Manual Connect)*/
+                                }
                         )
                     }
                 }
-                if ( nsdDeviceMap.isEmpty() ) {
+                if (nsdDeviceMap.isEmpty()) {
                     item {
                         EmptyDeviceCard()
                     }
@@ -439,25 +507,30 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                     DeviceCard(deviceInfo)
                 }
                 item {
-                    Row(modifier = Modifier
-                        .animateItemPlacement(
-                            animationSpec = tween(400)
-                        )
-                        .clickable {
-                            currentSelect.value = 1
-                            navController.navigate("DevicesScreen") {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                    Row(
+                        modifier = Modifier
+                            .animateItemPlacement(
+                                animationSpec = tween(400)
+                            )
+                            .clickable {
+                                currentSelect.value = 1
+                                navController.navigate("DevicesScreen") {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
                     ) {
                         Text(text = stringResource(id = R.string.page_connect_connected_devices))
-                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier
-                            .padding(horizontal = 2.dp)
-                            .align(Alignment.CenterVertically))
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(horizontal = 2.dp)
+                                .align(Alignment.CenterVertically)
+                        )
                     }
                 }
                 items(connectedDeviceMap.values.toList()) { deviceInfo ->
@@ -470,32 +543,43 @@ fun ConnectScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DeviceCard(deviceInfo: DeviceInfo, navController: NavHostController? = null, viewModel: HyliConnectViewModel? = null) {
+private fun DeviceCard(
+    deviceInfo: DeviceInfo,
+    navController: NavHostController? = null,
+    viewModel: HyliConnectViewModel? = null
+) {
     val currentSelect = viewModel?.currentSelect
-    AnimatedVisibility(visible = connectDeviceVisibilityMap[deviceInfo.uuid]?.value ?: remember { mutableStateOf(false) }.value,
+    AnimatedVisibility(
+        visible = connectDeviceVisibilityMap[deviceInfo.uuid]?.value ?: remember { mutableStateOf(false) }.value,
         enter = fadeIn(animationSpec = tween(400)),
-        exit = fadeOut(animationSpec = tween(400))) {
-        Card(modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                if (deviceInfo.uuid in connectedDeviceMap.keys && navController != null && currentSelect != null) {
-                    currentSelect.value = 1
-                    navController.navigate("DevicesScreen") {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+        exit = fadeOut(animationSpec = tween(400))
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    if (deviceInfo.uuid in connectedDeviceMap.keys && navController != null && currentSelect != null) {
+                        currentSelect.value = 1
+                        navController.navigate("DevicesScreen") {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
+                    } else {
+                        localBroadcastManager.sendBroadcast(
+                            Intent(
+                                "xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT"
+                            ).apply {
+                                putExtra("command", "start")
+                                putExtra("ip", deviceInfo.ip_address[0])
+                                putExtra("port", deviceInfo.port)
+                            }
+                        )
                     }
-                } else {
-                    localBroadcastManager.sendBroadcast(Intent("xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT").apply {
-                        putExtra("command", "start")
-                        putExtra("ip", deviceInfo.ip_address[0])
-                        putExtra("port", deviceInfo.port)
-                    })
                 }
-            }
-            .padding(6.dp),
+                .padding(6.dp),
             colors = CardColors(
                 containerColor = HyliConnectColorScheme().secondaryContainer,
                 contentColor = HyliConnectColorScheme().onSecondaryContainer,
@@ -504,46 +588,77 @@ private fun DeviceCard(deviceInfo: DeviceInfo, navController: NavHostController?
             )
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(when(deviceInfo.platform) {
-                    "Android Phone" -> { LineAwesomeIcons.MobileAltSolid }
-                    "Android TV" -> { LineAwesomeIcons.TvSolid }
-                    "Android Wear" -> { CssGgIcons.AppleWatch }
-                    "Windows" -> { LineAwesomeIcons.DesktopSolid }
-                    "Linux" -> { LineAwesomeIcons.DesktopSolid }
-                    "Mac" -> { CssGgIcons.Laptop }
-                    "Web" -> { CssGgIcons.GlobeAlt }
-                    else -> { LineAwesomeIcons.QuestionCircleSolid }
-                }, contentDescription = null, modifier = Modifier
-                    .size(84.dp)
-                    .padding(top = 12.dp, bottom = 12.dp))
-                Column(modifier = Modifier.padding(top = 12.dp, bottom = 12.dp, end = 12.dp), verticalArrangement = Arrangement.Center) {
-                    Row(verticalAlignment = Alignment.CenterVertically){
-                        Text(text = when(deviceInfo.uuid) {
-                            PreferencesDataStore.getConfigMap()["uuid"].toString() -> { deviceInfo.nickname + " (" + stringResource(id = R.string.page_connect_this_device) + ")" }
-                            else -> { deviceInfo.nickname }
-                        }, style = HyliConnectTypography.titleMedium)
+                Icon(
+                    when (deviceInfo.platform) {
+                        "Android Phone" -> { LineAwesomeIcons.MobileAltSolid }
+                        "Android TV" -> { LineAwesomeIcons.TvSolid }
+                        "Android Wear" -> { CssGgIcons.AppleWatch }
+                        "Windows" -> { LineAwesomeIcons.DesktopSolid }
+                        "Linux" -> { LineAwesomeIcons.DesktopSolid }
+                        "Mac" -> { CssGgIcons.Laptop }
+                        "Web" -> { CssGgIcons.GlobeAlt }
+                        else -> { LineAwesomeIcons.QuestionCircleSolid }
+                    },
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(84.dp)
+                        .padding(top = 12.dp, bottom = 12.dp)
+                )
+                Column(
+                    modifier = Modifier.padding(top = 12.dp, bottom = 12.dp, end = 12.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = when (deviceInfo.uuid) {
+                                PreferencesDataStore.getConfigMap()["uuid"].toString() -> {
+                                    deviceInfo.nickname + " (" + stringResource(id = R.string.page_connect_this_device) + ")"
+                                }
+                                else -> { deviceInfo.nickname }
+                            },
+                            style = HyliConnectTypography.titleMedium
+                        )
                     }
                     FlowRow {
-                        Card(modifier = Modifier.padding(end = 6.dp, top = 4.dp), colors = CardColors(
-                            containerColor = HyliConnectColorScheme().tertiaryContainer,
-                            contentColor = HyliConnectColorScheme().onTertiaryContainer,
-                            disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                            disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                        )) {
-                            Text(text = deviceInfo.platform, modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp), style = HyliConnectTypography.labelMedium)
-                        }
-                        deviceInfo.ip_address.forEach {
-                            Card(modifier = Modifier.padding(end = 6.dp, top = 4.dp), colors = CardColors(
+                        Card(
+                            modifier = Modifier.padding(end = 6.dp, top = 4.dp),
+                            colors = CardColors(
                                 containerColor = HyliConnectColorScheme().tertiaryContainer,
                                 contentColor = HyliConnectColorScheme().onTertiaryContainer,
                                 disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
                                 disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                            )) {
-                                Text(text = it, modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp), style = HyliConnectTypography.labelMedium)
+                            )
+                        ) {
+                            Text(
+                                text = deviceInfo.platform,
+                                modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
+                                style = HyliConnectTypography.labelMedium
+                            )
+                        }
+                        deviceInfo.ip_address.forEach {
+                            Card(
+                                modifier = Modifier.padding(end = 6.dp, top = 4.dp),
+                                colors = CardColors(
+                                    containerColor = HyliConnectColorScheme().tertiaryContainer,
+                                    contentColor = HyliConnectColorScheme().onTertiaryContainer,
+                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                )
+                            ) {
+                                Text(
+                                    text = it,
+                                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
+                                    style = HyliConnectTypography.labelMedium
+                                )
                             }
                         }
                     }
-                    Text(text = deviceInfo.uuid, style = HyliConnectTypography.bodySmall, color = HyliConnectColorScheme().outline, modifier = Modifier.padding(top = 4.dp))
+                    Text(
+                        text = deviceInfo.uuid,
+                        style = HyliConnectTypography.bodySmall,
+                        color = HyliConnectColorScheme().outline,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
                 }
             }
         }
@@ -578,12 +693,15 @@ fun EmptyDeviceCard() {
             }
         }
     }
-    AnimatedVisibility(visible = true,
+    AnimatedVisibility(
+        visible = true,
         enter = fadeIn(animationSpec = tween(400)),
-        exit = fadeOut(animationSpec = tween(400))) {
-        Card(modifier = Modifier
-            .fillMaxWidth()
-            .padding(6.dp),
+        exit = fadeOut(animationSpec = tween(400))
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(6.dp),
             colors = CardColors(
                 containerColor = HyliConnectColorScheme().secondaryContainer,
                 contentColor = HyliConnectColorScheme().onSecondaryContainer,
@@ -595,48 +713,77 @@ fun EmptyDeviceCard() {
                 val width = this.maxWidth
                 Box {
                     Row {
-                        AnimatedVisibility(visible = isIconVisible.value,
+                        AnimatedVisibility(
+                            visible = isIconVisible.value,
                             enter = fadeIn(animationSpec = tween(400)),
                             exit = fadeOut(animationSpec = tween(400))
                         ) {
                             Row(modifier = Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(icon.value, contentDescription = null, modifier = Modifier
-                                    .size(84.dp)
-                                    .padding(top = 12.dp, bottom = 12.dp))
+                                Icon(
+                                    icon.value,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(84.dp)
+                                        .padding(top = 12.dp, bottom = 12.dp)
+                                )
                             }
                         }
                     }
-                    Column(modifier = Modifier
-                        .padding(top = 12.dp, bottom = 12.dp, end = 12.dp)
-                        .align(Alignment.TopStart)
-                        .offset(x = 84.dp)) {
-                        Card(modifier = Modifier.padding(end = 6.dp, top = 4.dp), colors = CardColors(
-                            containerColor = HyliConnectColorScheme().tertiaryContainer,
-                            contentColor = HyliConnectColorScheme().onTertiaryContainer,
-                            disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                            disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                        )) {
+                    Column(
+                        modifier = Modifier
+                            .padding(top = 12.dp, bottom = 12.dp, end = 12.dp)
+                            .align(Alignment.TopStart)
+                            .offset(x = 84.dp)
+                    ) {
+                        Card(
+                            modifier = Modifier.padding(end = 6.dp, top = 4.dp),
+                            colors = CardColors(
+                                containerColor = HyliConnectColorScheme().tertiaryContainer,
+                                contentColor = HyliConnectColorScheme().onTertiaryContainer,
+                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                            )
+                        ) {
                             Text(text = "                           ", style = HyliConnectTypography.titleMedium)
                         }
                         Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                            Card(modifier = Modifier.padding(end = 6.dp, top = 4.dp), colors = CardColors(
-                                containerColor = HyliConnectColorScheme().tertiaryContainer,
-                                contentColor = HyliConnectColorScheme().onTertiaryContainer,
-                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                            )) {
-                                Text(text = "              ", modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp), style = HyliConnectTypography.labelMedium)
+                            Card(
+                                modifier = Modifier.padding(end = 6.dp, top = 4.dp),
+                                colors = CardColors(
+                                    containerColor = HyliConnectColorScheme().tertiaryContainer,
+                                    contentColor = HyliConnectColorScheme().onTertiaryContainer,
+                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                )
+                            ) {
+                                Text(
+                                    text = "              ",
+                                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
+                                    style = HyliConnectTypography.labelMedium
+                                )
                             }
-                            Card(modifier = Modifier.padding(end = 6.dp, top = 4.dp), colors = CardColors(
-                                containerColor = HyliConnectColorScheme().tertiaryContainer,
-                                contentColor = HyliConnectColorScheme().onTertiaryContainer,
-                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                            )) {
-                                Text(text = "                      ", modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp), style = HyliConnectTypography.labelMedium)
+                            Card(
+                                modifier = Modifier.padding(end = 6.dp, top = 4.dp),
+                                colors = CardColors(
+                                    containerColor = HyliConnectColorScheme().tertiaryContainer,
+                                    contentColor = HyliConnectColorScheme().onTertiaryContainer,
+                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                )
+                            ) {
+                                Text(
+                                    text = "                      ",
+                                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
+                                    style = HyliConnectTypography.labelMedium
+                                )
                             }
                         }
-                        Text(text = " ", style = HyliConnectTypography.bodySmall, color = HyliConnectColorScheme().outline, modifier = Modifier.padding(top = 4.dp))
+                        Text(
+                            text = " ",
+                            style = HyliConnectTypography.bodySmall,
+                            color = HyliConnectColorScheme().outline,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
                     }
                 }
             }
@@ -668,7 +815,7 @@ private fun checkShizukuPermission(context: Context): Boolean {
 
         result
     }
-    if ( PreferencesDataStore.getConfigMap(true)["is_stream"] == true && PreferencesDataStore.getConfigMap()["app_stream_method"] in 1..2 ) {
+    if (PreferencesDataStore.getConfigMap(true)["is_stream"] == true && PreferencesDataStore.getConfigMap()["app_stream_method"] in 1..2) {
         toast?.show()
     }
     return b
@@ -677,14 +824,16 @@ private fun checkShizukuPermission(context: Context): Boolean {
 @Preview(showBackground = true)
 @Composable
 fun DeviceCardPreview() {
-    DeviceCard(DeviceInfo(
-        api_version = 1,
-        app_version = 10000,
-        app_version_name = "1.0.0",
-        platform = "Android Phone",
-        uuid = "38299469-a3bc-48e9-b2c8-be8410650d87",
-        nickname = "Windows Subsystem for Android(TM)",
-        ip_address = mutableListOf("172.30.166.176", "127.0.0.1"),
-        port = 15372
-    ))
+    DeviceCard(
+        DeviceInfo(
+            api_version = 1,
+            app_version = 10000,
+            app_version_name = "1.0.0",
+            platform = "Android Phone",
+            uuid = "38299469-a3bc-48e9-b2c8-be8410650d87",
+            nickname = "Windows Subsystem for Android(TM)",
+            ip_address = mutableListOf("172.30.166.176", "127.0.0.1"),
+            port = 15372
+        )
+    )
 }

@@ -7,7 +7,6 @@ import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.net.SocketException
 
-
 object NetworkUtils {
     fun getLocalIPInfo(context: Context): Map<String, String> {
         val map = mutableMapOf<String, String>()
@@ -25,11 +24,13 @@ object NetworkUtils {
                     }
                 }
             }
-            if ( map.containsKey("wlan0").not() ) {
-                val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            if (map.containsKey("wlan0").not()) {
+                val connectivityManager = context.getSystemService(
+                    Context.CONNECTIVITY_SERVICE
+                ) as android.net.ConnectivityManager
                 val networkInfo = connectivityManager.activeNetworkInfo
-                if ( networkInfo != null ) {
-                    if ( networkInfo.type == android.net.ConnectivityManager.TYPE_WIFI ) {
+                if (networkInfo != null) {
+                    if (networkInfo.type == android.net.ConnectivityManager.TYPE_WIFI) {
                         val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
                         wifiManager.wifiState
                         val ipAddress = intToIp(wifiManager.connectionInfo.ipAddress)

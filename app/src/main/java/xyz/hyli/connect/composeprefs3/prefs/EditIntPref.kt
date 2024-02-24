@@ -73,7 +73,6 @@ fun EditIntPref(
     textColor: Color = HyliConnectColorScheme().onBackground,
     enabled: Boolean = true,
 ) {
-
     var showDialog by rememberSaveable { mutableStateOf(false) }
     val selectionKey = intPreferencesKey(key)
     val scope = rememberCoroutineScope()
@@ -81,9 +80,9 @@ fun EditIntPref(
     val datastore = LocalPrefsDataStore.current
     val prefs by remember { datastore.data }.collectAsState(initial = null)
 
-    //value should only change when save button is clicked
+    // value should only change when save button is clicked
     var value by remember { mutableIntStateOf(defaultValue) }
-    //value of the TextField which changes every time the text is modified
+    // value of the TextField which changes every time the text is modified
     var textVal by remember { mutableStateOf(value.toString()) }
     // int value of the TextField which changes every time the text is modified
     var intVal by remember { mutableIntStateOf(value) }
@@ -134,7 +133,7 @@ fun EditIntPref(
     )
 
     if (showDialog) {
-        //reset
+        // reset
         LaunchedEffect(null) {
             textVal = value.toString()
         }
@@ -165,7 +164,6 @@ fun EditIntPref(
                 )
             },
             confirmButton = {
-
                 TextButton(
                     enabled = if (textVal.isEmpty()) {
                         false
@@ -179,7 +177,7 @@ fun EditIntPref(
                     modifier = Modifier.padding(end = 16.dp),
                     onClick = {
                         try {
-                            if ( textVal.isNotEmpty() && textVal.toInt() in valueRange!! ) {
+                            if (textVal.isNotEmpty() && textVal.toInt() in valueRange!!) {
                                 edit()
                             }
                         } catch (e: Exception) {

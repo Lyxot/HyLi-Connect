@@ -90,7 +90,6 @@ class ControlService : IControlService.Stub() {
         } catch (e: Exception) {
             false
         }
-
     }
 
     /**
@@ -122,5 +121,4 @@ class ControlService : IControlService.Stub() {
             inputManager!!.injectInputEvent(up, displayId)
         } catch (_: Exception) { }
     }
-
 }

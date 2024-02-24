@@ -1,10 +1,10 @@
 package xyz.hyli.connect.hook
 
-import android.os.Build
 import android.content.pm.ActivityInfo
-import xyz.hyli.connect.hook.utils.XLog
+import android.os.Build
 import de.robv.android.xposed.*
 import de.robv.android.xposed.callbacks.XC_LoadPackage
+import xyz.hyli.connect.hook.utils.XLog
 
 class HookFramework : IXposedHookLoadPackage, IXposedHookZygoteInit {
 
@@ -12,7 +12,7 @@ class HookFramework : IXposedHookLoadPackage, IXposedHookZygoteInit {
      * 10
      */
     private fun hookASSOnQ(classLoader: ClassLoader) {
-        //val classLoader = Thread.currentThread().contextClassLoader
+        // val classLoader = Thread.currentThread().contextClassLoader
         val ass = XposedHelpers.findClass("com.android.server.wm.ActivityStackSupervisor", classLoader)
         val taskRecordClazz = XposedHelpers.findClass("com.android.server.wm.TaskRecord", classLoader)
         val activityStackClazz = XposedHelpers.findClass("com.android.server.wm.ActivityStack", classLoader)
@@ -41,7 +41,7 @@ class HookFramework : IXposedHookLoadPackage, IXposedHookZygoteInit {
     }
 
     private fun hookASSPreQ(classLoader: ClassLoader) {
-        //val classLoader = Thread.currentThread().contextClassLoader
+        // val classLoader = Thread.currentThread().contextClassLoader
         val ass = XposedHelpers.findClass("com.android.server.am.ActivityStackSupervisor", classLoader)
         XposedHelpers.findAndHookMethod(
             ass,
@@ -63,7 +63,7 @@ class HookFramework : IXposedHookLoadPackage, IXposedHookZygoteInit {
      * 10 11
      */
     private fun hookASS(classLoader: ClassLoader) {
-        //val classLoader = Thread.currentThread().contextClassLoader
+        // val classLoader = Thread.currentThread().contextClassLoader
         val ass = XposedHelpers.findClass("com.android.server.wm.ActivityStackSupervisor", classLoader)
         XposedHelpers.findAndHookMethod(
             ass,
@@ -85,7 +85,7 @@ class HookFramework : IXposedHookLoadPackage, IXposedHookZygoteInit {
      * 12 别找了，logcat突然没有这个报错了，可能要换hook点了，明明前几天还有
      */
     private fun hookATS(classLoader: ClassLoader) {
-        //val classLoader = Thread.currentThread().contextClassLoader
+        // val classLoader = Thread.currentThread().contextClassLoader
         val ats = XposedHelpers.findClass("com.android.server.wm.ActivityTaskSupervisor", classLoader)
         XposedHelpers.findAndHookMethod(
             ats,
@@ -107,7 +107,7 @@ class HookFramework : IXposedHookLoadPackage, IXposedHookZygoteInit {
      * 13
      */
     private fun hookATSOnT(classLoader: ClassLoader) {
-        //val classLoader = Thread.currentThread().contextClassLoader
+        // val classLoader = Thread.currentThread().contextClassLoader
         val ats = XposedHelpers.findClass("com.android.server.wm.ActivityTaskSupervisor", classLoader)
         val taskClazz = XposedHelpers.findClass("com.android.server.wm.Task", classLoader)
         val taskDisplayAreaClazz = XposedHelpers.findClass("com.android.server.wm.TaskDisplayArea", classLoader)
@@ -162,7 +162,7 @@ class HookFramework : IXposedHookLoadPackage, IXposedHookZygoteInit {
         val ats = XposedHelpers.findClass("com.android.server.wm.ActivityTaskSupervisor", classLoader)
         val taskClazz = XposedHelpers.findClass("com.android.server.wm.Task", classLoader)
         val taskDisplayAreaClazz = XposedHelpers.findClass("com.android.server.wm.TaskDisplayArea", classLoader)
-        //val activityStackClazz = XposedHelpers.findClass("com.android.server.wm.ActivityStack", classLoader)
+        // val activityStackClazz = XposedHelpers.findClass("com.android.server.wm.ActivityStack", classLoader)
         XposedHelpers.findAndHookMethod(
             ats,
             "handleNonResizableTaskIfNeeded",
@@ -194,7 +194,7 @@ class HookFramework : IXposedHookLoadPackage, IXposedHookZygoteInit {
             "injectInputEvent",
             object : XC_MethodReplacement() {
                 override fun replaceHookedMethod(p0: MethodHookParam): Any {
-                    //以mode代替display
+                    // 以mode代替display
                     return XposedHelpers.callMethod(
                         p0.thisObject,
                         "injectInputEventInternal",
@@ -324,11 +324,14 @@ class HookFramework : IXposedHookLoadPackage, IXposedHookZygoteInit {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             val activityThread =
                 Class.forName("android.app.ActivityThread")
-            XposedBridge.hookAllMethods(activityThread, "systemMain", object : XC_MethodHook() {
-                override fun afterHookedMethod(param: MethodHookParam) {
-                    hookIMS()
+            XposedBridge.hookAllMethods(
+                activityThread, "systemMain",
+                object : XC_MethodHook() {
+                    override fun afterHookedMethod(param: MethodHookParam) {
+                        hookIMS()
+                    }
                 }
-            })
+            )
         }
     }
 }
