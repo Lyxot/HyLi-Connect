@@ -13,10 +13,20 @@ plugins {
 val commitCount = if (System.getenv("CI") != null) {
     System.getenv("CODE")?.toInt() ?: 0
 } else {
-    val cmd = "git rev-list --count HEAD refs/remotes/origin/canary"
-    val proc = Runtime.getRuntime().exec(cmd)
-    proc.waitFor()
-    proc.inputStream.bufferedReader().readText().trim().toInt()
+    try {
+        var cmd = "git branch --show-current"
+        var proc = Runtime.getRuntime().exec(cmd)
+        proc.waitFor()
+        cmd = "git rev-list --count HEAD refs/remotes/origin/" + proc.inputStream.bufferedReader().readText().trim()
+        proc = Runtime.getRuntime().exec(cmd)
+        proc.waitFor()
+        proc.inputStream.bufferedReader().readText().trim().toInt()
+    } catch (e: Exception) {
+        val cmd = "git rev-list --count HEAD refs/remotes/origin/canary"
+        val proc = Runtime.getRuntime().exec(cmd)
+        proc.waitFor()
+        proc.inputStream.bufferedReader().readText().trim().toInt()
+    }
 }
 
 android {
@@ -32,7 +42,7 @@ android {
         versionName = if (System.getenv("VERSION") != null) {
             System.getenv("VERSION")
         } else {
-            val cmd = "git rev-parse --short=8 HEAD"
+            val cmd = "git rev-parse --short=7 HEAD"
             val proc = Runtime.getRuntime().exec(cmd)
             proc.waitFor()
             proc.inputStream.bufferedReader().readText().trim()

@@ -41,7 +41,7 @@ jobs:
           if [ ${{ github.ref_type == 'tag' || startsWith(github.ref_name, 'release') }} == true ]; then
             export version=$(git describe --tags --abbrev=0 | sed 's/v//')
           else
-            export version=$(echo $(git rev-parse --short=8 HEAD))
+            export version=$(echo $(git rev-parse --short=7 HEAD))
           fi
           echo VERSION=$version >> $GITHUB_ENV
           echo VERSION=$version

@@ -65,7 +65,7 @@ jobs:
       - name: Prepare for building
         run: |
           git fetch
-          echo VERSION=$(echo $(git rev-parse --short=8 HEAD)) >> $GITHUB_ENV
+          echo VERSION=$(echo $(git rev-parse --short=7 HEAD)) >> $GITHUB_ENV
           echo CODE=$(git rev-list --count HEAD refs/remotes/origin/canary) >> $GITHUB_ENV
           chmod +x gradlew
           base64 --decode <<< "${{ secrets.RELEASE_KEY }}" > "${{ env.ANDROID_KEYSTORE_FILE }}"
