@@ -10,6 +10,12 @@ plugins {
     id("io.gitlab.arturbosch.detekt")
 }
 
+if (!File("${rootDir}/app/dict.txt").exists()) {
+    val cmd = "python3 ${rootDir}/scripts/gen_dict.py ${rootDir}/app"
+    val proc = Runtime.getRuntime().exec(cmd)
+    proc.waitFor()
+}
+
 val commitCount = if (System.getenv("CI") != null) {
     System.getenv("CODE")?.toInt() ?: 0
 } else {

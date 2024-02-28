@@ -20,6 +20,10 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+-obfuscationdictionary dict.txt
+-classobfuscationdictionary dict.txt
+-packageobfuscationdictionary dict.txt
+
 -keep class xyz.hyli.connect.bean.MotionEventBean { *; }
 
 -keep class xyz.hyli.connect.hook.HookFramework { *; }

@@ -16,3 +16,4 @@ local.properties
 /app/release-key.jks
 /app/release
 /keystore.properties
+/app/dict.txt
