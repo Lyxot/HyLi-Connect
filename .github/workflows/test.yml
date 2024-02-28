@@ -11,6 +11,7 @@ on:
         required: true
       RELEASE_KEY_ALIAS:
         required: true
+  workflow_dispatch:
 
 jobs:
   instrumentation-tests:
@@ -23,23 +24,10 @@ jobs:
     strategy:
       fail-fast: false  # Allow tests to continue on other devices if they fail on one device.
       matrix:
-        include:
-          - os: macos-13
-            api-level: 26
-            target: google_apis
-            arch: x86_64
-          - os: ubuntu-latest
-            api-level: 30
-            target: aosp_atd
-            arch: x86_64
-          - os: macos-13
-            api-level: 32
-            target: google_apis
-            arch: x86_64
-          - os: ubuntu-latest
-            api-level: 34
-            target: aosp_atd
-            arch: x86_64
+        os: [ubuntu-latest]
+        api-level: [26, 30, 32, 34]
+        target: [google_apis]
+        arch: [x86]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,6 +50,7 @@ jobs:
           gradle-home-cache-cleanup: true
           cache-overwrite-existing: true
           cache-read-only: false
+          add-job-summary: 'on-failure'
       - name: Prepare for building
         run: |
           git fetch
@@ -80,7 +69,7 @@ jobs:
 
       - name: create AVD && Generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@main
         with:
           avd-name: test-${{ matrix.api-level }}-${{ matrix.target }}-${{ matrix.arch }}
           api-level: ${{ matrix.api-level }}
@@ -91,10 +80,11 @@ jobs:
           target: ${{ matrix.target }}
           arch: ${{ matrix.arch }}
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          channel: canary
           script: echo "Generated AVD snapshot for caching."
 
       - name: run tests
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@main
         env:
           VERSION: ${{ env.VERSION }}
           CODE: ${{ env.CODE }}
@@ -111,6 +101,7 @@ jobs:
           target: ${{ matrix.target }}
           arch: ${{ matrix.arch }}
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          channel: canary
           script: ./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.notPackage=com.kevalpatel2106.benchmark.macro
 
       - name: Upload test results Artifact
