@@ -69,7 +69,7 @@ class SocketService : Service() {
                     } else if (command == "stop_service") {
                         stopSelf()
                     } else if (command == "reboot_service") {
-                        destroy()
+                        destroy(reboot = true)
                         init()
                     } else if (command == "reboot_nsd_service") {
                         restartNsdService()
@@ -102,6 +102,7 @@ class SocketService : Service() {
         startServer(serverPort)
         registerNsdService()
         checkConnection()
+        HyliConnect.serviceStateMap["SocketService"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_socket_service)))
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
@@ -123,8 +124,8 @@ class SocketService : Service() {
             e.printStackTrace()
         }
     }
-    private fun destroy() {
-        HyliConnect.serviceStateMap["SocketService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_service)))
+    private fun destroy(reboot: Boolean = false) {
+        if (reboot) HyliConnect.serviceStateMap["SocketService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_service)))
         checkConnectionJob.cancel()
         stopSocket()
         unregisterNsdService()

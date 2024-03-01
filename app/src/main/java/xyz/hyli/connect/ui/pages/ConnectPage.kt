@@ -48,6 +48,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,7 +95,6 @@ import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
 private var shizukuPermissionFuture = CompletableFuture<Boolean>()
-private val mNsdManagerState = mutableStateOf<NsdManager?>(null)
 private lateinit var applicationState: MutableState<String>
 private lateinit var permissionState: MutableState<Boolean>
 private lateinit var localBroadcastManager: LocalBroadcastManager
@@ -102,30 +102,10 @@ private lateinit var nsdDeviceMap: MutableMap<String, DeviceInfo>
 private lateinit var connectDeviceVisibilityMap: MutableMap<String, MutableState<Boolean>>
 private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ConnectScreen(
-    viewModel: HyliConnectViewModel,
-    navController: NavHostController,
-    paddingValues: PaddingValues = PaddingValues(0.dp)
-) {
-    val context = LocalContext.current
-    val currentSelect = viewModel.currentSelect
-    localBroadcastManager = viewModel.localBroadcastManager.value ?: LocalBroadcastManager.getInstance(context)
-    applicationState = viewModel.applicationState
-    permissionState = viewModel.permissionState
-    nsdDeviceMap = viewModel.nsdDeviceMap
-    connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
-    connectedDeviceMap = viewModel.connectedDeviceMap
-
-    val configMap = remember { PreferencesDataStore.getConfigMap(true) }
-    val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = configMap["nickname"].toString())
-    val UUID = PreferencesDataStore.uuid.asFlow().collectAsState(initial = configMap["uuid"].toString())
-    val IP_ADDRESS = remember { NetworkUtils.getLocalIPInfo(context) }
-
+private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: State<Boolean?>) {
     val semaphore = remember { Semaphore(1) }
-    mNsdManagerState.value = context.getSystemService(Context.NSD_SERVICE) as NsdManager
-    val mNsdManager = mNsdManagerState.value
+    val mNsdManager = remember { context.getSystemService(Context.NSD_SERVICE) as NsdManager }
     val mResolverListener = object : NsdManager.ResolveListener {
         override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
             // Called when the resolve fails. Use the error code to debug.
@@ -146,7 +126,7 @@ fun ConnectScreen(
             val ip_address = String(attributes["ip_addr"] ?: byteArrayOf())
 
             // Filter out self
-            if (uuid == UUID.value && BuildConfig.DEBUG.not() && configMap["connect_to_myself"] == false) {
+            if (uuid == UUID.value && BuildConfig.DEBUG.not() && !connectToMyself.value!!) {
                 return
             }
             // Filter out connected
@@ -187,7 +167,7 @@ fun ConnectScreen(
             Log.d("mDiscoveryListener", "Service discovery success $service")
             thread {
                 semaphore.acquire()
-                mNsdManager!!.resolveService(service, mResolverListener)
+                mNsdManager.resolveService(service, mResolverListener)
             }
         }
         override fun onServiceLost(service: NsdServiceInfo) {
@@ -198,13 +178,52 @@ fun ConnectScreen(
         }
         override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
             Log.e("mDiscoveryListener", "Discovery failed: Error code:$errorCode")
-            mNsdManager!!.stopServiceDiscovery(this)
+            mNsdManager.stopServiceDiscovery(this)
         }
         override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
             Log.e("mDiscoveryListener", "Discovery failed: Error code:$errorCode")
-            mNsdManager!!.stopServiceDiscovery(this)
+            mNsdManager.stopServiceDiscovery(this)
         }
     }
+    DisposableEffect(Unit) {
+        try {
+            mNsdManager.stopServiceDiscovery(mDiscoveryListener)
+        } catch (_: Exception) { }
+        mNsdManager.discoverServices("_hyli-connect._tcp.", NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener)
+        onDispose {
+            nsdDeviceMap.clear()
+            try {
+                mNsdManager.stopServiceDiscovery(mDiscoveryListener)
+            } catch (e: Exception) {
+                Log.e("mDiscoveryListener", "stopServiceDiscovery failed: $e")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ConnectScreen(
+    viewModel: HyliConnectViewModel,
+    navController: NavHostController,
+    paddingValues: PaddingValues = PaddingValues(0.dp)
+) {
+    val context = LocalContext.current
+    val currentSelect = viewModel.currentSelect
+    localBroadcastManager = viewModel.localBroadcastManager.value ?: LocalBroadcastManager.getInstance(context)
+    applicationState = viewModel.applicationState
+    permissionState = viewModel.permissionState
+    nsdDeviceMap = viewModel.nsdDeviceMap
+    connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
+    connectedDeviceMap = viewModel.connectedDeviceMap
+
+    val configMap = remember { PreferencesDataStore.getConfigMap(true) }
+    val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = configMap["nickname"].toString())
+    val UUID = PreferencesDataStore.uuid.asFlow().collectAsState(initial = configMap["uuid"].toString())
+    val IP_ADDRESS = remember { NetworkUtils.getLocalIPInfo(context) }
+
+    InitNsd(context, UUID, PreferencesDataStore.connect_to_myself.asFlow().collectAsState(initial = false))
+
     DisposableEffect(Unit) {
         MainScope().launch {
             try {
@@ -227,15 +246,7 @@ fun ConnectScreen(
                 putExtra("command", "reboot_nsd_service")
             }
         )
-        mNsdManager!!.discoverServices("_hyli-connect._tcp.", NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener)
-        onDispose {
-            nsdDeviceMap.clear()
-            try {
-                mNsdManager.stopServiceDiscovery(mDiscoveryListener)
-            } catch (e: Exception) {
-                Log.e("mDiscoveryListener", "stopServiceDiscovery failed: $e")
-            }
-        }
+        onDispose { }
     }
     Column(modifier = Modifier.padding(paddingValues)) {
         Column(
@@ -267,6 +278,14 @@ fun ConnectScreen(
                                 CardColors(
                                     containerColor = HyliConnectColorScheme().secondaryContainer,
                                     contentColor = HyliConnectColorScheme().onSecondaryContainer,
+                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                )
+                            }
+                            "rebooting" -> {
+                                CardColors(
+                                    containerColor = Color(0xFFdcb334),
+                                    contentColor = HyliConnectColorScheme().onError,
                                     disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
                                     disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
                                 )
@@ -306,6 +325,7 @@ fun ConnectScreen(
                             Icon(
                                 imageVector = when (applicationState.value) {
                                     "running" -> { Icons.Default.Check }
+                                    "rebooting" -> { Icons.Default.Refresh }
                                     "error" -> { LineAwesomeIcons.QuestionCircleSolid }
                                     "stopped" -> { Icons.Default.Close }
                                     else -> { LineAwesomeIcons.QuestionCircleSolid }
@@ -323,6 +343,7 @@ fun ConnectScreen(
                                     Text(
                                         text = when (applicationState.value) {
                                             "running" -> { stringResource(id = R.string.state_application_running) }
+                                            "rebooting" -> { stringResource(id = R.string.state_application_rebooting) }
                                             "error" -> { stringResource(id = R.string.state_application_error) }
                                             "stopped" -> { stringResource(id = R.string.state_application_stopped) }
                                             else -> { "" }
@@ -336,6 +357,9 @@ fun ConnectScreen(
                                             .padding(start = 12.dp)
                                             .align(Alignment.CenterVertically)
                                             .clickable {
+                                                HyliConnectViewModel().applicationState.value =
+                                                    "rebooting"
+                                                applicationState.value = "rebooting"
                                                 localBroadcastManager.sendBroadcast(
                                                     Intent(
                                                         "xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER"
@@ -343,19 +367,16 @@ fun ConnectScreen(
                                                         putExtra("command", "reboot_service")
                                                     }
                                                 )
-                                                Toast.makeText(
-                                                    context,
-                                                    getString(context, R.string.state_application_rebooting),
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                MainScope().launch {
-                                                    delay(1000)
-                                                    HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
-                                                        ServiceState("running", context.getString(R.string.state_service_running, context.getString(R.string.service_socket_service)))
-                                                    } else {
-                                                        ServiceState("stopped", context.getString(R.string.state_service_stopped, context.getString(R.string.service_socket_service)))
-                                                    }
-                                                }
+                                                Toast
+                                                    .makeText(
+                                                        context,
+                                                        getString(
+                                                            context,
+                                                            R.string.state_application_rebooting
+                                                        ),
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                    .show()
                                             }
                                     )
                                 }

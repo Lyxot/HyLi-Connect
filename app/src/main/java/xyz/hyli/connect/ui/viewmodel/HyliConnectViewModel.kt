@@ -21,7 +21,7 @@ import xyz.hyli.connect.utils.PermissionUtils
 class HyliConnectViewModel : ViewModel() {
     init {
         viewModelScope.launch(context = Dispatchers.Main) {
-            delay(1000)
+            delay(500)
             while (true) {
                 try {
                     HyliConnect.uuidMap.forEach {
@@ -105,9 +105,9 @@ class HyliConnectViewModel : ViewModel() {
             }
         }
         if (serviceStateList.contains("stopped")) {
-            applicationState.value = "stopped"
+            if (applicationState.value != "rebooting") applicationState.value = "stopped"
         } else if (serviceStateList.contains("error")) {
-            applicationState.value = "error"
+            if (applicationState.value != "rebooting") applicationState.value = "rebooting"
         } else {
             applicationState.value = "running"
         }
