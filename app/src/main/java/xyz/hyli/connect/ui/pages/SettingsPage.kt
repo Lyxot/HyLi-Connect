@@ -2,7 +2,6 @@ package xyz.hyli.connect.ui.pages
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +19,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -127,6 +125,8 @@ fun SettingsScreen(
                         icons = iconList
                     )
                 }
+            }
+            prefsGroup(getString(context, R.string.page_settings_connect)) {
                 prefsItem {
                     EditIntPref(
                         title = stringResource(id = R.string.page_settings_server_port),
@@ -137,8 +137,6 @@ fun SettingsScreen(
                         displayValueAtEnd = true
                     )
                 }
-            }
-            prefsGroup(getString(context, R.string.page_settings_connect)) {
                 prefsItem {
                     SwitchPref(
                         key = "nsd_service",
@@ -149,36 +147,28 @@ fun SettingsScreen(
             }
             prefsGroup(getString(context, R.string.page_settings_functions)) {
                 prefsItem {
-                    SwitchPref(key = "is_stream", title = stringResource(id = R.string.page_settings_stream))
-                }
-                prefsItem {
-                    if (PreferencesDataStore.is_stream.asFlow()
-                            .collectAsState(initial = false).value == true
-                    ) {
-                        DropDownPref(
-                            title = stringResource(id = R.string.page_settings_app_stream_method),
-                            summary = stringResource(id = R.string.page_settings_app_stream_method_summary),
-                            key = "app_stream_method",
-                            displayValueAtEnd = true,
-                            entries = if (Build.VERSION_CODES.S <= Build.VERSION.SDK_INT || BuildConfig.DEBUG) {
-                                PreferencesDataStore.appStreamMethodMap
-                            } else {
-                                linkedMapOf(
-                                    0 to "Root + Xposed",
-                                    1 to "Shizuku + Xposed"
-                                )
-                            },
-                            onValueChange = {
-                                if (it.contains("Shizuku")) {
-                                    HyliConnect.me.initShizuku()
-                                }
+                    DropDownPref(
+                        title = stringResource(id = R.string.page_settings_working_mode),
+                        summary = stringResource(id = R.string.page_settings_working_mode_summary),
+                        key = "working_mode",
+                        displayValueAtEnd = true,
+                        entries = PreferencesDataStore.workingModeMap,
+                        onValueChange = {
+                            if (it.contains("Shizuku")) {
+                                HyliConnect.me.initShizuku()
                             }
-                        )
-                    }
+                        }
+                    )
                 }
                 prefsItem {
                     SwitchPref(
-                        key = "notification_forward",
+                        key = "function_app_streaming",
+                        title = stringResource(id = R.string.page_settings_app_streaming),
+                        summary = stringResource(id = R.string.page_settings_app_streaming_summary))
+                }
+                prefsItem {
+                    SwitchPref(
+                        key = "function_notification_forward",
                         title = stringResource(id = R.string.page_settings_notification_forward),
                         summary = stringResource(id = R.string.page_settings_notification_forward_summary)
                     )

@@ -34,9 +34,9 @@
     <string name="page_settings_device_type">设备类型</string>
     <string name="page_settings_server_port">服务端口</string>
     <string name="page_settings_server_port_dialog_message">请输入服务端口 (1024–65535)</string>
-    <string name="page_settings_stream">应用流转</string>
-    <string name="page_settings_app_stream_method">工作模式</string>
-    <string name="page_settings_app_stream_method_summary">启用应用流转所需的权限与防止应用在主屏幕上启动所需的权限\n* 仅Shizuku: 只支持Android 12+\n* 可能会导致屏幕闪烁、卡顿等问题\n* 建议仅在没有Xposed或者Xposed阻止失败时启用</string>
+    <string name="page_settings_app_streaming">应用流转</string>
+    <string name="page_settings_working_mode">工作模式</string>
+    <string name="page_settings_working_mode_summary">基础模式: 仅支持部分基础功能\nShizuku/Root模式: 支持几乎全部功能</string>
     <string name="page_settings_notification_forward">通知转发</string>
     <string name="page_settings_notification_forward_summary">转发通知到已连接的设备。如果启用了应用流转，则可以在已连接的设备上打开通知</string>
     <string name="page_settings_basic">基本设置</string>
@@ -59,4 +59,8 @@
     <string name="page_settings_nsd_service">网络发现服务</string>
     <string name="page_settings_nsd_service_summary">允许同局域网的设备发现您的设备</string>
     <string name="state_application_rebooting">正在重启</string>
+    <string name="page_settings_app_streaming_summary">需要Xposed来防止应用在主屏幕上启动\n* 无Xposed模式: 只支持Android 12+\n* 可能会导致屏幕闪烁、卡顿等问题\n* 建议仅在没有Xposed或者Xposed阻止失败时尝试使用</string>
+    <string name="working_mode_basic">"基础模式"</string>
+    <string name="working_mode_shizuku">"Shizuku模式"</string>
+    <string name="working_mode_root">"Root模式"</string>
 </resources>
