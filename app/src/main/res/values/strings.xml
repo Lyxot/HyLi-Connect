@@ -40,9 +40,9 @@
     <string name="page_settings_device_type">Device type</string>
     <string name="page_settings_server_port">Server port</string>
     <string name="page_settings_server_port_dialog_message">Please enter the server port (1024–65535)</string>
-    <string name="page_settings_stream">App streaming</string>
-    <string name="page_settings_app_stream_method">Working method</string>
-    <string name="page_settings_app_stream_method_summary">Permission required for app streaming and preventing apps from popping out to full screen\n* Shizuku only mode: Only supports Android 12+\n* May cause problems such as screen flickering, freezing, etc.\n* This feature is recommended to be enabled only when there is no Xposed or Xposed blocking fails</string>
+    <string name="page_settings_app_streaming">App streaming</string>
+    <string name="page_settings_working_mode">Working mode</string>
+    <string name="page_settings_working_mode_summary">Basic Mode: Only support some basic functions\nShizuku/Root Mode: Support almost every functions</string>
     <string name="page_settings_notification_forward">Notification forward</string>
     <string name="page_settings_notification_forward_summary">Forward notifications to connected devices.If app streaming is enabled, notifications can be turned on a connected device</string>
     <string name="page_settings_basic">Basic</string>
@@ -70,4 +70,8 @@
     <string name="page_settings_nsd_service">Network discovery service</string>
     <string name="page_settings_nsd_service_summary">Allow devices on the same LAN to discover your devices</string>
     <string name="state_application_rebooting">Rebooting</string>
+    <string name="page_settings_app_streaming_summary">Need Xposed to prevent apps from popping out to full screen\nWorking without Xposed: Only supports Android 12+\\n* May cause problems such as screen flickering, freezing, etc.\\n* This feature is recommended only when Xposed is not available or Xposed blocking fails</string>
+    <string name="working_mode_basic">Basic Mode</string>
+    <string name="working_mode_shizuku">Shizuku Mode</string>
+    <string name="working_mode_root">Root Mode</string>
 </resources>
