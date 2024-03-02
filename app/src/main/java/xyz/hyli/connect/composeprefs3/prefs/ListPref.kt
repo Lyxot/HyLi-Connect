@@ -28,11 +28,13 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.launch
+import xyz.hyli.connect.R
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
@@ -166,7 +168,7 @@ fun ListPref(
                 TextButton(
                     onClick = { showDialog = false },
                 ) {
-                    Text("Cancel", style = HyliConnectTypography.bodyLarge, color = buttonColor)
+                    Text(stringResource(id = R.string.composeprefs_cancel), style = HyliConnectTypography.bodyLarge, color = buttonColor)
                 }
             },
             containerColor = dialogBackgroundColor,

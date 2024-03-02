@@ -64,4 +64,7 @@
     <string name="working_mode_shizuku">"Shizuku模式"</string>
     <string name="working_mode_root">"Root模式"</string>
     <string name="page_connect_no_device_connected">无设备连接</string>
+    <string name="composeprefs_save">保存</string>
+    <string name="composeprefs_cancel">取消</string>
+    <string name="composeprefs_select">确定</string>
 </resources>
