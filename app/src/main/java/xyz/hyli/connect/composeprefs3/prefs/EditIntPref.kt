@@ -24,6 +24,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import xyz.hyli.connect.R
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
@@ -186,7 +188,7 @@ fun EditIntPref(
                         showDialog = false
                     }
                 ) {
-                    Text("Save", style = HyliConnectTypography.bodyLarge)
+                    Text(stringResource(id = R.string.composeprefs_save), style = HyliConnectTypography.bodyLarge)
                 }
             },
             dismissButton = {
@@ -194,7 +196,7 @@ fun EditIntPref(
                     modifier = Modifier.padding(end = 16.dp),
                     onClick = { showDialog = false }
                 ) {
-                    Text("Cancel", style = HyliConnectTypography.bodyLarge)
+                    Text(stringResource(R.string.composeprefs_cancel), style = HyliConnectTypography.bodyLarge)
                 }
             },
             properties = DialogProperties(usePlatformDefaultWidth = false),

@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.DialogProperties
@@ -29,6 +30,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import xyz.hyli.connect.R
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
 import xyz.hyli.connect.composeprefs3.ifNotNullThen
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
@@ -157,7 +159,7 @@ fun EditTextPref(
                         showDialog = false
                     }
                 ) {
-                    Text("Save", style = HyliConnectTypography.bodyLarge)
+                    Text(stringResource(id = R.string.composeprefs_save), style = HyliConnectTypography.bodyLarge)
                 }
             },
             dismissButton = {
@@ -165,7 +167,7 @@ fun EditTextPref(
                     modifier = Modifier.padding(end = 16.dp),
                     onClick = { showDialog = false }
                 ) {
-                    Text("Cancel", style = HyliConnectTypography.bodyLarge)
+                    Text(stringResource(id = R.string.composeprefs_cancel), style = HyliConnectTypography.bodyLarge)
                 }
             },
             properties = DialogProperties(usePlatformDefaultWidth = false),

@@ -75,4 +75,7 @@
     <string name="working_mode_shizuku">Shizuku Mode</string>
     <string name="working_mode_root">Root Mode</string>
     <string name="page_connect_no_device_connected">No device connected</string>
+    <string name="composeprefs_save">Save</string>
+    <string name="composeprefs_cancel">Cancel</string>
+    <string name="composeprefs_select">Select</string>
 </resources>

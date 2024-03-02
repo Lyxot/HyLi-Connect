@@ -10,3 +10,4 @@ JamalMulla/ComposePrefs3: [https://github.com/JamalMulla/ComposePrefs3](https://
 * Add Icon in `ListPref`, `MultiSelectListPref`, `DropDownPref`
 * Forbid an empty input in `EditTextPref`
 * Add `EditIntPref` (similar with `EditTextPref`)
+* Add Chinese Translation
