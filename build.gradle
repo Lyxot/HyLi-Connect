@@ -24,7 +24,7 @@ buildscript {
 //        classpath "com.didiglobal.booster:booster-task-compression-pngquant:$booster_version"
 //        classpath "io.johnsonlee.booster:booster-pngquant-provider:2.4.0"
 //        classpath "com.didiglobal.booster:booster-task-compression-cwebp:$booster_version"
-            classpath "com.didiglobal.booster:booster-task-compression-processed-res:$booster_version"
+//            classpath "com.didiglobal.booster:booster-task-compression-processed-res:$booster_version"
 //            classpath "com.didiglobal.booster:booster-transform-r-inline:$booster_version"
 //            classpath "com.didiglobal.booster:booster-transform-br-inline:$booster_version"
             classpath "com.didiglobal.booster:booster-transform-activity-thread:$booster_version"
