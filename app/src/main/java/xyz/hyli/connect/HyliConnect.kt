@@ -14,6 +14,7 @@ import rikka.shizuku.Shizuku
 import rikka.sui.Sui
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.MessageQueue
+import xyz.hyli.connect.bean.MessageReceiveListener
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.service.ControlService
@@ -91,7 +92,10 @@ open class HyliConnect : Application() {
         lateinit var deviceInfoMap: ConcurrentHashMap<String, DeviceInfo>
 
         // ip: blockingQueue
-        lateinit var blockingQueueMap: ConcurrentHashMap<String, BlockingQueue<MessageQueue>>
+        lateinit var sendMessageQueueMap: ConcurrentHashMap<String, BlockingQueue<MessageQueue>>
+
+        // ip: set<listener>
+        lateinit var receiveMessageListenerMap: ConcurrentHashMap<String, MutableSet<MessageReceiveListener>>
 
         init {
             Sui.init(BuildConfig.APPLICATION_ID)
@@ -106,7 +110,8 @@ open class HyliConnect : Application() {
         outputStreamMap = ConcurrentHashMap()
         connectionMap = ConcurrentHashMap()
         deviceInfoMap = ConcurrentHashMap()
-        blockingQueueMap = ConcurrentHashMap()
+        sendMessageQueueMap = ConcurrentHashMap()
+        receiveMessageListenerMap = ConcurrentHashMap()
         me = this
         super.onCreate()
         startForegroundService(Intent(this, SocketService::class.java))

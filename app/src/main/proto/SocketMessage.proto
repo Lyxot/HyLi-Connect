@@ -24,17 +24,19 @@ message Header {
 }
 
 enum TYPE {
-  REQUEST = 0;
-  RESPONSE = 1;
-  BROADCAST = 2;
-  FORWARD = 3;
-  HEARTBEAT = 4;
+  UNDEFINED_TYPE = 0;
+  REQUEST = 1;
+  RESPONSE = 2;
+  BROADCAST = 3;
+  FORWARD = 4;
+  HEARTBEAT = 5;
 }
 enum COMMAND {
-  GET_INFO = 0;
-  CONNECT = 1;
-  DISCONNECT = 2;
-  GET_CLIENTS = 3;
+  UNDEFINED_COMMAND = 0;
+  GET_INFO = 1;
+  CONNECT = 2;
+  DISCONNECT = 3;
+  GET_CLIENTS = 4;
 }
 enum STATUS {
   SUCCESS = 0;

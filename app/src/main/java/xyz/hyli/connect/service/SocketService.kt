@@ -161,11 +161,11 @@ class SocketService : Service() {
 
                                 HyliConnect.inputStreamMap[IPAddress] = inputStream
                                 HyliConnect.outputStreamMap[IPAddress] = outputStream
-                                HyliConnect.blockingQueueMap[IPAddress] = LinkedBlockingQueue()
+                                HyliConnect.sendMessageQueueMap[IPAddress] = LinkedBlockingQueue()
                                 GlobalScope.launch(context = Dispatchers.IO) {
                                     while (HyliConnect.socketMap.containsKey(IPAddress)) {
                                         try {
-                                            val mq = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
+                                            val mq = HyliConnect.sendMessageQueueMap[IPAddress]?.take()!!
                                             if (mq.dropTime != 0L && mq.dropTime < System.currentTimeMillis()) {
                                                 Log.i(TAG, "Drop message: $IPAddress ${mq.messageBody}")
                                             } else {
@@ -243,11 +243,11 @@ class SocketService : Service() {
 
                 HyliConnect.inputStreamMap[IPAddress] = inputStream
                 HyliConnect.outputStreamMap[IPAddress] = outputStream
-                HyliConnect.blockingQueueMap[IPAddress] = LinkedBlockingQueue()
+                HyliConnect.sendMessageQueueMap[IPAddress] = LinkedBlockingQueue()
                 GlobalScope.launch(context = Dispatchers.IO) {
                     while (HyliConnect.socketMap.containsKey(IPAddress)) {
                         try {
-                            val mq = HyliConnect.blockingQueueMap[IPAddress]?.take()!!
+                            val mq = HyliConnect.sendMessageQueueMap[IPAddress]?.take()!!
                             if (mq.dropTime != 0L && mq.dropTime < System.currentTimeMillis()) {
                                 Log.i(TAG, "Drop message: $IPAddress ${mq.messageBody}")
                             } else {

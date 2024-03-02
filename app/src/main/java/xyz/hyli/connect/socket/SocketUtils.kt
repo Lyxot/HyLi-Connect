@@ -5,6 +5,7 @@ import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.MessageQueue
+import xyz.hyli.connect.bean.MessageReceiveListener
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.proto.ConnectProto
 import xyz.hyli.connect.proto.InfoProto
@@ -18,19 +19,23 @@ object SocketUtils {
         HyliConnect.socketMap.remove(ip)
         HyliConnect.inputStreamMap.remove(ip)
         HyliConnect.outputStreamMap.remove(ip)
-        HyliConnect.blockingQueueMap.remove(ip)
+        HyliConnect.sendMessageQueueMap.remove(ip)
+        HyliConnect.receiveMessageListenerMap.remove(ip)
         HyliConnect.connectionMap.remove(ip)
     }
     fun closeAllConnection() {
         HyliConnect.socketMap.forEach {
-            it.value.close()
+            closeConnection(it.key)
         }
+        HyliConnect.socketMap.clear()
+        HyliConnect.deviceInfoMap.clear()
         HyliConnect.uuidMap.clear()
         HyliConnect.socketMap.clear()
         HyliConnect.inputStreamMap.clear()
         HyliConnect.outputStreamMap.clear()
+        HyliConnect.sendMessageQueueMap.clear()
+        HyliConnect.receiveMessageListenerMap.clear()
         HyliConnect.connectionMap.clear()
-        HyliConnect.deviceInfoMap.clear()
     }
     fun acceptConnection(ip: String, deviceInfo: DeviceInfo) {
         HyliConnect.uuidMap[ip] = deviceInfo.uuid
@@ -66,7 +71,14 @@ object SocketUtils {
             .setUuid(PreferencesDataStore.getConfigMap()["uuid"].toString())
             .setSTATUS(SocketMessage.STATUS.FAILED)
             .setData(messageData.toByteString())
-        sendMessage(ip, messageBody, onMessageSend = { closeConnection(ip) })
+        sendMessage(
+            ip,
+            messageBody,
+            onMessageSend = {
+                disconnectRequest(ip)
+                closeConnection(ip)
+            }
+        )
     }
     fun sendHeartbeat(ip: String) {
         val messageBody = SocketMessage.Body.newBuilder()
@@ -130,7 +142,7 @@ object SocketUtils {
         onMessageSend: (() -> Unit) = {
         }
     ) {
-        HyliConnect.blockingQueueMap[ip]?.put(
+        HyliConnect.sendMessageQueueMap[ip]?.put(
             MessageQueue(
                 messageBody,
                 dropTime,
@@ -158,5 +170,47 @@ object SocketUtils {
             Log.e("SocketUtils", "Send message error: $ip ${e.message}")
 //            closeConnection(ip)
         }
+    }
+    fun registerReceiveMessageListener(
+        ip: String,
+        className: String,
+        type: SocketMessage.TYPE,
+        command: SocketMessage.COMMAND,
+        unregisterAfterReceived: Boolean = false,
+        onMessageReceive: (SocketMessage.Body) -> Unit
+    ) {
+        if (HyliConnect.receiveMessageListenerMap[ip] == null) {
+            HyliConnect.receiveMessageListenerMap[ip] = mutableSetOf()
+        }
+        HyliConnect.receiveMessageListenerMap[ip]?.add(
+            MessageReceiveListener(
+                className,
+                type,
+                command,
+                onMessageReceive,
+                unregisterAfterReceived
+            )
+        )
+        Log.i("SocketUtils", "Register receive message listener: $ip $className $type $command")
+    }
+
+    fun unregisterReceiveMessageListener(
+        ip: String,
+        className: String,
+        type: SocketMessage.TYPE,
+        command: SocketMessage.COMMAND,
+        unregisterAfterReceived: Boolean = false,
+        onMessageReceive: (SocketMessage.Body) -> Unit
+    ) {
+        HyliConnect.receiveMessageListenerMap[ip]?.remove(
+            MessageReceiveListener(
+                className,
+                type,
+                command,
+                onMessageReceive,
+                unregisterAfterReceived
+            )
+        )
+        Log.i("SocketUtils", "Unregister receive message listener: $ip $className $type $command")
     }
 }
