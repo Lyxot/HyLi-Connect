@@ -175,42 +175,46 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.22"))
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
-    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    implementation(platform("androidx.compose:compose-bom:2024.02.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3-window-size-class-android:1.2.0-beta02")
-    implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation("androidx.compose.material3:material3-window-size-class-android:1.2.0")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.02.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.0-rc01")
-    implementation("androidx.compose.material3:material3:1.1.2")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.2")
+    implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     //noinspection GradleDependency
     implementation("io.github.biezhi:TinyPinyin:2.0.3.RELEASE")
     implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.45")
     implementation("com.google.android.material:material:1.11.0")
-    implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.0")
-    implementation("br.com.devsrsouza.compose.icons:line-awesome:1.1.0")
-    implementation("br.com.devsrsouza.compose.icons:css-gg:1.1.0")
     implementation("androidx.startup:startup-runtime:1.1.1")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    implementation("com.google.protobuf:protobuf-java:3.25.2")
-    implementation("com.google.protobuf:protobuf-kotlin:3.25.2")
-    implementation("com.google.protobuf:protoc:3.25.2")
 
-    val accompanist_version = "0.32.0"
+    val compose_icons_version = "1.1.0"
+    implementation("br.com.devsrsouza.compose.icons:font-awesome:$compose_icons_version")
+    implementation("br.com.devsrsouza.compose.icons:line-awesome:$compose_icons_version")
+    implementation("br.com.devsrsouza.compose.icons:css-gg:$compose_icons_version")
+
+    val protobuf_version = "3.25.2"
+    implementation("com.google.protobuf:protobuf-java:$protobuf_version")
+    implementation("com.google.protobuf:protobuf-kotlin:$protobuf_version")
+    implementation("com.google.protobuf:protoc:$protobuf_version")
+
+    val accompanist_version = "0.34.0"
     implementation("com.google.accompanist:accompanist-adaptive:$accompanist_version")
     implementation("com.google.accompanist:accompanist-navigation-animation:$accompanist_version")
-
-    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
-    compileOnly(files("libs/XposedBridgeAPI-89.jar"))
 
     val shizuku_version = "13.1.5"
     implementation("dev.rikka.shizuku:api:$shizuku_version")
     implementation("dev.rikka.shizuku:provider:$shizuku_version")
+
+    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
+    compileOnly(files("libs/XposedBridgeAPI-89.jar"))
 }
