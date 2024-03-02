@@ -74,4 +74,5 @@
     <string name="working_mode_basic">Basic Mode</string>
     <string name="working_mode_shizuku">Shizuku Mode</string>
     <string name="working_mode_root">Root Mode</string>
+    <string name="page_connect_no_device_connected">No device connected</string>
 </resources>

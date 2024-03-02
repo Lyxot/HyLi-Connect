@@ -503,33 +503,6 @@ fun ConnectScreen(
                 item {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItemPlacement(animationSpec = tween(400))
-                    ) {
-                        Text(text = stringResource(id = R.string.page_connect_available_devices))
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(horizontal = 2.dp)
-                                .align(Alignment.CenterVertically)
-                                .clickable {
-                                    /*TODO(Manual Connect)*/
-                                }
-                        )
-                    }
-                }
-                if (nsdDeviceMap.isEmpty()) {
-                    item {
-                        EmptyDeviceCard()
-                    }
-                }
-                items(nsdDeviceMap.values.toList()) { deviceInfo ->
-                    DeviceCard(deviceInfo)
-                }
-                item {
-                    Row(
-                        modifier = Modifier
                             .animateItemPlacement(
                                 animationSpec = tween(400)
                             )
@@ -556,6 +529,49 @@ fun ConnectScreen(
                 }
                 items(connectedDeviceMap.values.toList()) { deviceInfo ->
                     DeviceCard(deviceInfo, navController, viewModel)
+                }
+                if (connectedDeviceMap.isEmpty()) {
+                    item {
+                        DeviceCard(
+                            deviceInfo = DeviceInfo(
+                                api_version = 0,
+                                app_version = 0,
+                                app_version_name = "",
+                                platform = "",
+                                uuid = "",
+                                nickname = stringResource(id = R.string.page_connect_no_device_connected),
+                                ip_address = mutableListOf(),
+                                port = 0
+                            )
+                        )
+                    }
+                }
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItemPlacement(animationSpec = tween(400))
+                    ) {
+                        Text(text = stringResource(id = R.string.page_connect_available_devices))
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(horizontal = 2.dp)
+                                .align(Alignment.CenterVertically)
+                                .clickable {
+                                    /*TODO(Manual Connect)*/
+                                }
+                        )
+                    }
+                }
+                if (nsdDeviceMap.isEmpty()) {
+                    item {
+                        EmptyDeviceCard()
+                    }
+                }
+                items(nsdDeviceMap.values.toList()) { deviceInfo ->
+                    DeviceCard(deviceInfo)
                 }
             })
         }
@@ -641,22 +657,7 @@ private fun DeviceCard(
                         )
                     }
                     FlowRow {
-                        Card(
-                            modifier = Modifier.padding(end = 6.dp, top = 4.dp),
-                            colors = CardColors(
-                                containerColor = HyliConnectColorScheme().tertiaryContainer,
-                                contentColor = HyliConnectColorScheme().onTertiaryContainer,
-                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
-                            )
-                        ) {
-                            Text(
-                                text = deviceInfo.platform,
-                                modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
-                                style = HyliConnectTypography.labelMedium
-                            )
-                        }
-                        deviceInfo.ip_address.forEach {
+                        if (deviceInfo.platform != "") {
                             Card(
                                 modifier = Modifier.padding(end = 6.dp, top = 4.dp),
                                 colors = CardColors(
@@ -667,10 +668,29 @@ private fun DeviceCard(
                                 )
                             ) {
                                 Text(
-                                    text = it,
+                                    text = deviceInfo.platform,
                                     modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
                                     style = HyliConnectTypography.labelMedium
                                 )
+                            }
+                        }
+                        if (deviceInfo.ip_address.isNotEmpty()) {
+                            deviceInfo.ip_address.forEach {
+                                Card(
+                                    modifier = Modifier.padding(end = 6.dp, top = 4.dp),
+                                    colors = CardColors(
+                                        containerColor = HyliConnectColorScheme().tertiaryContainer,
+                                        contentColor = HyliConnectColorScheme().onTertiaryContainer,
+                                        disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                        disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                    )
+                                ) {
+                                    Text(
+                                        text = it,
+                                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
+                                        style = HyliConnectTypography.labelMedium
+                                    )
+                                }
                             }
                         }
                     }

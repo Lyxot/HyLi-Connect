@@ -63,4 +63,5 @@
     <string name="working_mode_basic">"基础模式"</string>
     <string name="working_mode_shizuku">"Shizuku模式"</string>
     <string name="working_mode_root">"Root模式"</string>
+    <string name="page_connect_no_device_connected">无设备连接</string>
 </resources>
