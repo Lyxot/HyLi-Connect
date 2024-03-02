@@ -49,10 +49,20 @@ jobs:
           export code=$(git rev-list --count HEAD refs/remotes/origin/canary)
           echo CODE=$code >> $GITHUB_ENV
           echo CODE=$code
+
+          echo BRANCH=$(git branch --show-current) >> $GITHUB_ENV
       - name: Prepare for building
         run: |
           chmod +x gradlew
           base64 --decode <<< "${{ secrets.RELEASE_KEY }}" > "${{ env.ANDROID_KEYSTORE_FILE }}"
+      - name: Cache dict.txt
+        uses: actions/cache@v4
+        env:
+          BRANCH: ${{ env.BRANCH }}
+        with:
+          path: |
+            app/dict.txt
+          key: ${{ runner.os }}-dict.txt-${{ env.BRANCH }}
       - name: Setup Gradle & Build APK
         uses: gradle/gradle-build-action@v3
         with:
