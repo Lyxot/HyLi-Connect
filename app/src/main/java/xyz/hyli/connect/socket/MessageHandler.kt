@@ -1,6 +1,7 @@
 package xyz.hyli.connect.socket
 
 import android.content.Intent
+import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
@@ -26,12 +27,23 @@ object MessageHandler {
 //            return
 //        }
 
+        Log.i("MessageHandler", "Received message from $ip: ${body.type} ${body.cmd}")
+        Log.i("MessageHandler", "${HyliConnect.receiveMessageListenerMap}")
+        HyliConnect.receiveMessageListenerMap[ip]?.filter {
+            it.type == body.type && it.command == body.cmd
+        }?.forEach {
+            it.onMessageReceive(body)
+            if (it.unregisterAfterReceived) {
+                HyliConnect.receiveMessageListenerMap[ip]?.remove(it)
+            }
+        }
+
         when (body.type) {
+            SocketMessage.TYPE.HEARTBEAT -> heartbeatHandler(ip, body, broadcastManager)
             SocketMessage.TYPE.REQUEST -> requestHandler(ip, body, broadcastManager)
             SocketMessage.TYPE.RESPONSE -> responseHandler(ip, body, broadcastManager)
             SocketMessage.TYPE.BROADCAST -> broadcastHandler(ip, body, broadcastManager)
             SocketMessage.TYPE.FORWARD -> forwardHandler(ip, body, broadcastManager)
-            SocketMessage.TYPE.HEARTBEAT -> heartbeatHandler(ip, body, broadcastManager)
             else -> return
         }
     }
