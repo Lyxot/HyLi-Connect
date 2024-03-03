@@ -5,7 +5,7 @@ buildscript {
     }
     ext.kotlin_version = '1.9.22'
     ext.protobuf_version = '0.9.4'
-    ext.booster_version = '5.0.0-alpha2'
+    ext.booster_version = '5.0.0-beta7'
     repositories {
         google()
         mavenCentral()
