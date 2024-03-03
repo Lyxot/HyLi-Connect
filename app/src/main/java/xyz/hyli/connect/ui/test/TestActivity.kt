@@ -74,9 +74,9 @@ class TestActivity : AppCompatActivity() {
         }
         GlobalScope.launch(Dispatchers.IO) {
             appList = async { PackageUtils.GetAppList(packageManager) }
-            UUID = async { PreferencesDataStore.getConfigMap()["uuid"].toString() }
+            UUID = async { PreferencesDataStore.uuid.getBlocking()!! }
             IP_ADDRESS = async { NetworkUtils.getLocalIPInfo(this@TestActivity) }
-            NICKNAME = async { PreferencesDataStore.getConfigMap()["nickname"].toString() }
+            NICKNAME = async { PreferencesDataStore.nickname.getBlocking()!! }
         }
         GlobalScope.launch(Dispatchers.Main) {
             textView.text = "UUID: ${UUID?.await()}\nIP_ADDRESS: ${IP_ADDRESS?.await()}\nNICKNAME: ${NICKNAME?.await()}"

@@ -1,18 +1,38 @@
 package xyz.hyli.connect.datastore
 
 import android.os.Build
-import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat.getString
 import kotlinx.coroutines.runBlocking
-import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
 import java.util.UUID.randomUUID
-import java.util.concurrent.ConcurrentHashMap
 
 object PreferencesDataStore : DataStoreOwner("preferences") {
-    private var isInit = false
-    private val configMap = ConcurrentHashMap<String, Any>()
+    val last_run_version_code by intPreference(0)
+    val uuid by stringPreference()
+    val nickname by stringPreference()
+    val platform by intPreference()
+    val server_port by intPreference()
+    val nsd_service by booleanPreference()
+    val working_mode by intPreference()
+    val function_app_streaming by booleanPreference()
+    val function_notification_forward by booleanPreference()
+    val connect_to_myself by booleanPreference()
+
+    init {
+        runBlocking {
+            if (uuid.get().isNullOrEmpty()) uuid.set(randomUUID().toString())
+            if (nickname.get().isNullOrEmpty()) nickname.set(Build.BRAND + " " + Build.MODEL)
+            if (platform.get() == null || platform.get() !in 0..6) platform.set(0)
+            if (server_port.get() == null || server_port.get() !in 1024..65535) server_port.set(15732)
+            if (nsd_service.get() == null) nsd_service.set(true)
+            if (working_mode.get() == null) working_mode.set(0)
+            if (function_app_streaming.get() == null) function_app_streaming.set(false)
+            if (function_notification_forward.get() == null) function_notification_forward.set(false)
+            if (connect_to_myself.get() == null) connect_to_myself.set(false)
+        }
+    }
+
     val platformMap = linkedMapOf(
         0 to "Android Phone",
         1 to "Android TV",
@@ -27,45 +47,4 @@ object PreferencesDataStore : DataStoreOwner("preferences") {
         1 to getString(HyliConnect().getContext(), R.string.working_mode_shizuku),
         2 to getString(HyliConnect().getContext(), R.string.working_mode_root),
     )
-
-    val last_run_version_code by intPreference(0)
-    val uuid by stringPreference()
-    val nickname by stringPreference()
-    val platform by intPreference()
-    val server_port by intPreference()
-    val nsd_service by booleanPreference()
-    val working_mode by intPreference()
-    val function_app_streaming by booleanPreference()
-    val function_notification_forward by booleanPreference()
-    val connect_to_myself by booleanPreference()
-
-    private fun refresh() {
-        runBlocking {
-            if (uuid.get().isNullOrEmpty()) uuid.set(randomUUID().toString())
-            if (nickname.get().isNullOrEmpty()) nickname.set(Build.BRAND + " " + Build.MODEL)
-            if (platform.get() == null || platform.get() !in 0..6) platform.set(0)
-            if (server_port.get() == null || server_port.get() !in 1024..65535) server_port.set(15732)
-            if (nsd_service.get() == null) nsd_service.set(true)
-            if (working_mode.get() == null) working_mode.set(0)
-            if (function_app_streaming.get() == null) function_app_streaming.set(false)
-            if (function_notification_forward.get() == null) function_notification_forward.set(false)
-            if (connect_to_myself.get() == null) connect_to_myself.set(false)
-
-            configMap["uuid"] = uuid.get()!!
-            configMap["nickname"] = nickname.get()!!
-            configMap["platform"] = platformMap[platform.get()]!!
-            configMap["server_port"] = server_port.get()!!
-            configMap["nsd_service"] = nsd_service.get()!!
-            configMap["working_mode"] = working_mode.get()!!
-            configMap["function_app_streaming"] = function_app_streaming.get()!!
-            configMap["function_notification_forward"] = function_notification_forward.get()!!
-            configMap["connect_to_myself"] = connect_to_myself.get()!!
-            isInit = true
-        }
-    }
-
-    fun getConfigMap(refresh: Boolean = true): MutableMap<String, Any> {
-        if (isInit.not() || configMap.isEmpty() || refresh) refresh()
-        return configMap
-    }
 }
