@@ -3,6 +3,7 @@ package xyz.hyli.connect.datastore
 import android.os.Build
 import androidx.core.content.ContextCompat.getString
 import kotlinx.coroutines.runBlocking
+import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
 import java.util.UUID.randomUUID
@@ -29,7 +30,7 @@ object PreferencesDataStore : DataStoreOwner("preferences") {
             if (working_mode.get() == null) working_mode.set(0)
             if (function_app_streaming.get() == null) function_app_streaming.set(false)
             if (function_notification_forward.get() == null) function_notification_forward.set(false)
-            if (connect_to_myself.get() == null) connect_to_myself.set(false)
+            if (connect_to_myself.get() == null) connect_to_myself.set(BuildConfig.DEBUG)
         }
     }
 
