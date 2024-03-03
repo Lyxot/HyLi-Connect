@@ -104,13 +104,11 @@ private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
 
 @Composable
 private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: State<Boolean?>) {
-    val semaphore = remember { Semaphore(1) }
     val mNsdManager = remember { context.getSystemService(Context.NSD_SERVICE) as NsdManager }
     val mResolverListener = object : NsdManager.ResolveListener {
         override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
             // Called when the resolve fails. Use the error code to debug.
             Log.e("mResolverListener", "Resolve failed $errorCode")
-            semaphore.release()
         }
         override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
             Log.i("mResolverListener", "Resolve Succeeded. $serviceInfo")
@@ -126,7 +124,7 @@ private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: Sta
             val ip_address = String(attributes["ip_addr"] ?: byteArrayOf())
 
             // Filter out self
-            if (uuid == UUID.value && BuildConfig.DEBUG.not() && !connectToMyself.value!!) {
+            if (uuid == UUID.value && !connectToMyself.value!!) {
                 return
             }
             // Filter out connected
@@ -156,7 +154,6 @@ private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: Sta
                     port = port
                 )
             }
-            semaphore.release()
         }
     }
     val mDiscoveryListener = object : NsdManager.DiscoveryListener {
@@ -165,10 +162,7 @@ private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: Sta
         }
         override fun onServiceFound(service: NsdServiceInfo) {
             Log.d("mDiscoveryListener", "Service discovery success $service")
-            thread {
-                semaphore.acquire()
-                mNsdManager.resolveService(service, mResolverListener)
-            }
+            mNsdManager.resolveService(service, mResolverListener)
         }
         override fun onServiceLost(service: NsdServiceInfo) {
             Log.e("mDiscoveryListener", "service lost $service")
