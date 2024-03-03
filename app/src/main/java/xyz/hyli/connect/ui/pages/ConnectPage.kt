@@ -217,9 +217,8 @@ fun ConnectScreen(
     connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
     connectedDeviceMap = viewModel.connectedDeviceMap
 
-    val configMap = remember { PreferencesDataStore.getConfigMap(true) }
-    val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = configMap["nickname"].toString())
-    val UUID = PreferencesDataStore.uuid.asFlow().collectAsState(initial = configMap["uuid"].toString())
+    val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = "")
+    val UUID = PreferencesDataStore.uuid.asFlow().collectAsState(initial = "")
     val IP_ADDRESS = remember { NetworkUtils.getLocalIPInfo(context) }
 
     InitNsd(context, UUID, PreferencesDataStore.connect_to_myself.asFlow().collectAsState(initial = false))
@@ -648,7 +647,7 @@ private fun DeviceCard(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = when (deviceInfo.uuid) {
-                                PreferencesDataStore.getConfigMap()["uuid"].toString() -> {
+                                PreferencesDataStore.uuid.getBlocking()!! -> {
                                     deviceInfo.nickname + " (" + stringResource(id = R.string.page_connect_this_device) + ")"
                                 }
                                 else -> { deviceInfo.nickname }
@@ -856,7 +855,7 @@ private fun checkShizukuPermission(context: Context): Boolean {
 
         result
     }
-    if (PreferencesDataStore.getConfigMap(true)["function_app_streaming"] == true && PreferencesDataStore.getConfigMap()["working_mode"] in 1..2) {
+    if (PreferencesDataStore.function_app_streaming.getBlocking()!! && PreferencesDataStore.working_mode.getBlocking()!! in 1..2) {
         toast?.show()
     }
     return b

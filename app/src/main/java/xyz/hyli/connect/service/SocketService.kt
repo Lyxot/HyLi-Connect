@@ -80,7 +80,6 @@ class SocketService : Service() {
     }
     private lateinit var localBroadcastManager: LocalBroadcastManager
     private lateinit var checkConnectionJob: Job
-    private lateinit var configMap: MutableMap<String, Any>
 
     override fun onCreate() {
         super.onCreate()
@@ -97,8 +96,7 @@ class SocketService : Service() {
         return Binder()
     }
     private fun init() {
-        configMap = PreferencesDataStore.getConfigMap(true)
-        serverPort = configMap["server_port"] as Int
+        serverPort = PreferencesDataStore.server_port.getBlocking()!!
         startServer(serverPort)
         registerNsdService()
         checkConnection()
@@ -348,8 +346,8 @@ class SocketService : Service() {
         }
         HyliConnect.serviceStateMap["NsdService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_nsd_service)))
 
-        val uuid = configMap["uuid"].toString()
-        val nickname = configMap["nickname"].toString()
+        val uuid = PreferencesDataStore.uuid.getBlocking()!!
+        val nickname = PreferencesDataStore.nickname.getBlocking()!!
         val mNsdServiceInfo = NsdServiceInfo().apply {
             serviceName = "HyliConnect@$uuid"
             serviceType = "_hyli-connect._tcp."
@@ -360,7 +358,7 @@ class SocketService : Service() {
         mNsdServiceInfo.setAttribute("api", API_VERSION.toString())
         mNsdServiceInfo.setAttribute("app", BuildConfig.VERSION_CODE.toString())
         mNsdServiceInfo.setAttribute("app_name", BuildConfig.VERSION_NAME)
-        mNsdServiceInfo.setAttribute("platform", configMap["platform"].toString())
+        mNsdServiceInfo.setAttribute("platform", PreferencesDataStore.platformMap[PreferencesDataStore.platform.getBlocking()!!])
         mNsdServiceInfo.setAttribute("ip_addr", NetworkUtils.getLocalIPInfo(this)["wlan0"] ?: "0.0.0.0")
         mNsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
         NsdRegistrationListener = object : NsdManager.RegistrationListener {

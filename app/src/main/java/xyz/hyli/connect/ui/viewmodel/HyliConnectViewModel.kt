@@ -94,7 +94,7 @@ class HyliConnectViewModel : ViewModel() {
         val serviceStateList: MutableList<String> = mutableListOf()
         serviceMap.keys.forEach {
             if (HyliConnect.serviceStateMap.containsKey(it)) {
-                if (it == "NsdService" && PreferencesDataStore.getConfigMap(true)["nsd_service"] == false) {
+                if (it == "NsdService" && PreferencesDataStore.nsd_service.getBlocking() == false) {
                     serviceStateList.add("running")
                 } else {
                     serviceStateList.add(HyliConnect.serviceStateMap[it]!!.state)
@@ -131,9 +131,8 @@ class HyliConnectViewModel : ViewModel() {
             "Overlay"
         )
         HyliConnect.permissionStateMap["Overlay"] = PermissionUtils.checkOverlayPermission(context)
-        val configMap = PreferencesDataStore.getConfigMap(true)
-        if (configMap["function_app_streaming"] == true) {
-            when (configMap["working_mode"]) {
+        if (PreferencesDataStore.function_app_streaming.getBlocking() == true) {
+            when (PreferencesDataStore.working_mode.getBlocking()) {
                 1 -> {
                     keyPermissionList.add("Shizuku")
                 }
@@ -145,7 +144,7 @@ class HyliConnectViewModel : ViewModel() {
                 HyliConnect.permissionStateMap["Xposed"] = HookTest().checkXposed()
             }
         }
-        if (configMap["function_notification_forward"] == true) {
+        if (PreferencesDataStore.function_notification_forward.getBlocking() == true) {
             keyPermissionList.add("NotificationListener")
             HyliConnect.permissionStateMap["NotificationListener"] = PermissionUtils.checkNotificationListenerPermission(context)
         }

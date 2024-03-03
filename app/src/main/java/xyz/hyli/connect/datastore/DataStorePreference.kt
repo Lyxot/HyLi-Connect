@@ -8,6 +8,7 @@ import androidx.lifecycle.asLiveData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 
 operator fun <V> Preferences.get(preference: DataStorePreference<V>) = this[preference.key]
 
@@ -37,4 +38,6 @@ open class DataStorePreference<V>(
     suspend fun get(): V? = asFlow().first()
 
     suspend fun getOrDefault(): V = get() ?: throw IllegalStateException("No default value")
+
+    fun getBlocking(): V? = runBlocking { get() }
 }

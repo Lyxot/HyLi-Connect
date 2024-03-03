@@ -189,7 +189,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.2")
     implementation("androidx.compose.material3:material3:1.2.0")
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    api("androidx.datastore:datastore-preferences:1.1.0-beta01")
     //noinspection GradleDependency
     implementation("io.github.biezhi:TinyPinyin:2.0.3.RELEASE")
     implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.45")
