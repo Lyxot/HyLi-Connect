@@ -77,10 +77,17 @@ android {
         }
         if (System.getenv("CI") != null) {
             create("release") {
-                storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
-                storePassword = System.getenv("RELEASE_KEY_STORE_PASSWORD")
-                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
-                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+                if (System.getenv("release_key_exists").equals("true")) {
+                    storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
+                    storePassword = System.getenv("RELEASE_KEY_STORE_PASSWORD")
+                    keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                    keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+                } else {
+                    storeFile = file("debug-key.jks")
+                    storePassword = "androiddebug"
+                    keyAlias = "key0"
+                    keyPassword = "androiddebug"
+                }
                 enableV1Signing = true
                 enableV2Signing = true
                 enableV3Signing = true
