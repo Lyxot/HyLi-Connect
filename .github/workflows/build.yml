@@ -52,9 +52,11 @@ jobs:
 
           echo BRANCH=$(git branch --show-current) >> $GITHUB_ENV
       - name: Prepare for building
+        id: prepare
         run: |
           chmod +x gradlew
           base64 --decode <<< "${{ secrets.RELEASE_KEY }}" > "${{ env.ANDROID_KEYSTORE_FILE }}"
+          grep -q '[^[:space:]]' "${{ env.ANDROID_KEYSTORE_FILE }}" && echo release_key_exists=true >> $GITHUB_ENV || echo release_key_exists=false >> $GITHUB_ENV
       - name: Cache dict.txt
         uses: actions/cache@v4
         env:
@@ -76,22 +78,29 @@ jobs:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
           RELEASE_KEY_STORE_PASSWORD: ${{ secrets.RELEASE_KEY_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          release_key_exists: ${{ env.release_key_exists }}
       - name: Upload built apk
-        if: success()
+        env:
+          release_key_exists: ${{ env.release_key_exists }}
+        if: success() && env.release_key_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: apk
           path: |
             app/build/outputs/apk/release/*.apk
       - name: Upload signature
-        if: success()
+        env:
+          release_key_exists: ${{ env.release_key_exists }}
+        if: success() && env.release_key_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: signature_v4
           path: |
             app/build/outputs/apk/release/*.idsig
       - name: Upload mappings
-        if: success()
+        env:
+          release_key_exists: ${{ env.release_key_exists }}
+        if: success() && env.release_key_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: mappings
