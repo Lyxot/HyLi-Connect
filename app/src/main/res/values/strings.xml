@@ -78,4 +78,7 @@
     <string name="composeprefs_save">Save</string>
     <string name="composeprefs_cancel">Cancel</string>
     <string name="composeprefs_select">Select</string>
+    <string name="page_settings_reset_all_settings">Reset All Settings</string>
+    <string name="composeprefs_confirm">Confirm</string>
+    <string name="page_settings_reset_all_settings_confirm">Confirm reset all settings?</string>
 </resources>

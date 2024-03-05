@@ -16,9 +16,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -30,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat.getString
 import androidx.navigation.NavHostController
 import compose.icons.CssGgIcons
@@ -42,16 +49,21 @@ import compose.icons.lineawesomeicons.DesktopSolid
 import compose.icons.lineawesomeicons.Github
 import compose.icons.lineawesomeicons.MobileAltSolid
 import compose.icons.lineawesomeicons.TvSolid
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
+import xyz.hyli.connect.composeprefs3.PrefsItem
 import xyz.hyli.connect.composeprefs3.PrefsScreen
 import xyz.hyli.connect.composeprefs3.prefs.DropDownPref
 import xyz.hyli.connect.composeprefs3.prefs.EditIntPref
 import xyz.hyli.connect.composeprefs3.prefs.EditTextPref
 import xyz.hyli.connect.composeprefs3.prefs.ListPref
 import xyz.hyli.connect.composeprefs3.prefs.SwitchPref
+import xyz.hyli.connect.composeprefs3.prefs.TextPref
 import xyz.hyli.connect.datastore.PreferencesDataStore
+import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 
@@ -157,12 +169,16 @@ fun SettingsScreen(
                             if (it.contains("Shizuku")) {
                                 HyliConnect.me.initShizuku()
                             }
+                            if (!it.contains("Shizuku") && !it.contains("Root")) {
+                                MainScope().launch { PreferencesDataStore.function_app_streaming.reset() }
+                            }
                         }
                     )
                 }
                 prefsItem {
                     SwitchPref(
                         key = "function_app_streaming",
+                        enabled = PreferencesDataStore.working_mode.asFlow().collectAsState(initial = 0).value != 0,
                         title = stringResource(id = R.string.page_settings_app_streaming),
                         summary = stringResource(id = R.string.page_settings_app_streaming_summary))
                 }
@@ -180,6 +196,47 @@ fun SettingsScreen(
                         key = "connect_to_myself",
                         title = stringResource(id = R.string.page_settings_connect_to_myself)
                     )
+                }
+                prefsItem {
+                    val showResetDialog = remember { mutableStateOf(false) }
+                    TextPref(
+                        title = stringResource(id = R.string.page_settings_reset_all_settings),
+                        enabled = true,
+                        leadingIcon = { Icon(Icons.Default.Refresh, contentDescription = null) },
+                        onClick = {
+                            showResetDialog.value = true
+                        }
+                    )
+                    if (showResetDialog.value) {
+                        AlertDialog(
+                            modifier = Modifier.fillMaxWidth(0.9f),
+                            onDismissRequest = { showResetDialog.value = false },
+                            title = { Text(stringResource(id = R.string.page_settings_reset_all_settings_confirm), style = HyliConnectTypography.titleLarge, modifier = Modifier.padding(16.dp)) },
+                            confirmButton = {
+                                TextButton(
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    onClick = {
+                                        MainScope().launch { 
+                                            PreferencesDataStore.resetAll()
+                                        }
+                                        showResetDialog.value = false
+                                    }
+                                ) {
+                                    Text(stringResource(id = R.string.composeprefs_confirm), style = HyliConnectTypography.bodyLarge)
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    onClick = { showResetDialog.value = false }
+                                ) {
+                                    Text(stringResource(id = R.string.composeprefs_cancel), style = HyliConnectTypography.bodyLarge)
+                                }
+                            },
+                            properties = DialogProperties(usePlatformDefaultWidth = false),
+                            containerColor = HyliConnectColorScheme().background
+                        )
+                    }
                 }
             }
             prefsGroup(getString(context, R.string.page_settings_about)) {
@@ -245,7 +302,8 @@ fun SettingsScreen(
                                     context.startActivity(
                                         Intent().apply {
                                             action = Intent.ACTION_VIEW
-                                            data = Uri.parse(getString(context, R.string.url_github))
+                                            data =
+                                                Uri.parse(getString(context, R.string.url_github))
                                         }
                                     )
                                 },
