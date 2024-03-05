@@ -4,7 +4,7 @@ import sys
 length = 10
 result = set()
 
-keys = ["l","I","|"]
+keys = ["l","I","1"]
 
 for o in range(1,100000):
     # 长度 5-11 位
