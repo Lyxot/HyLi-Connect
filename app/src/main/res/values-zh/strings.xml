@@ -67,4 +67,7 @@
     <string name="composeprefs_save">保存</string>
     <string name="composeprefs_cancel">取消</string>
     <string name="composeprefs_select">确定</string>
+    <string name="page_settings_reset_all_settings">重置所有设置</string>
+    <string name="composeprefs_confirm">确定</string>
+    <string name="page_settings_reset_all_settings_confirm">确定重置所有设置？</string>
 </resources>

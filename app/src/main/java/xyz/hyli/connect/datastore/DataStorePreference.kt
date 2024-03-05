@@ -30,14 +30,16 @@ open class DataStorePreference<V>(
 
     suspend fun set(value: V?): Preferences = set { value }
 
-    fun asFlow(): Flow<V?> =
-        dataStore.data.map { it[key] ?: default }
+    fun asFlow(fallback: V? = default): Flow<V?> =
+        dataStore.data.map { it[key] ?: fallback }
 
-    fun asLiveData(): LiveData<V?> = asFlow().asLiveData()
+    fun asLiveData(fallback: V? = default): LiveData<V?> = asFlow(fallback).asLiveData()
 
-    suspend fun get(): V? = asFlow().first()
+    suspend fun get(fallback: V? = default): V? = asFlow(fallback).first()
 
     suspend fun getOrDefault(): V = get() ?: throw IllegalStateException("No default value")
 
-    fun getBlocking(): V? = runBlocking { get() }
+    fun getBlocking(fallback: V? = default): V? = runBlocking { get(fallback) }
+
+    suspend fun reset() = set(default)
 }
