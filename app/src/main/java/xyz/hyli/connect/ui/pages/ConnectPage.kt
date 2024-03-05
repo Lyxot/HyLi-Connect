@@ -74,8 +74,11 @@ import compose.icons.lineawesomeicons.DesktopSolid
 import compose.icons.lineawesomeicons.MobileAltSolid
 import compose.icons.lineawesomeicons.QuestionCircleSolid
 import compose.icons.lineawesomeicons.TvSolid
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
@@ -102,13 +105,16 @@ private lateinit var nsdDeviceMap: MutableMap<String, DeviceInfo>
 private lateinit var connectDeviceVisibilityMap: MutableMap<String, MutableState<Boolean>>
 private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
 
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: State<Boolean?>) {
+    val semaphore = remember { Semaphore(1) }
     val mNsdManager = remember { context.getSystemService(Context.NSD_SERVICE) as NsdManager }
     val mResolverListener = object : NsdManager.ResolveListener {
         override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
             // Called when the resolve fails. Use the error code to debug.
             Log.e("mResolverListener", "Resolve failed $errorCode")
+            semaphore.release()
         }
         override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
             Log.i("mResolverListener", "Resolve Succeeded. $serviceInfo")
@@ -154,6 +160,7 @@ private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: Sta
                     port = port
                 )
             }
+            semaphore.release()
         }
     }
     val mDiscoveryListener = object : NsdManager.DiscoveryListener {
@@ -162,7 +169,13 @@ private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: Sta
         }
         override fun onServiceFound(service: NsdServiceInfo) {
             Log.d("mDiscoveryListener", "Service discovery success $service")
-            mNsdManager.resolveService(service, mResolverListener)
+            // 在某些设备上必须使用semaphore+协程才能正常工作 未知原因
+            // 例如ChromeOS上的Android11子系统
+            // 在其它设备上甚至无需协程即可正常工作
+            GlobalScope.launch(Dispatchers.IO) {
+                semaphore.acquire()
+                mNsdManager.resolveService(service, mResolverListener)
+            }
         }
         override fun onServiceLost(service: NsdServiceInfo) {
             Log.e("mDiscoveryListener", "service lost $service")
@@ -180,10 +193,8 @@ private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: Sta
         }
     }
     DisposableEffect(Unit) {
-        try {
-            mNsdManager.stopServiceDiscovery(mDiscoveryListener)
-        } catch (_: Exception) { }
-        mNsdManager.discoverServices("_hyli-connect._tcp.", NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener)
+        try { mNsdManager.stopServiceDiscovery(mDiscoveryListener) } catch (_: Exception) { }
+        try { mNsdManager.discoverServices("_hyli-connect._tcp.", NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener) } catch (_: Exception) { }
         onDispose {
             nsdDeviceMap.clear()
             try {
