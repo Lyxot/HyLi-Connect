@@ -25,23 +25,8 @@ class HyliConnectViewModel : ViewModel() {
             while (true) {
                 try {
                     HyliConnect.uuidMap.forEach {
-                        if (nsdDeviceMap.containsKey(it.value) && HyliConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not()) {
+                        if (HyliConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not()) {
                             connectedDeviceMap[it.value] = HyliConnect.deviceInfoMap[it.value]!!
-                            nsdDeviceMap.remove(it.value)
-                            connectDeviceVisibilityMap[it.value]!!.value = false
-                        } else if (HyliConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not()) {
-                            connectedDeviceMap[it.value] = HyliConnect.deviceInfoMap[it.value]!!
-                            connectDeviceVisibilityMap[it.value]!!.value = false
-                        }
-                    }
-                } catch (_: Exception) { }
-                try {
-                    connectedDeviceMap.keys.toMutableList().forEach {
-                        if (HyliConnect.deviceInfoMap.containsKey(it).not()) {
-                            connectDeviceVisibilityMap[it]!!.value = false
-                            delay(500)
-                            connectedDeviceMap.remove(it)
-                            connectDeviceVisibilityMap.remove(it)
                         }
                     }
                 } catch (_: Exception) { }
@@ -57,7 +42,6 @@ class HyliConnectViewModel : ViewModel() {
     val applicationState = mutableStateOf("error")
     val permissionState = mutableStateOf(false)
     val nsdDeviceMap = mutableStateMapOf<String, DeviceInfo>()
-    val connectDeviceVisibilityMap = mutableStateMapOf<String, MutableState<Boolean>>()
     val connectedDeviceMap = mutableStateMapOf<String, DeviceInfo>()
 
     val serviceMap = mapOf(
