@@ -102,7 +102,6 @@ private lateinit var applicationState: MutableState<String>
 private lateinit var permissionState: MutableState<Boolean>
 private lateinit var localBroadcastManager: LocalBroadcastManager
 private lateinit var nsdDeviceMap: MutableMap<String, DeviceInfo>
-private lateinit var connectDeviceVisibilityMap: MutableMap<String, MutableState<Boolean>>
 private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -219,7 +218,6 @@ fun ConnectScreen(
     applicationState = viewModel.applicationState
     permissionState = viewModel.permissionState
     nsdDeviceMap = viewModel.nsdDeviceMap
-    connectDeviceVisibilityMap = viewModel.connectDeviceVisibilityMap
     connectedDeviceMap = viewModel.connectedDeviceMap
 
     val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = "")
@@ -532,22 +530,40 @@ fun ConnectScreen(
                     }
                 }
                 items(connectedDeviceMap.values.toList()) { deviceInfo ->
-                    DeviceCard(deviceInfo, navController, viewModel)
+                    DeviceCard(deviceInfo, true, navController, viewModel)
                 }
                 if (connectedDeviceMap.isEmpty()) {
                     item {
-                        DeviceCard(
-                            deviceInfo = DeviceInfo(
-                                api_version = 0,
-                                app_version = 0,
-                                app_version_name = "",
-                                platform = "",
-                                uuid = "",
-                                nickname = stringResource(id = R.string.page_connect_no_device_connected),
-                                ip_address = mutableListOf(),
-                                port = 0
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(6.dp)
+                                .animateItemPlacement(animationSpec = tween(400)),
+                            colors = CardColors(
+                                containerColor = HyliConnectColorScheme().secondaryContainer,
+                                contentColor = HyliConnectColorScheme().onSecondaryContainer,
+                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
+                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
                             )
-                        )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    LineAwesomeIcons.QuestionCircleSolid,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(84.dp)
+                                        .padding(top = 12.dp, bottom = 12.dp)
+                                )
+                                Text(
+                                    text = stringResource(id = R.string.page_connect_no_device_connected),
+                                    style = HyliConnectTypography.titleMedium
+                                )
+                            }
+                        }
                     }
                 }
                 item {
@@ -586,12 +602,14 @@ fun ConnectScreen(
 @Composable
 private fun DeviceCard(
     deviceInfo: DeviceInfo,
+    connected: Boolean = false,
     navController: NavHostController? = null,
     viewModel: HyliConnectViewModel? = null
 ) {
     val currentSelect = viewModel?.currentSelect
+    val visibility = remember { mutableStateOf(false) }
     AnimatedVisibility(
-        visible = connectDeviceVisibilityMap[deviceInfo.uuid]?.value ?: remember { mutableStateOf(false) }.value,
+        visible = visibility.value,
         enter = fadeIn(animationSpec = tween(400)),
         exit = fadeOut(animationSpec = tween(400))
     ) {
@@ -599,7 +617,7 @@ private fun DeviceCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    if (deviceInfo.uuid in connectedDeviceMap.keys && navController != null && currentSelect != null) {
+                    if (connected && navController != null && currentSelect != null) {
                         currentSelect.value = 1
                         navController.navigate("DevicesScreen") {
                             popUpTo(navController.graph.findStartDestination().id) {
@@ -708,11 +726,26 @@ private fun DeviceCard(
             }
         }
     }
-    connectDeviceVisibilityMap[deviceInfo.uuid] = remember { mutableStateOf(true) }
+    LaunchedEffect(deviceInfo) {
+        visibility.value = true
+        if (connected) {
+            while (HyliConnect.deviceInfoMap.containsKey(deviceInfo.uuid)) delay(500)
+            visibility.value = false
+            delay(400)
+            connectedDeviceMap.remove(deviceInfo.uuid)
+        } else {
+            while (HyliConnect.deviceInfoMap.containsKey(deviceInfo.uuid).not()) delay(500)
+            visibility.value = false
+            connectedDeviceMap[deviceInfo.uuid] = HyliConnect.deviceInfoMap[deviceInfo.uuid]!!
+            delay(350)
+            nsdDeviceMap.remove(deviceInfo.uuid)
+        }
+    }
 }
 
 @Composable
-fun EmptyDeviceCard() {
+private fun EmptyDeviceCard() {
+    val visibility = remember { mutableStateOf(false) }
     val isIconVisible = remember { mutableStateOf(true) }
     val icon = remember { mutableStateOf(LineAwesomeIcons.MobileAltSolid) }
     val iconList = listOf(
@@ -723,8 +756,9 @@ fun EmptyDeviceCard() {
         CssGgIcons.Laptop,
         CssGgIcons.GlobeAlt
     )
-    LaunchedEffect(Unit) {
-        MainScope().launch(context = Dispatchers.Main) {
+    LaunchedEffect(iconList) {
+        MainScope().launch {
+            visibility.value = true
             delay(1000)
             while (nsdDeviceMap.isEmpty()) {
                 try {
@@ -739,7 +773,7 @@ fun EmptyDeviceCard() {
         }
     }
     AnimatedVisibility(
-        visible = true,
+        visible = visibility.value,
         enter = fadeIn(animationSpec = tween(400)),
         exit = fadeOut(animationSpec = tween(400))
     ) {
@@ -755,7 +789,7 @@ fun EmptyDeviceCard() {
             )
         ) {
             BoxWithConstraints {
-                val width = this.maxWidth
+                this.maxWidth
                 Box {
                     Row {
                         AnimatedVisibility(
