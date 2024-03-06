@@ -8,9 +8,12 @@ import android.net.nsd.NsdServiceInfo
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -570,7 +573,7 @@ fun ConnectScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .animateItemPlacement(animationSpec = tween(400))
+                            .animateItemPlacement(animationSpec = tween(300))
                     ) {
                         Text(text = stringResource(id = R.string.page_connect_available_devices))
                         Icon(
@@ -610,8 +613,16 @@ private fun DeviceCard(
     val visibility = remember { mutableStateOf(false) }
     AnimatedVisibility(
         visible = visibility.value,
-        enter = fadeIn(animationSpec = tween(400)),
-        exit = fadeOut(animationSpec = tween(400))
+        enter = if (connected) {
+            fadeIn(animationSpec = tween(400)) + expandVertically(animationSpec = tween(300, easing = LinearEasing), expandFrom = Alignment.Top)
+        } else {
+            fadeIn(animationSpec = tween(400))
+        },
+        exit = if (connected) {
+            fadeOut(animationSpec = tween(400))
+        } else {
+            shrinkVertically(animationSpec = tween(300, easing = LinearEasing), shrinkTowards = Alignment.Top) + fadeOut(animationSpec = tween(400))
+        }
     ) {
         Card(
             modifier = Modifier
