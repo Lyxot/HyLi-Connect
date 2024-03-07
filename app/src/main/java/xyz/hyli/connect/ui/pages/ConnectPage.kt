@@ -65,7 +65,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.getString
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import compose.icons.CssGgIcons
@@ -101,15 +100,10 @@ import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
 private var shizukuPermissionFuture = CompletableFuture<Boolean>()
-private lateinit var applicationState: MutableState<String>
-private lateinit var permissionState: MutableState<Boolean>
-private lateinit var localBroadcastManager: LocalBroadcastManager
-private lateinit var nsdDeviceMap: MutableMap<String, DeviceInfo>
-private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
 
 @OptIn(DelicateCoroutinesApi::class)
 @Composable
-private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: State<Boolean?>) {
+private fun InitNsd(viewModel: HyliConnectViewModel, context: Context, UUID: State<String?>, connectToMyself: State<Boolean?>) {
     val semaphore = remember { Semaphore(1) }
     val mNsdManager = remember { context.getSystemService(Context.NSD_SERVICE) as NsdManager }
     val mResolverListener = object : NsdManager.ResolveListener {
@@ -136,22 +130,22 @@ private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: Sta
                 return
             }
             // Filter out connected
-            if (uuid in connectedDeviceMap.keys) {
+            if (uuid in viewModel.connectedDeviceMap.keys) {
                 return
             }
-            if (uuid in nsdDeviceMap.keys) {
-                if (host in nsdDeviceMap[uuid]!!.ip_address) {
+            if (uuid in viewModel.nsdDeviceMap.keys) {
+                if (host in viewModel.nsdDeviceMap[uuid]!!.ip_address) {
                     return
                 }
-                val newMap = nsdDeviceMap
+                val newMap = viewModel.nsdDeviceMap
                 if (host == ip_address) {
                     newMap[uuid]!!.ip_address.add(0, host)
                 } else {
                     newMap[uuid]!!.ip_address.add(host)
                 }
-                nsdDeviceMap = newMap
+                viewModel.nsdDeviceMap = newMap
             } else {
-                nsdDeviceMap[uuid] = DeviceInfo(
+                viewModel.nsdDeviceMap[uuid] = DeviceInfo(
                     api_version = api_version,
                     app_version = app_version,
                     app_version_name = app_version_name,
@@ -198,7 +192,7 @@ private fun InitNsd(context: Context, UUID: State<String?>, connectToMyself: Sta
         try { mNsdManager.stopServiceDiscovery(mDiscoveryListener) } catch (_: Exception) { }
         try { mNsdManager.discoverServices("_hyli-connect._tcp.", NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener) } catch (_: Exception) { }
         onDispose {
-            nsdDeviceMap.clear()
+            viewModel.nsdDeviceMap.clear()
             try {
                 mNsdManager.stopServiceDiscovery(mDiscoveryListener)
             } catch (e: Exception) {
@@ -217,41 +211,38 @@ fun ConnectScreen(
 ) {
     val context = LocalContext.current
     val currentSelect = viewModel.currentSelect
-    localBroadcastManager = viewModel.localBroadcastManager.value ?: LocalBroadcastManager.getInstance(context)
-    applicationState = viewModel.applicationState
-    permissionState = viewModel.permissionState
-    nsdDeviceMap = viewModel.nsdDeviceMap
-    connectedDeviceMap = viewModel.connectedDeviceMap
 
     val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = "")
     val UUID = PreferencesDataStore.uuid.asFlow().collectAsState(initial = "")
     val IP_ADDRESS = remember { NetworkUtils.getLocalIPInfo(context) }
 
-    InitNsd(context, UUID, PreferencesDataStore.connect_to_myself.asFlow().collectAsState(initial = false))
+    InitNsd(viewModel, context, UUID, PreferencesDataStore.connect_to_myself.asFlow().collectAsState(initial = false))
 
-    DisposableEffect(Unit) {
-        MainScope().launch {
-            try {
-                HyliConnect.permissionStateMap["Shizuku"] = checkShizukuPermission(context)
-            } catch (_: Exception) { }
-            try {
-                HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
-                    ServiceState("running", context.getString(R.string.state_service_running, context.getString(R.string.service_socket_service)))
-                } else {
-                    ServiceState("stopped", context.getString(R.string.state_service_stopped, context.getString(R.string.service_socket_service)))
-                }
-            } catch (_: Exception) { }
-            applicationState.value = viewModel.updateApplicationState()
-            permissionState.value = viewModel.updatePermissionState(context)
-        }
-        localBroadcastManager.sendBroadcast(
+    LaunchedEffect(viewModel.applicationState.value) {
+        try {
+            HyliConnect.permissionStateMap["Shizuku"] = checkShizukuPermission(context)
+        } catch (_: Exception) { }
+        try {
+            HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
+                ServiceState("running", context.getString(R.string.state_service_running, context.getString(R.string.service_socket_service)))
+            } else {
+                ServiceState("stopped", context.getString(R.string.state_service_stopped, context.getString(R.string.service_socket_service)))
+            }
+        } catch (_: Exception) { }
+        viewModel.updateApplicationState()
+        viewModel.updatePermissionState(context)
+        // TODO: observe network state
+        viewModel.localBroadcastManager.value?.sendBroadcast(
             Intent(
                 "xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER"
             ).apply {
                 putExtra("command", "reboot_nsd_service")
             }
         )
-        onDispose { }
+    }
+
+    DisposableEffect(viewModel.applicationState.value) {
+        onDispose {  }
     }
     Column(modifier = Modifier.padding(paddingValues)) {
         Column(
@@ -278,7 +269,7 @@ fun ConnectScreen(
                         modifier = Modifier
                             .padding(6.dp)
                             .animateItemPlacement(animationSpec = tween(400)),
-                        colors = when (applicationState.value) {
+                        colors = when (viewModel.applicationState.value) {
                             "running" -> {
                                 CardColors(
                                     containerColor = HyliConnectColorScheme().secondaryContainer,
@@ -328,7 +319,7 @@ fun ConnectScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = when (applicationState.value) {
+                                imageVector = when (viewModel.applicationState.value) {
                                     "running" -> { Icons.Default.Check }
                                     "rebooting" -> { Icons.Default.Refresh }
                                     "error" -> { LineAwesomeIcons.QuestionCircleSolid }
@@ -346,7 +337,7 @@ fun ConnectScreen(
                             ) {
                                 Row {
                                     Text(
-                                        text = when (applicationState.value) {
+                                        text = when (viewModel.applicationState.value) {
                                             "running" -> { stringResource(id = R.string.state_application_running) }
                                             "rebooting" -> { stringResource(id = R.string.state_application_rebooting) }
                                             "error" -> { stringResource(id = R.string.state_application_error) }
@@ -364,8 +355,8 @@ fun ConnectScreen(
                                             .clickable {
                                                 HyliConnectViewModel().applicationState.value =
                                                     "rebooting"
-                                                applicationState.value = "rebooting"
-                                                localBroadcastManager.sendBroadcast(
+                                                viewModel.applicationState.value = "rebooting"
+                                                viewModel.localBroadcastManager.value?.sendBroadcast(
                                                     Intent(
                                                         "xyz.hyli.connect.service.SocketService.action.SERVICE_CONTROLLER"
                                                     ).apply {
@@ -382,11 +373,12 @@ fun ConnectScreen(
                                                         Toast.LENGTH_SHORT
                                                     )
                                                     .show()
+                                                viewModel.nsdDeviceMap.clear()
                                             }
                                     )
                                 }
-                                if (applicationState.value != "stopped") {
-                                    if (applicationState.value == "error") {
+                                if (viewModel.applicationState.value != "stopped") {
+                                    if (viewModel.applicationState.value == "error") {
                                         HyliConnect.serviceStateMap.forEach {
                                             if (it.value.state == "error") {
                                                 it.value.message?.let { it1 ->
@@ -414,7 +406,7 @@ fun ConnectScreen(
                                                 .padding(horizontal = 2.dp)
                                                 .align(Alignment.CenterVertically)
                                                 .clickable {
-                                                    currentSelect.value = 2
+                                                    currentSelect.intValue = 2
                                                     navController.navigate("settingsScreen") {
                                                         popUpTo(navController.graph.findStartDestination().id) {
                                                             saveState = true
@@ -471,7 +463,7 @@ fun ConnectScreen(
                     }
                 }
                 item {
-                    if (permissionState.value.not()) {
+                    if (viewModel.permissionState.value.not()) {
                         Card(
                             modifier = Modifier
                                 .padding(6.dp)
@@ -512,7 +504,7 @@ fun ConnectScreen(
                                 animationSpec = tween(400)
                             )
                             .clickable {
-                                currentSelect.value = 1
+                                currentSelect.intValue = 1
                                 navController.navigate("DevicesScreen") {
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
@@ -532,10 +524,10 @@ fun ConnectScreen(
                         )
                     }
                 }
-                items(connectedDeviceMap.values.toList()) { deviceInfo ->
+                items(viewModel.connectedDeviceMap.values.toList()) { deviceInfo ->
                     DeviceCard(deviceInfo, true, navController, viewModel)
                 }
-                if (connectedDeviceMap.isEmpty()) {
+                if (viewModel.connectedDeviceMap.isEmpty()) {
                     item {
                         Card(
                             modifier = Modifier
@@ -588,13 +580,13 @@ fun ConnectScreen(
                         )
                     }
                 }
-                if (nsdDeviceMap.isEmpty()) {
+                if (viewModel.nsdDeviceMap.isEmpty()) {
                     item {
-                        EmptyDeviceCard()
+                        EmptyDeviceCard(viewModel)
                     }
                 }
-                items(nsdDeviceMap.values.toList()) { deviceInfo ->
-                    DeviceCard(deviceInfo)
+                items(viewModel.nsdDeviceMap.values.toList()) { deviceInfo ->
+                    DeviceCard(deviceInfo, false, navController, viewModel)
                 }
             })
         }
@@ -629,7 +621,7 @@ private fun DeviceCard(
                 .fillMaxWidth()
                 .clickable {
                     if (connected && navController != null && currentSelect != null) {
-                        currentSelect.value = 1
+                        currentSelect.intValue = 1
                         navController.navigate("DevicesScreen") {
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
@@ -638,7 +630,7 @@ private fun DeviceCard(
                             restoreState = true
                         }
                     } else {
-                        localBroadcastManager.sendBroadcast(
+                        viewModel?.localBroadcastManager?.value?.sendBroadcast(
                             Intent(
                                 "xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT"
                             ).apply {
@@ -743,19 +735,19 @@ private fun DeviceCard(
             while (HyliConnect.deviceInfoMap.containsKey(deviceInfo.uuid)) delay(500)
             visibility.value = false
             delay(400)
-            connectedDeviceMap.remove(deviceInfo.uuid)
+            viewModel?.connectedDeviceMap?.remove(deviceInfo.uuid)
         } else {
             while (HyliConnect.deviceInfoMap.containsKey(deviceInfo.uuid).not()) delay(500)
             visibility.value = false
-            connectedDeviceMap[deviceInfo.uuid] = HyliConnect.deviceInfoMap[deviceInfo.uuid]!!
+            viewModel!!.connectedDeviceMap[deviceInfo.uuid] = HyliConnect.deviceInfoMap[deviceInfo.uuid]!!
             delay(350)
-            nsdDeviceMap.remove(deviceInfo.uuid)
+            viewModel?.nsdDeviceMap?.remove(deviceInfo.uuid)
         }
     }
 }
 
 @Composable
-private fun EmptyDeviceCard() {
+private fun EmptyDeviceCard(viewModel: HyliConnectViewModel) {
     val visibility = remember { mutableStateOf(false) }
     val isIconVisible = remember { mutableStateOf(true) }
     val icon = remember { mutableStateOf(LineAwesomeIcons.MobileAltSolid) }
@@ -771,7 +763,7 @@ private fun EmptyDeviceCard() {
         MainScope().launch {
             visibility.value = true
             delay(1000)
-            while (nsdDeviceMap.isEmpty()) {
+            while (viewModel.nsdDeviceMap.isEmpty()) {
                 try {
                     isIconVisible.value = false
                     delay(400)

@@ -48,9 +48,9 @@ fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             NavigationBarItem(
                 icon = { Icon(Icons.Filled.Share, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_connect)) },
-                selected = currentSelect.value == 0,
+                selected = currentSelect.intValue == 0,
                 onClick = {
-                    currentSelect.value = 0
+                    currentSelect.intValue = 0
                     navController.navigate("connectScreen") {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
@@ -65,9 +65,9 @@ fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                     modifier = Modifier.size(24.dp)
                 ) },
                 label = { Text(stringResource(id = R.string.page_devices)) },
-                selected = currentSelect.value == 1,
+                selected = currentSelect.intValue == 1,
                 onClick = {
-                    currentSelect.value = 1
+                    currentSelect.intValue = 1
                     navController.navigate("devicesScreen") {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
@@ -78,9 +78,9 @@ fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
             NavigationBarItem(
                 icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_settings)) },
-                selected = currentSelect.value == 2,
+                selected = currentSelect.intValue == 2,
                 onClick = {
-                    currentSelect.value = 2
+                    currentSelect.intValue = 2
                     navController.navigate("settingsScreen") {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
@@ -116,9 +116,9 @@ fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
                 modifier = Modifier.padding(vertical = 8.dp),
                 icon = { Icon(Icons.Filled.Share, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_connect)) },
-                selected = currentSelect.value == 0,
+                selected = currentSelect.intValue == 0,
                 onClick = {
-                    currentSelect.value = 0
+                    currentSelect.intValue = 0
                     navController.navigate("connectScreen") {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
@@ -134,9 +134,9 @@ fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
                     modifier = Modifier.size(24.dp)
                 ) },
                 label = { Text(stringResource(id = R.string.page_devices)) },
-                selected = currentSelect.value == 1,
+                selected = currentSelect.intValue == 1,
                 onClick = {
-                    currentSelect.value = 1
+                    currentSelect.intValue = 1
                     navController.navigate("devicesScreen") {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
@@ -148,9 +148,9 @@ fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
                 modifier = Modifier.padding(vertical = 8.dp),
                 icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_settings)) },
-                selected = currentSelect.value == 2,
+                selected = currentSelect.intValue == 2,
                 onClick = {
-                    currentSelect.value = 2
+                    currentSelect.intValue = 2
                     navController.navigate("settingsScreen") {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
@@ -191,9 +191,9 @@ fun ExpandedScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 icon = { Icon(Icons.Filled.Share, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_connect)) },
-                selected = currentSelect.value == 0,
+                selected = currentSelect.intValue == 0,
                 onClick = {
-                    currentSelect.value = 0
+                    currentSelect.intValue = 0
                     navController.navigate("connectScreen") {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
@@ -209,9 +209,9 @@ fun ExpandedScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                     modifier = Modifier.size(24.dp)
                 ) },
                 label = { Text(stringResource(id = R.string.page_devices)) },
-                selected = currentSelect.value == 1,
+                selected = currentSelect.intValue == 1,
                 onClick = {
-                    currentSelect.value = 1
+                    currentSelect.intValue = 1
                     navController.navigate("devicesScreen") {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
@@ -223,9 +223,9 @@ fun ExpandedScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_settings)) },
-                selected = currentSelect.value == 2,
+                selected = currentSelect.intValue == 2,
                 onClick = {
-                    currentSelect.value = 2
+                    currentSelect.intValue = 2
                     navController.navigate("settingsScreen") {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true

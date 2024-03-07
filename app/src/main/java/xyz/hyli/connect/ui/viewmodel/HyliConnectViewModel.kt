@@ -2,6 +2,7 @@ package xyz.hyli.connect.ui.viewmodel
 
 import android.content.Context
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -38,10 +39,10 @@ class HyliConnectViewModel : ViewModel() {
         }
     }
     val localBroadcastManager = mutableStateOf<LocalBroadcastManager?>(null)
-    val currentSelect = mutableStateOf(0)
+    val currentSelect = mutableIntStateOf(0)
     val applicationState = mutableStateOf("error")
     val permissionState = mutableStateOf(false)
-    val nsdDeviceMap = mutableStateMapOf<String, DeviceInfo>()
+    var nsdDeviceMap = mutableStateMapOf<String, DeviceInfo>()
     val connectedDeviceMap = mutableStateMapOf<String, DeviceInfo>()
 
     val serviceMap = mapOf(
