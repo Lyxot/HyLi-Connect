@@ -14,5 +14,6 @@ message Info {
   string platform = 4;
   string uuid = 5;
   string nickname = 6;
-  ClientList client_list = 7;
+  int32 server_port = 7;
+  ClientList client_list = 8;
 }

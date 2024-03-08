@@ -1,7 +1,6 @@
 package xyz.hyli.connect.socket
 
 import android.content.Intent
-import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
@@ -70,6 +69,7 @@ object MessageHandler {
                         .setPlatform(PreferencesDataStore.platformMap[PreferencesDataStore.platform.getBlocking()!!])
                         .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
                         .setNickname(PreferencesDataStore.nickname.getBlocking()!!)
+                        .setServerPort(PreferencesDataStore.server_port.getBlocking()!!)
                         .build()
                     responseBody.setData(responseData.toByteString())
                     SocketUtils.sendMessage(ip, responseBody)
@@ -87,6 +87,7 @@ object MessageHandler {
                                     putExtra("app_version", dataProto.appVersion)
                                     putExtra("app_version_name", dataProto.appVersionName)
                                     putExtra("platform", dataProto.platform)
+                                    putExtra("server_port", dataProto.serverPort)
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                         )
@@ -105,7 +106,8 @@ object MessageHandler {
                             ClientListProto.Client.newBuilder()
                                 .setUuid(it.value)
                                 .setIp(it.key)
-                                .setPort(HyliConnect.deviceInfoMap[it.value]?.port ?: 0)
+                                .setConnectedPort(HyliConnect.deviceInfoMap[it.value]?.connectedPort ?: 0)
+                                .setServerPort(HyliConnect.deviceInfoMap[it.value]?.serverPort ?: 0)
                                 .build()
                         )
                     }
@@ -116,6 +118,7 @@ object MessageHandler {
                         .setPlatform(PreferencesDataStore.platformMap[PreferencesDataStore.platform.getBlocking()!!])
                         .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
                         .setNickname(PreferencesDataStore.nickname.getBlocking()!!)
+                        .setServerPort(PreferencesDataStore.server_port.getBlocking()!!)
                         .setClientList(clientList.build())
                         .build()
                     responseBody.setData(responseData.toByteString())
@@ -131,7 +134,8 @@ object MessageHandler {
                             ClientListProto.Client.newBuilder()
                                 .setUuid(it.value)
                                 .setIp(it.key)
-                                .setPort(HyliConnect.deviceInfoMap[it.value]?.port ?: 0)
+                                .setConnectedPort(HyliConnect.deviceInfoMap[it.value]?.connectedPort ?: 0)
+                                .setServerPort(HyliConnect.deviceInfoMap[it.value]?.serverPort ?: 0)
                                 .build()
                         )
                     }
@@ -189,7 +193,8 @@ object MessageHandler {
                         uuid,
                         dataProto.info.nickname,
                         mutableListOf(ip_address),
-                        port
+                        port,
+                        dataProto.info.serverPort
                     )
                     HyliConnect.deviceInfoMap[uuid] = deviceInfo
                     SocketUtils.sendHeartbeat(ip)
