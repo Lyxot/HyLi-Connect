@@ -34,9 +34,6 @@ class HyliConnectViewModel : ViewModel() {
                         }
                     }
                 } catch (_: Exception) { }
-                try {
-                    updateApplicationState()
-                } catch (_: Exception) { }
                 delay(1000)
             }
         }

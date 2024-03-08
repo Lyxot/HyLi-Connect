@@ -9,6 +9,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
@@ -22,6 +23,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
+import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.ui.navigation.CompactScreen
 import xyz.hyli.connect.ui.navigation.MediumScreen
@@ -66,13 +68,15 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MainScreen(widthSizeClass: WindowWidthSizeClass, viewModel: HyliConnectViewModel) {
-    val currentSelect = viewModel.currentSelect
     val navController = rememberNavController()
     when (widthSizeClass) {
         WindowWidthSizeClass.Compact -> { CompactScreen(viewModel, navController) }
         WindowWidthSizeClass.Medium -> { MediumScreen(viewModel, navController) }
         WindowWidthSizeClass.Expanded -> { MediumScreen(viewModel, navController) }
         else -> { CompactScreen(viewModel, navController) }
+    }
+    LaunchedEffect(HyliConnect.serviceStateMap) {
+        viewModel.updateApplicationState()
     }
 }
 
