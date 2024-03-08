@@ -27,8 +27,6 @@ object MessageHandler {
 //            return
 //        }
 
-        Log.i("MessageHandler", "Received message from $ip: ${body.type} ${body.cmd}")
-        Log.i("MessageHandler", "${HyliConnect.receiveMessageListenerMap}")
         HyliConnect.receiveMessageListenerMap[ip]?.filter {
             it.type == body.type && it.command == body.cmd
         }?.forEach {
