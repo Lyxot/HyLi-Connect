@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.hjq.permissions.Permission
+import com.hjq.permissions.XXPermissions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -18,6 +20,7 @@ import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.hook.utils.HookTest
 import xyz.hyli.connect.utils.PermissionUtils
+import java.io.Serializable
 
 class HyliConnectViewModel : ViewModel() {
     init {
@@ -41,7 +44,6 @@ class HyliConnectViewModel : ViewModel() {
     val localBroadcastManager = mutableStateOf<LocalBroadcastManager?>(null)
     val currentSelect = mutableIntStateOf(0)
     val applicationState = mutableStateOf("error")
-    val permissionState = mutableStateOf(false)
     var nsdDeviceMap = mutableStateMapOf<String, DeviceInfo>()
     val connectedDeviceMap = mutableStateMapOf<String, DeviceInfo>()
 
@@ -50,30 +52,19 @@ class HyliConnectViewModel : ViewModel() {
         "NsdService" to R.string.service_nsd_service,
         "SocketService" to R.string.service_socket_service
     )
+    val permissionOverlay = listOf(Permission.SYSTEM_ALERT_WINDOW)
+    val permissionNotificationListener = listOf(Permission.BIND_NOTIFICATION_LISTENER_SERVICE)
+    val permissionShizuku = listOf("Shizuku")
+    val permissionRoot = listOf("Root")
+    val permissionXposed = listOf("Xposed")
     val permissionMap = mapOf(
-        "Overlay" to R.string.permission_overlay,
-        "Shizuku" to R.string.permission_shizuku,
-        "Root" to R.string.permission_root,
-        "Xposed" to R.string.permission_xposed,
-        "Accessibility" to R.string.permission_accessibility,
-        "NotificationListener" to R.string.permission_notification_listener,
+        permissionOverlay to R.string.permission_overlay,
+        permissionNotificationListener to R.string.permission_notification_listener,
+        permissionShizuku to R.string.permission_shizuku,
+        permissionRoot to R.string.permission_root,
+        permissionXposed to R.string.permission_xposed,
     )
-    var keyPermissionList = mutableListOf(
-        "Overlay"
-    )
-    val streamPermissionList = listOf(
-        "Shizuku",
-        "Root"
-    )
-    val refuseFullScreenPermissionList = listOf(
-        "Xposed",
-        "Shizuku"
-    )
-    val optionalPermission = listOf(
-        "Accessibility",
-        "NotificationListener",
-//        "UsageStats"
-    )
+    val thirdPartyPermissionSet = setOf(permissionShizuku, permissionRoot, permissionXposed)
 
     fun updateApplicationState(): String {
         val serviceStateList: MutableList<String> = mutableListOf()
@@ -98,41 +89,19 @@ class HyliConnectViewModel : ViewModel() {
         }
         return applicationState.value
     }
-    fun updatePermissionState(context: Context): Boolean {
-        checkPermission(context)
-        var state1 = true
-        keyPermissionList.forEach {
-            if (HyliConnect.permissionStateMap[it] != true && permissionMap.containsKey(it)) {
-                HyliConnect.permissionStateMap[it] = false
-                state1 = false
-            }
-        }
-        // TODO: optional permission
-        permissionState.value = state1
-        return permissionState.value
+    fun getRequiredPermissions(): Set<List<String>> {
+        val nativePermissionSet = mutableSetOf<List<String>>()
+        nativePermissionSet.add(permissionOverlay)
+        if (PreferencesDataStore.function_notification_forward.getBlocking() == true) nativePermissionSet.add(permissionNotificationListener)
+        return nativePermissionSet
     }
-    private fun checkPermission(context: Context) {
-        keyPermissionList = mutableListOf(
-            "Overlay"
-        )
-        HyliConnect.permissionStateMap["Overlay"] = PermissionUtils.checkOverlayPermission(context)
-        if (PreferencesDataStore.function_app_streaming.getBlocking() == true) {
-            when (PreferencesDataStore.working_mode.getBlocking()) {
-                1 -> {
-                    keyPermissionList.add("Shizuku")
-                }
-                2 -> {
-                    keyPermissionList.add("Root")
-                }
-            }
-            if (keyPermissionList.contains("Xposed")) {
-                HyliConnect.permissionStateMap["Xposed"] = HookTest().checkXposed()
-            }
+    fun getThirdPartyPermissions(): Set<List<String>> {
+        val thirdPartyPermissionSet = mutableSetOf<List<String>>()
+        when (PreferencesDataStore.working_mode.getBlocking()) {
+            1 -> thirdPartyPermissionSet.add(permissionShizuku)
+            2 -> thirdPartyPermissionSet.add(permissionRoot)
         }
-        if (PreferencesDataStore.function_notification_forward.getBlocking() == true) {
-            keyPermissionList.add("NotificationListener")
-            HyliConnect.permissionStateMap["NotificationListener"] = PermissionUtils.checkNotificationListenerPermission(context)
-        }
+        return thirdPartyPermissionSet
     }
 }
 

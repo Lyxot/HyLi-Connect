@@ -203,6 +203,7 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.startup:startup-runtime:1.1.1")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation("com.github.getActivity:XXPermissions:18.6")
 
     val compose_icons_version = "1.1.0"
     implementation("br.com.devsrsouza.compose.icons:font-awesome:$compose_icons_version")

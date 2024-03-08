@@ -1,25 +1,51 @@
 package xyz.hyli.connect.utils
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.provider.Settings
 import android.text.TextUtils
+import android.widget.Toast
+import androidx.core.content.ContextCompat
+import rikka.shizuku.Shizuku
+import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.R
+import xyz.hyli.connect.datastore.PreferencesDataStore
+import java.util.concurrent.CompletableFuture
 
 object PermissionUtils {
-    // 通知使用权限
-    fun checkNotificationListenerPermission(context: Context): Boolean {
-        var enable = false
-        val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
-        if (flat != null) {
-            enable = flat.contains(context.packageName)
+    var shizukuPermissionFuture = CompletableFuture<Boolean>()
+    fun checkShizukuPermission(context: Context): Boolean {
+        var toast: Toast? = null
+        val b = if (!Shizuku.pingBinder()) {
+            toast = Toast.makeText(context,
+                ContextCompat.getString(context, R.string.toast_shizuku_not_available), Toast.LENGTH_LONG)
+            false
+        } else if (Shizuku.isPreV11()) {
+            toast = Toast.makeText(context,
+                ContextCompat.getString(context, R.string.toast_shizuku_not_support), Toast.LENGTH_LONG)
+            false
+        } else if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+            true
+        } else if (Shizuku.shouldShowRequestPermissionRationale()) {
+            toast = Toast.makeText(
+                context,
+                ContextCompat.getString(context, R.string.toast_shizuku_denied),
+                Toast.LENGTH_LONG
+            )
+            false
+        } else {
+            Shizuku.requestPermission(HyliConnect.SHIZUKU_CODE)
+
+            val result = shizukuPermissionFuture.get()
+            shizukuPermissionFuture = CompletableFuture<Boolean>()
+
+            result
         }
-        return enable
+        if (PreferencesDataStore.function_app_streaming.getBlocking()!! && PreferencesDataStore.working_mode.getBlocking()!! in 1..2) {
+            toast?.show()
+        }
+        return b
     }
-
-    // 悬浮窗权限
-    fun checkOverlayPermission(context: Context): Boolean {
-        return Settings.canDrawOverlays(context)
-    }
-
     // 无障碍权限
     fun isAccessibilitySettingsOn(context: Context): Boolean {
         var accessibilityEnabled = 0
