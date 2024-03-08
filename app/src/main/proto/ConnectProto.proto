@@ -8,15 +8,16 @@ option optimize_for = LITE_RUNTIME;
 import "InfoProto.proto";
 
 message ConnectRequest {
-    int32 api_version = 1;
-    int32 app_version = 2;
-    string app_version_name = 3;
-    string platform = 4;
-    string uuid = 5;
-    string nickname = 6;
+  int32 api_version = 1;
+  int32 app_version = 2;
+  string app_version_name = 3;
+  string platform = 4;
+  string uuid = 5;
+  string nickname = 6;
+  int32 server_port = 7;
 }
 
 message ConnectResponse {
-    bool success = 1;
-    Info info = 2;
+  bool success = 1;
+  Info info = 2;
 }

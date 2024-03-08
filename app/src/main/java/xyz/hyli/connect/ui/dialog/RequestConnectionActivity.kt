@@ -30,6 +30,7 @@ class RequestConnectionActivity : ComponentActivity() {
         val app_version = intent.getIntExtra("app_version", 0)
         val app_version_name = intent.getStringExtra("app_version_name")
         val platform = intent.getStringExtra("platform")
+        val server_port = intent.getIntExtra("server_port", 15732)
 
         setContent {
             HyliConnectTheme {
@@ -40,7 +41,7 @@ class RequestConnectionActivity : ComponentActivity() {
                     dialog = MaterialAlertDialogBuilder(this)
                         .setTitle(getString(R.string.dialog_connect_request_title))
                         .setMessage("${getString(R.string.dialog_connect_request_message, nickname, IP_Address)}\n\nUUID: $uuid")
-                        .setPositiveButton(getString(R.string.dialog_connect_request_accept)) { dialog, which ->
+                        .setPositiveButton(getString(R.string.dialog_connect_request_accept)) { dialog, _ ->
                             val deviceInfo = DeviceInfo(
                                 api_version,
                                 app_version,
@@ -49,7 +50,8 @@ class RequestConnectionActivity : ComponentActivity() {
                                 uuid ?: "",
                                 nickname ?: "",
                                 mutableListOf(ip.substring(1, ip.length).split(":")[0]),
-                                ip.substring(1, ip.length).split(":").last().toInt()
+                                ip.substring(1, ip.length).split(":").last().toInt(),
+                                server_port
                             )
                             SocketUtils.acceptConnection(ip, deviceInfo)
                             dialog.dismiss()

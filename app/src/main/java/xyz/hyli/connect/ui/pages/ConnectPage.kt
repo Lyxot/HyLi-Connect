@@ -2,7 +2,6 @@ package xyz.hyli.connect.ui.pages
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.util.Log
@@ -50,7 +49,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
@@ -69,7 +67,6 @@ import androidx.core.content.ContextCompat.getString
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.hjq.permissions.XXPermissions
-import com.hjq.permissions.OnPermissionCallback
 import compose.icons.CssGgIcons
 import compose.icons.LineAwesomeIcons
 import compose.icons.cssggicons.AppleWatch
@@ -83,11 +80,8 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import rikka.shizuku.Shizuku
-import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
@@ -99,10 +93,7 @@ import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 import xyz.hyli.connect.utils.NetworkUtils
 import xyz.hyli.connect.utils.PermissionUtils
 import xyz.hyli.connect.utils.ServiceUtils
-import java.io.Serializable
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Semaphore
-import kotlin.concurrent.thread
 
 @OptIn(DelicateCoroutinesApi::class)
 @Composable
@@ -137,26 +128,26 @@ private fun InitNsd(viewModel: HyliConnectViewModel, context: Context, UUID: Sta
                 return
             }
             if (uuid in viewModel.nsdDeviceMap.keys) {
-                if (host in viewModel.nsdDeviceMap[uuid]!!.ip_address) {
+                if (host in viewModel.nsdDeviceMap[uuid]!!.ipAddress) {
                     return
                 }
                 val newMap = viewModel.nsdDeviceMap
                 if (host == ip_address) {
-                    newMap[uuid]!!.ip_address.add(0, host)
+                    newMap[uuid]!!.ipAddress.add(0, host)
                 } else {
-                    newMap[uuid]!!.ip_address.add(host)
+                    newMap[uuid]!!.ipAddress.add(host)
                 }
                 viewModel.nsdDeviceMap = newMap
             } else {
                 viewModel.nsdDeviceMap[uuid] = DeviceInfo(
-                    api_version = api_version,
-                    app_version = app_version,
-                    app_version_name = app_version_name,
+                    apiVersion = api_version,
+                    appVersion = app_version,
+                    appVersionName = app_version_name,
                     platform = platform,
                     uuid = uuid,
                     nickname = nickname,
-                    ip_address = mutableListOf(host),
-                    port = port
+                    ipAddress = mutableListOf(host),
+                    serverPort = port
                 )
             }
             semaphore.release()
@@ -352,6 +343,7 @@ fun ConnectScreen(
                                             .padding(start = 12.dp)
                                             .align(Alignment.CenterVertically)
                                             .clickable {
+                                                val map = viewModel.connectedDeviceMap.toMap()
                                                 HyliConnectViewModel().applicationState.value =
                                                     "rebooting"
                                                 viewModel.applicationState.value = "rebooting"
@@ -372,7 +364,32 @@ fun ConnectScreen(
                                                         Toast.LENGTH_SHORT
                                                     )
                                                     .show()
-                                                viewModel.nsdDeviceMap.clear()
+                                                MainScope().launch {
+                                                    val newMap = mutableMapOf<String, DeviceInfo>().apply {
+                                                        map.forEach {
+                                                            this[it.key] = DeviceInfo(
+                                                                apiVersion = it.value.apiVersion,
+                                                                appVersion = it.value.appVersion,
+                                                                appVersionName = it.value.appVersionName,
+                                                                platform = it.value.platform,
+                                                                uuid = it.value.uuid,
+                                                                nickname = it.value.nickname,
+                                                                ipAddress = it.value.ipAddress,
+                                                                serverPort = it.value.serverPort
+                                                            )
+                                                        }
+                                                    }
+                                                    val t = System.currentTimeMillis()
+                                                    while (viewModel.applicationState.value != "running") {
+                                                        delay(500)
+                                                        if (System.currentTimeMillis() - t > 20000) {
+                                                            return@launch
+                                                        }
+                                                    }
+                                                    newMap.forEach {
+                                                        viewModel.nsdDeviceMap[it.key] = it.value
+                                                    }
+                                                }
                                             }
                                     )
                                 }
@@ -660,8 +677,8 @@ private fun DeviceCard(
                                 "xyz.hyli.connect.service.SocketService.action.SOCKET_CLIENT"
                             ).apply {
                                 putExtra("command", "start")
-                                putExtra("ip", deviceInfo.ip_address[0])
-                                putExtra("port", deviceInfo.port)
+                                putExtra("ip", deviceInfo.ipAddress[0])
+                                putExtra("port", deviceInfo.serverPort)
                             }
                         )
                     }
@@ -724,8 +741,8 @@ private fun DeviceCard(
                                 )
                             }
                         }
-                        if (deviceInfo.ip_address.isNotEmpty()) {
-                            deviceInfo.ip_address.forEach {
+                        if (deviceInfo.ipAddress.isNotEmpty()) {
+                            deviceInfo.ipAddress.forEach {
                                 Card(
                                     modifier = Modifier.padding(end = 6.dp, top = 4.dp),
                                     colors = CardColors(
@@ -903,14 +920,14 @@ private fun EmptyDeviceCard(viewModel: HyliConnectViewModel) {
 fun DeviceCardPreview() {
     DeviceCard(
         DeviceInfo(
-            api_version = 1,
-            app_version = 10000,
-            app_version_name = "1.0.0",
+            apiVersion = 1,
+            appVersion = 10000,
+            appVersionName = "1.0.0",
             platform = "Android Phone",
             uuid = "38299469-a3bc-48e9-b2c8-be8410650d87",
             nickname = "Windows Subsystem for Android(TM)",
-            ip_address = mutableListOf("172.30.166.176", "127.0.0.1"),
-            port = 15372
+            ipAddress = mutableListOf("172.30.166.176", "127.0.0.1"),
+            serverPort = 15372
         )
     )
 }
