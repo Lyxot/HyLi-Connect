@@ -17,3 +17,4 @@ local.properties
 /app/release
 /keystore.properties
 /app/dict.txt
+/.idea/copilot
