@@ -80,7 +80,7 @@ class HyliConnectViewModel : ViewModel() {
         if (serviceStateList.contains("stopped")) {
             if (applicationState.value != "rebooting") applicationState.value = "stopped"
         } else if (serviceStateList.contains("error")) {
-            if (applicationState.value != "rebooting") applicationState.value = "rebooting"
+            if (applicationState.value != "rebooting") applicationState.value = "error"
         } else {
             applicationState.value = "running"
         }
