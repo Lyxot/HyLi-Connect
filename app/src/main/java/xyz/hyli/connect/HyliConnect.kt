@@ -79,7 +79,6 @@ open class HyliConnect : Application() {
 
         // service name, state
         lateinit var serviceStateMap: ConcurrentHashMap<String, ServiceState>
-        lateinit var permissionStateMap: ConcurrentHashMap<String, Boolean>
 
         // ip: data
         lateinit var uuidMap: ConcurrentHashMap<String, String>
@@ -103,7 +102,6 @@ open class HyliConnect : Application() {
     }
     override fun onCreate() {
         serviceStateMap = ConcurrentHashMap()
-        permissionStateMap = ConcurrentHashMap()
         uuidMap = ConcurrentHashMap()
         socketMap = ConcurrentHashMap()
         inputStreamMap = ConcurrentHashMap()

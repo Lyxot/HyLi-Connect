@@ -87,3 +87,5 @@
 
 # An annotation used for build tooling, won't be directly accessed.
 -dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+
+-keep class com.hjq.permissions.** {*;}

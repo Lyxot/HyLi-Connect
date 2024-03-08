@@ -53,6 +53,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -67,6 +68,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.getString
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.hjq.permissions.XXPermissions
+import com.hjq.permissions.OnPermissionCallback
 import compose.icons.CssGgIcons
 import compose.icons.LineAwesomeIcons
 import compose.icons.cssggicons.AppleWatch
@@ -94,12 +97,12 @@ import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 import xyz.hyli.connect.utils.NetworkUtils
+import xyz.hyli.connect.utils.PermissionUtils
 import xyz.hyli.connect.utils.ServiceUtils
+import java.io.Serializable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
-
-private var shizukuPermissionFuture = CompletableFuture<Boolean>()
 
 @OptIn(DelicateCoroutinesApi::class)
 @Composable
@@ -220,9 +223,6 @@ fun ConnectScreen(
 
     LaunchedEffect(viewModel.applicationState.value) {
         try {
-            HyliConnect.permissionStateMap["Shizuku"] = checkShizukuPermission(context)
-        } catch (_: Exception) { }
-        try {
             HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
                 ServiceState("running", context.getString(R.string.state_service_running, context.getString(R.string.service_socket_service)))
             } else {
@@ -230,7 +230,6 @@ fun ConnectScreen(
             }
         } catch (_: Exception) { }
         viewModel.updateApplicationState()
-        viewModel.updatePermissionState(context)
         // TODO: observe network state
         viewModel.localBroadcastManager.value?.sendBroadcast(
             Intent(
@@ -463,7 +462,24 @@ fun ConnectScreen(
                     }
                 }
                 item {
-                    if (viewModel.permissionState.value.not()) {
+                    val permissions = remember { mutableStateOf(viewModel.getRequiredPermissions()) }
+                    val thirdPartyPermissions = remember { mutableStateOf(viewModel.getThirdPartyPermissions()) }
+                    val deniedPermissions = remember { mutableStateListOf(listOf<String>()) }
+                    LaunchedEffect(viewModel.applicationState.value) {
+                        permissions.value = viewModel.getRequiredPermissions()
+                        deniedPermissions.clear()
+                        permissions.value.forEach {
+                            if (!XXPermissions.isGranted(context, it)) deniedPermissions.add(it)
+                            else deniedPermissions.remove(it)
+                        }
+                        try {
+                            if (thirdPartyPermissions.value.contains(viewModel.permissionShizuku)) {
+                                if (!PermissionUtils.checkShizukuPermission(context)) deniedPermissions.add(viewModel.permissionShizuku)
+                                else deniedPermissions.remove(viewModel.permissionShizuku)
+                            }
+                        } catch (e: Exception) { e.printStackTrace() }
+                    }
+                    if (deniedPermissions.isNotEmpty()) {
                         Card(
                             modifier = Modifier
                                 .padding(6.dp)
@@ -480,17 +496,26 @@ fun ConnectScreen(
                                     .fillMaxWidth()
                                     .padding(vertical = 12.dp)
                             ) {
-                                HyliConnect.permissionStateMap.forEach {
-                                    if (it.value.not() && it.key in viewModel.keyPermissionList && it.key in viewModel.permissionMap.keys) {
-                                        Row(modifier = Modifier.padding(horizontal = 12.dp)) {
-                                            Icon(Icons.Default.Close, contentDescription = null)
-                                            Text(
-                                                stringResource(
-                                                    id = R.string.state_permission_false,
-                                                    stringResource(id = viewModel.permissionMap[it.key]!!)
-                                                )
-                                            )
+                                deniedPermissions.forEach {
+                                    if (it.isEmpty()) return@forEach
+                                    Row(modifier = Modifier
+                                        .padding(horizontal = 12.dp)
+                                        .clickable {
+                                            if (it !in viewModel.thirdPartyPermissionSet) {
+                                                XXPermissions.with(context)
+                                                    .permission(it)
+                                                    .request { _, allGranted ->
+                                                        if (allGranted) deniedPermissions.remove(it)
+                                                    }
+                                            } else if (it == viewModel.permissionShizuku) {
+                                                try {
+                                                    HyliConnect().initShizuku()
+                                                } catch (e: Exception) { e.printStackTrace() }
+                                            }
                                         }
+                                    ) {
+                                        Icon(Icons.Default.Close, contentDescription = null)
+                                        Text(stringResource(id = R.string.state_permission_false, stringResource(id = viewModel.permissionMap[it]!!)))
                                     }
                                 }
                             }
@@ -871,36 +896,6 @@ private fun EmptyDeviceCard(viewModel: HyliConnectViewModel) {
             }
         }
     }
-}
-private fun checkShizukuPermission(context: Context): Boolean {
-    var toast: Toast? = null
-    val b = if (!Shizuku.pingBinder()) {
-        toast = Toast.makeText(context, getString(context, R.string.toast_shizuku_not_available), Toast.LENGTH_LONG)
-        false
-    } else if (Shizuku.isPreV11()) {
-        toast = Toast.makeText(context, getString(context, R.string.toast_shizuku_not_support), Toast.LENGTH_LONG)
-        false
-    } else if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-        true
-    } else if (Shizuku.shouldShowRequestPermissionRationale()) {
-        toast = Toast.makeText(
-            context,
-            getString(context, R.string.toast_shizuku_denied),
-            Toast.LENGTH_LONG
-        )
-        false
-    } else {
-        Shizuku.requestPermission(HyliConnect.SHIZUKU_CODE)
-
-        val result = shizukuPermissionFuture.get()
-        shizukuPermissionFuture = CompletableFuture<Boolean>()
-
-        result
-    }
-    if (PreferencesDataStore.function_app_streaming.getBlocking()!! && PreferencesDataStore.working_mode.getBlocking()!! in 1..2) {
-        toast?.show()
-    }
-    return b
 }
 
 @Preview(showBackground = true)
