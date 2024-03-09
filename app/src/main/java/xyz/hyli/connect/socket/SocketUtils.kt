@@ -86,10 +86,10 @@ object SocketUtils {
             .setType(SocketMessage.TYPE.HEARTBEAT)
         sendMessage(ip, messageBody)
     }
-    fun getInfoRequest(ip: String) {
+    fun sendRequest(ip: String, command: SocketMessage.COMMAND) {
         val messageBody = SocketMessage.Body.newBuilder()
             .setType(SocketMessage.TYPE.REQUEST)
-            .setCmd(SocketMessage.COMMAND.GET_INFO)
+            .setCmd(command)
             .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
             .setSTATUS(SocketMessage.STATUS.SUCCESS)
         sendMessage(ip, messageBody)
@@ -128,14 +128,6 @@ object SocketUtils {
             .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
             .setSTATUS(SocketMessage.STATUS.SUCCESS)
         sendMessage(ip, messageBody, onMessageSend = { closeConnection(ip) })
-    }
-    fun getClientsRequest(ip: String) {
-        val messageBody = SocketMessage.Body.newBuilder()
-            .setType(SocketMessage.TYPE.REQUEST)
-            .setCmd(SocketMessage.COMMAND.GET_CLIENTS)
-            .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
-            .setSTATUS(SocketMessage.STATUS.SUCCESS)
-        sendMessage(ip, messageBody)
     }
     fun sendMessage(
         ip: String,

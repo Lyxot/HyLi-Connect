@@ -9,10 +9,11 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import xyz.hyli.connect.R
+import xyz.hyli.connect.bean.ApplicationInfo
 import xyz.hyli.connect.utils.PackageUtils
 
-class AppListAdapter(private val context: Context, private val appList: List<String>) :
-    ArrayAdapter<String?>(context, 0, appList) {
+class AppListAdapter(private val context: Context, private val appList: List<ApplicationInfo>) :
+    ArrayAdapter<ApplicationInfo?>(context, 0, appList) {
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var convertView = convertView
         if (convertView == null) {
@@ -20,10 +21,13 @@ class AppListAdapter(private val context: Context, private val appList: List<Str
         }
         val packageManager = context.packageManager
 
+        val applicationInfo = appList[position]
         // 获取应用的图标和名称
-        val packageName = appList[position]
-        var appName = PackageUtils.appNameMap[packageName]
-        var appIcon: Drawable? = PackageUtils.appIconMap[packageName]
+        val packageName = applicationInfo.packageName
+        var appName = applicationInfo.appName
+        var appIcon: Drawable? = applicationInfo.icon?.data?.let {
+            PackageUtils.bitmapToDrawable(context, PackageUtils.byteStringToBitmap(it))
+        }
         //        Log.i("xyz.hyli.connect.ui.test.AppListAdapter", "packageName: " + packageName);
 
         // 显示应用的图标和名称
