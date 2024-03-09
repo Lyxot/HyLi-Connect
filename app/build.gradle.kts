@@ -197,13 +197,12 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.2")
     implementation("androidx.compose.material3:material3:1.2.0")
     api("androidx.datastore:datastore-preferences:1.1.0-beta01")
-    //noinspection GradleDependency
-    implementation("io.github.biezhi:TinyPinyin:2.0.3.RELEASE")
     implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.45")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.startup:startup-runtime:1.1.1")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("com.github.getActivity:XXPermissions:18.6")
+    implementation("com.github.1552980358:C2Pinyin:3.0.0")
 
     val compose_icons_version = "1.1.0"
     implementation("br.com.devsrsouza.compose.icons:font-awesome:$compose_icons_version")

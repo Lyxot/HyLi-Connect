@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.core.view.WindowCompat
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
+import xyz.hyli.connect.bean.ApplicationInfo
 import xyz.hyli.connect.utils.PackageUtils
 import xyz.hyli.connect.utils.VirtualDisplayUtils
 
@@ -16,13 +17,14 @@ class AppListActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_app_list)
-        var listView = findViewById<ListView>(R.id.applist)
-        val appList: List<String> = intent.getStringArrayExtra("appList")!!.toList()
+        val listView = findViewById<ListView>(R.id.applist)
+        val appList: List<ApplicationInfo> = PackageUtils.getAppList(this, true)
         val adapter = AppListAdapter(this, appList)
         listView.adapter = adapter
-        listView.setOnItemClickListener { parent, view, position, id ->
-            val packageName = appList[position]
-            val mainActivityName = PackageUtils.GetMainActivityName(packageManager, packageName)
+        listView.setOnItemClickListener { _, _, position, _ ->
+            val applicationInfo = appList[position]
+            val packageName = applicationInfo.packageName
+            val mainActivityName = PackageUtils.getMainActivityName(packageManager, packageName)
             val displayID = VirtualDisplayUtils(
                 this
             ).createDisplay(packageName, 720, 1440, this.resources.displayMetrics.densityDpi)

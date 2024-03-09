@@ -20,6 +20,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 import xyz.hyli.connect.R
+import xyz.hyli.connect.bean.ApplicationInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.service.SocketService
 import xyz.hyli.connect.utils.NetworkUtils
@@ -29,7 +30,6 @@ import java.util.concurrent.CompletableFuture
 class TestActivity : AppCompatActivity() {
     private val SHIZUKU_CODE = 0xCA07A
     private var shizukuPermissionFuture = CompletableFuture<Boolean>()
-    private var appList: Deferred<List<String>>? = null
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var localBroadcastManager: LocalBroadcastManager
@@ -73,7 +73,6 @@ class TestActivity : AppCompatActivity() {
             }
         }
         GlobalScope.launch(Dispatchers.IO) {
-            appList = async { PackageUtils.GetAppList(packageManager) }
             UUID = async { PreferencesDataStore.uuid.getBlocking()!! }
             IP_ADDRESS = async { NetworkUtils.getLocalIPInfo(this@TestActivity) }
             NICKNAME = async { PreferencesDataStore.nickname.getBlocking()!! }
@@ -84,7 +83,6 @@ class TestActivity : AppCompatActivity() {
         applist_button.setOnClickListener {
             GlobalScope.launch(Dispatchers.Main) {
                 val intent = Intent(this@TestActivity, AppListActivity::class.java)
-                intent.putExtra("appList", appList?.await()?.toTypedArray())
                 startActivity(intent)
             }
         }

@@ -45,10 +45,6 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
 
-        GlobalScope.launch(Dispatchers.IO) {
-            appList = async { PackageUtils.GetAppList(packageManager) }
-        }
-
         viewModel = ViewModelProvider(this, HyliConnectViewModelFactory()).get(HyliConnectViewModel::class.java)
         localBroadcastManager = LocalBroadcastManager.getInstance(this)
         viewModel.localBroadcastManager.value = localBroadcastManager

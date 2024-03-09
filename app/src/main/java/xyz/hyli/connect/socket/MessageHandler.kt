@@ -1,16 +1,19 @@
 package xyz.hyli.connect.socket
 
 import android.content.Intent
+import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
+import xyz.hyli.connect.proto.ApplicationProto
 import xyz.hyli.connect.proto.ClientListProto
 import xyz.hyli.connect.proto.ConnectProto
 import xyz.hyli.connect.proto.InfoProto
 import xyz.hyli.connect.proto.SocketMessage
 import xyz.hyli.connect.ui.dialog.RequestConnectionActivity
+import xyz.hyli.connect.utils.PackageUtils
 
 object MessageHandler {
     fun messageHandler(
@@ -29,6 +32,7 @@ object MessageHandler {
         HyliConnect.receiveMessageListenerMap[ip]?.filter {
             it.type == body.type && it.command == body.cmd
         }?.forEach {
+            Log.i("MessageHandler", "Receive message listener found ${it.className} ${it.type} ${it.command} $message")
             it.onMessageReceive(body)
             if (it.unregisterAfterReceived) {
                 HyliConnect.receiveMessageListenerMap[ip]?.remove(it)
@@ -53,7 +57,7 @@ object MessageHandler {
         val command = messageBody.cmd
         val data = messageBody.data
         val uuid = messageBody.uuid
-        if (data.isEmpty || uuid.isNullOrEmpty()) return
+        if (uuid.isNullOrEmpty()) return
         val responseBody = SocketMessage.Body.newBuilder()
             .setType(SocketMessage.TYPE.RESPONSE)
             .setCmd(command)
@@ -93,9 +97,7 @@ object MessageHandler {
                         )
                     }
                 }
-                else -> {
-                    return
-                }
+                else -> return
             }
         } else {
             when (command) {
@@ -127,7 +129,7 @@ object MessageHandler {
                 SocketMessage.COMMAND.DISCONNECT -> {
                     SocketUtils.closeConnection(ip)
                 }
-                SocketMessage.COMMAND.GET_CLIENTS -> {
+                SocketMessage.COMMAND.GET_CLIENT_LIST -> {
                     val clientList = ClientListProto.ClientList.newBuilder()
                     HyliConnect.uuidMap.forEach {
                         clientList.addClients(
@@ -142,29 +144,31 @@ object MessageHandler {
                     responseBody.setData(clientList.build().toByteString())
                     SocketUtils.sendMessage(ip, responseBody)
                 }
-                else -> {
-                    return
+                SocketMessage.COMMAND.GET_APPLICATION_LIST -> {
+                    val appList = ApplicationProto.ApplicationList.newBuilder()
+                    PackageUtils.getAppList(HyliConnect().getContext(), true).forEach {
+                        appList.addApplications(
+                            ApplicationProto.ApplicationInfo.newBuilder()
+                                .setPackageName(it.packageName)
+                                .setAppName(it.appName)
+                                .setVersionName(it.versionName)
+                                .setMainActivity(it.mainActivity)
+                                .setIcon(
+                                    ApplicationProto.ApplicationIcon.newBuilder()
+                                        .setWidth(it.icon?.width ?: 0)
+                                        .setHeight(it.icon?.height ?: 0)
+                                        .setData(it.icon?.data)
+                                        .build()
+                                )
+                                .build()
+                        )
+                    }
+                    responseBody.setData(appList.build().toByteString())
+                    SocketUtils.sendMessage(ip, responseBody)
                 }
+                else -> return
             }
         }
-//        if (uuid in HyliConnect.uuidMap.values) {
-//            when (command) {
-//                COMMAND_APP_LIST -> {
-//                    val appList = JSONObject()
-//                    PackageUtils.appNameMap.forEach { (key, value) ->
-//                        val appInfo = JSONObject()
-//                        appInfo["name"] = value
-//                        appInfo["width"] = PackageUtils.appWidthMap[key]
-//                        appInfo["height"] = PackageUtils.appHeightMap[key]
-//                        appInfo["icon"] = PackageUtils.appIconByteMap[key]
-//                        appList[key] = value
-//                    }
-//                    responseData["app_list"] = appList
-//                    responseJson["data"] = responseData
-//                    SocketUtils.sendMessage(ip, responseJson)
-//                }
-//            }
-//        }
     }
 
     private fun responseHandler(
