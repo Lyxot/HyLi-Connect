@@ -3,6 +3,8 @@ package xyz.hyli.connect.socket
 import android.content.Intent
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.bean.DeviceInfo
@@ -29,13 +31,13 @@ object MessageHandler {
 //            return
 //        }
 
-        HyliConnect.receiveMessageListenerMap[ip]?.filter {
-            it.type == body.type && it.command == body.cmd
-        }?.forEach {
-            Log.i("MessageHandler", "Receive message listener found ${it.className} ${it.type} ${it.command} $message")
-            it.onMessageReceive(body)
-            if (it.unregisterAfterReceived) {
-                HyliConnect.receiveMessageListenerMap[ip]?.remove(it)
+        MainScope().launch {
+            HyliConnect.receiveMessageListenerMap[ip]?.filter {
+                it.type == body.type && it.command == body.cmd
+            }?.forEach {
+                Log.i("MessageHandler", "Receive message listener found ${it.className} ${it.type} ${it.command} $message")
+                it.onMessageReceive(body)
+                if (it.unregisterAfterReceived) SocketUtils.unregisterReceiveMessageListener(ip, it)
             }
         }
 

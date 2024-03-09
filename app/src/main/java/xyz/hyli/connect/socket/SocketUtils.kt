@@ -207,4 +207,15 @@ object SocketUtils {
         )
         Log.i("SocketUtils", "Unregister receive message listener: $ip $className $type $command")
     }
+
+    fun unregisterReceiveMessageListener(ip: String, listener: MessageReceiveListener) {
+        HyliConnect.receiveMessageListenerMap[ip]?.remove(listener)
+        Log.i("SocketUtils", "Unregister receive message listener: $ip ${listener.className} ${listener.type} ${listener.command}")
+    }
+
+    fun unregisterReceiveMessageListener(ip: String, className: String) {
+        HyliConnect.receiveMessageListenerMap[ip]?.filter { it.className == className }?.forEach {
+            unregisterReceiveMessageListener(ip, it)
+        }
+    }
 }
