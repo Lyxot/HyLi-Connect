@@ -37,6 +37,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -67,15 +68,6 @@ import androidx.core.content.ContextCompat.getString
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.hjq.permissions.XXPermissions
-import compose.icons.CssGgIcons
-import compose.icons.LineAwesomeIcons
-import compose.icons.cssggicons.AppleWatch
-import compose.icons.cssggicons.GlobeAlt
-import compose.icons.cssggicons.Laptop
-import compose.icons.lineawesomeicons.DesktopSolid
-import compose.icons.lineawesomeicons.MobileAltSolid
-import compose.icons.lineawesomeicons.QuestionCircleSolid
-import compose.icons.lineawesomeicons.TvSolid
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -205,6 +197,7 @@ fun ConnectScreen(
 ) {
     val context = LocalContext.current
     val currentSelect = viewModel.currentSelect
+    currentSelect.intValue = 0
 
     val NICKNAME = PreferencesDataStore.nickname.asFlow().collectAsState(initial = "")
     val UUID = PreferencesDataStore.uuid.asFlow().collectAsState(initial = "")
@@ -312,9 +305,9 @@ fun ConnectScreen(
                                 imageVector = when (viewModel.applicationState.value) {
                                     "running" -> { Icons.Default.Check }
                                     "rebooting" -> { Icons.Default.Refresh }
-                                    "error" -> { LineAwesomeIcons.QuestionCircleSolid }
+                                    "error" -> { Icons.AutoMirrored.Outlined.HelpOutline }
                                     "stopped" -> { Icons.Default.Close }
-                                    else -> { LineAwesomeIcons.QuestionCircleSolid }
+                                    else -> { Icons.AutoMirrored.Outlined.HelpOutline }
                                 },
                                 contentDescription = null,
                                 modifier = Modifier
@@ -589,7 +582,7 @@ fun ConnectScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    LineAwesomeIcons.QuestionCircleSolid,
+                                    Icons.AutoMirrored.Outlined.HelpOutline,
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(84.dp)
@@ -693,16 +686,7 @@ private fun DeviceCard(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    when (deviceInfo.platform) {
-                        "Android Phone" -> { LineAwesomeIcons.MobileAltSolid }
-                        "Android TV" -> { LineAwesomeIcons.TvSolid }
-                        "Android Wear" -> { CssGgIcons.AppleWatch }
-                        "Windows" -> { LineAwesomeIcons.DesktopSolid }
-                        "Linux" -> { LineAwesomeIcons.DesktopSolid }
-                        "Mac" -> { CssGgIcons.Laptop }
-                        "Web" -> { CssGgIcons.GlobeAlt }
-                        else -> { LineAwesomeIcons.QuestionCircleSolid }
-                    },
+                    viewModel!!.platformMap[deviceInfo.platform] ?: Icons.AutoMirrored.Outlined.HelpOutline,
                     contentDescription = null,
                     modifier = Modifier
                         .size(84.dp)
@@ -792,15 +776,8 @@ private fun DeviceCard(
 private fun EmptyDeviceCard(viewModel: HyliConnectViewModel) {
     val visibility = remember { mutableStateOf(false) }
     val isIconVisible = remember { mutableStateOf(true) }
-    val icon = remember { mutableStateOf(LineAwesomeIcons.MobileAltSolid) }
-    val iconList = listOf(
-        LineAwesomeIcons.MobileAltSolid,
-        LineAwesomeIcons.TvSolid,
-        CssGgIcons.AppleWatch,
-        LineAwesomeIcons.DesktopSolid,
-        CssGgIcons.Laptop,
-        CssGgIcons.GlobeAlt
-    )
+    val iconList = viewModel.platformMap.toList().map { it.second }.distinct()
+    val icon = remember { mutableStateOf(iconList[0]) }
     LaunchedEffect(iconList) {
         MainScope().launch {
             visibility.value = true

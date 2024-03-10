@@ -40,6 +40,7 @@ fun DevicesScreen(
 ) {
     val context = LocalContext.current
     val currentSelect = viewModel.currentSelect
+    currentSelect.intValue = 1
     connectedDeviceMap = viewModel.connectedDeviceMap
     Column(modifier = Modifier.padding(paddingValues)) {
         LazyColumn(

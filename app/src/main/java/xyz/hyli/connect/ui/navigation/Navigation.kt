@@ -8,10 +8,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.SettingsEthernet
+import androidx.compose.material.icons.outlined.Devices
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -29,14 +30,10 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
-import compose.icons.FontAwesomeIcons
-import compose.icons.fontawesomeicons.Solid
-import compose.icons.fontawesomeicons.solid.TabletAlt
 import xyz.hyli.connect.R
 import xyz.hyli.connect.ui.pages.ConnectScreen
 import xyz.hyli.connect.ui.pages.DevicesScreen
 import xyz.hyli.connect.ui.pages.SettingsScreen
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -46,7 +43,7 @@ fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
         NavigationBar {
             NavigationBarItem(
-                icon = { Icon(Icons.Filled.Share, contentDescription = null) },
+                icon = { Icon(Icons.Filled.SettingsEthernet, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_connect)) },
                 selected = currentSelect.intValue == 0,
                 onClick = {
@@ -59,11 +56,7 @@ fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                 }
             )
             NavigationBarItem(
-                icon = { Icon(
-                    FontAwesomeIcons.Solid.TabletAlt,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                ) },
+                icon = { Icon(Icons.Outlined.Devices, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_devices)) },
                 selected = currentSelect.intValue == 1,
                 onClick = {
@@ -76,7 +69,7 @@ fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
                 }
             )
             NavigationBarItem(
-                icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                icon = { Icon(if (currentSelect.intValue != 2) Icons.Outlined.Settings else Icons.Filled.Settings, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_settings)) },
                 selected = currentSelect.intValue == 2,
                 onClick = {
@@ -110,11 +103,11 @@ fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
 fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostController) {
     val currentSelect = viewModel.currentSelect
     Row(modifier = Modifier.fillMaxSize()) {
-        NavigationRail(containerColor = HyliConnectColorScheme().onSecondary) {
+        NavigationRail {
             Spacer(modifier = Modifier.weight(1f))
             NavigationRailItem(
                 modifier = Modifier.padding(vertical = 8.dp),
-                icon = { Icon(Icons.Filled.Share, contentDescription = null) },
+                icon = { Icon(Icons.Filled.SettingsEthernet, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_connect)) },
                 selected = currentSelect.intValue == 0,
                 onClick = {
@@ -128,11 +121,7 @@ fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
             )
             NavigationRailItem(
                 modifier = Modifier.padding(vertical = 8.dp),
-                icon = { Icon(
-                    FontAwesomeIcons.Solid.TabletAlt,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                ) },
+                icon = { Icon(Icons.Outlined.Devices, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_devices)) },
                 selected = currentSelect.intValue == 1,
                 onClick = {
@@ -146,7 +135,7 @@ fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
             )
             NavigationRailItem(
                 modifier = Modifier.padding(vertical = 8.dp),
-                icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                icon = { Icon(if (currentSelect.intValue != 2) Icons.Outlined.Settings else Icons.Filled.Settings, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_settings)) },
                 selected = currentSelect.intValue == 2,
                 onClick = {
@@ -185,11 +174,11 @@ fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
 fun ExpandedScreen(viewModel: HyliConnectViewModel, navController: NavHostController) {
     val currentSelect = viewModel.currentSelect
     Row(modifier = Modifier.fillMaxSize()) {
-        PermanentDrawerSheet(drawerContainerColor = HyliConnectColorScheme().onSecondary) {
+        PermanentDrawerSheet {
             Spacer(modifier = Modifier.weight(1f))
             NavigationDrawerItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                icon = { Icon(Icons.Filled.Share, contentDescription = null) },
+                icon = { Icon(Icons.Filled.SettingsEthernet, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_connect)) },
                 selected = currentSelect.intValue == 0,
                 onClick = {
@@ -203,11 +192,7 @@ fun ExpandedScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
             )
             NavigationDrawerItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                icon = { Icon(
-                    FontAwesomeIcons.Solid.TabletAlt,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                ) },
+                icon = { Icon(Icons.Outlined.Devices, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_devices)) },
                 selected = currentSelect.intValue == 1,
                 onClick = {
@@ -221,7 +206,7 @@ fun ExpandedScreen(viewModel: HyliConnectViewModel, navController: NavHostContro
             )
             NavigationDrawerItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                icon = { Icon(if (currentSelect.intValue != 2) Icons.Outlined.Settings else Icons.Filled.Settings, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_settings)) },
                 selected = currentSelect.intValue == 2,
                 onClick = {

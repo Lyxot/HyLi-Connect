@@ -1,7 +1,10 @@
 package xyz.hyli.connect.ui.viewmodel
 
-import android.content.Context
-import androidx.compose.runtime.MutableState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DesktopWindows
+import androidx.compose.material.icons.outlined.LaptopMac
+import androidx.compose.material.icons.outlined.Tv
+import androidx.compose.material.icons.outlined.Web
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -10,7 +13,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.hjq.permissions.Permission
-import com.hjq.permissions.XXPermissions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -18,9 +20,8 @@ import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
-import xyz.hyli.connect.hook.utils.HookTest
-import xyz.hyli.connect.utils.PermissionUtils
-import java.io.Serializable
+import xyz.hyli.connect.ui.icon.AndroidPhone
+import xyz.hyli.connect.ui.icon.Watch
 
 class HyliConnectViewModel : ViewModel() {
     init {
@@ -43,6 +44,16 @@ class HyliConnectViewModel : ViewModel() {
     val applicationState = mutableStateOf("error")
     var nsdDeviceMap = mutableStateMapOf<String, DeviceInfo>()
     val connectedDeviceMap = mutableStateMapOf<String, DeviceInfo>()
+
+    val platformMap = mapOf(
+        "Android Phone" to AndroidPhone,
+        "Android TV" to Icons.Outlined.Tv,
+        "Android Wear" to Watch,
+        "Windows" to Icons.Outlined.DesktopWindows,
+        "Linux" to Icons.Outlined.DesktopWindows,
+        "Mac" to Icons.Outlined.LaptopMac,
+        "Web" to Icons.Outlined.Web
+    )
 
     val serviceMap = mapOf(
         "SocketServer" to R.string.service_socket_server,

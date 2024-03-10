@@ -39,22 +39,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat.getString
 import androidx.navigation.NavHostController
-import compose.icons.CssGgIcons
-import compose.icons.LineAwesomeIcons
-import compose.icons.cssggicons.AppleWatch
-import compose.icons.cssggicons.CornerRightUp
-import compose.icons.cssggicons.GlobeAlt
-import compose.icons.cssggicons.Laptop
-import compose.icons.lineawesomeicons.DesktopSolid
-import compose.icons.lineawesomeicons.Github
-import compose.icons.lineawesomeicons.MobileAltSolid
-import compose.icons.lineawesomeicons.TvSolid
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.HyliConnect
 import xyz.hyli.connect.R
-import xyz.hyli.connect.composeprefs3.PrefsItem
 import xyz.hyli.connect.composeprefs3.PrefsScreen
 import xyz.hyli.connect.composeprefs3.prefs.DropDownPref
 import xyz.hyli.connect.composeprefs3.prefs.EditIntPref
@@ -63,6 +52,8 @@ import xyz.hyli.connect.composeprefs3.prefs.ListPref
 import xyz.hyli.connect.composeprefs3.prefs.SwitchPref
 import xyz.hyli.connect.composeprefs3.prefs.TextPref
 import xyz.hyli.connect.datastore.PreferencesDataStore
+import xyz.hyli.connect.ui.icon.ExternalLink
+import xyz.hyli.connect.ui.icon.Github
 import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyliConnectTypography
 import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
@@ -78,6 +69,7 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val currentSelect = viewModel.currentSelect
+    currentSelect.intValue = 2
     Column(modifier = Modifier.padding(paddingValues)) {
         PrefsScreen(
             dataStore = PreferencesDataStore.dataStore,
@@ -112,15 +104,7 @@ fun SettingsScreen(
                 }
                 prefsItem {
                     val iconList = mutableListOf<@Composable (() -> Unit)?>()
-                    listOf(
-                        LineAwesomeIcons.MobileAltSolid,
-                        LineAwesomeIcons.TvSolid,
-                        CssGgIcons.AppleWatch,
-                        LineAwesomeIcons.DesktopSolid,
-                        LineAwesomeIcons.DesktopSolid,
-                        CssGgIcons.Laptop,
-                        CssGgIcons.GlobeAlt
-                    ).forEach {
+                    viewModel.platformMap.toList().map { it.second }.forEach {
                         iconList.add {
                             Icon(
                                 imageVector = it,
@@ -310,13 +294,13 @@ fun SettingsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                LineAwesomeIcons.Github,
+                                Github,
                                 contentDescription = null,
                                 modifier = Modifier.size(24.dp)
                             )
                             Text(text = "Lyxot/HyliConnect", modifier = Modifier.padding(horizontal = 6.dp))
                             Icon(
-                                CssGgIcons.CornerRightUp,
+                                ExternalLink,
                                 contentDescription = null,
                                 modifier = Modifier.size(12.dp)
                             )
