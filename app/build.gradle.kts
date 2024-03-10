@@ -196,6 +196,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.2")
     implementation("androidx.compose.material3:material3:1.2.0")
+    implementation("androidx.compose.material:material-icons-extended:1.6.3")
     api("androidx.datastore:datastore-preferences:1.1.0-beta01")
     implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.45")
     implementation("com.google.android.material:material:1.11.0")
@@ -203,11 +204,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("com.github.getActivity:XXPermissions:18.6")
     implementation("com.github.1552980358:C2Pinyin:3.0.0")
-
-    val compose_icons_version = "1.1.0"
-    implementation("br.com.devsrsouza.compose.icons:font-awesome:$compose_icons_version")
-    implementation("br.com.devsrsouza.compose.icons:line-awesome:$compose_icons_version")
-    implementation("br.com.devsrsouza.compose.icons:css-gg:$compose_icons_version")
 
     val protobuf_version = "3.25.2"
     implementation("com.google.protobuf:protobuf-java:$protobuf_version")
