@@ -74,14 +74,14 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.HyLiConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
-import xyz.hyli.connect.ui.theme.HyliConnectTypography
-import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectTypography
+import xyz.hyli.connect.ui.viewmodel.HyLiConnectViewModel
 import xyz.hyli.connect.utils.NetworkUtils
 import xyz.hyli.connect.utils.PermissionUtils
 import xyz.hyli.connect.utils.ServiceUtils
@@ -89,7 +89,7 @@ import java.util.concurrent.Semaphore
 
 @OptIn(DelicateCoroutinesApi::class)
 @Composable
-private fun InitNsd(viewModel: HyliConnectViewModel, context: Context, UUID: State<String?>, connectToMyself: State<Boolean?>) {
+private fun InitNsd(viewModel: HyLiConnectViewModel, context: Context, UUID: State<String?>, connectToMyself: State<Boolean?>) {
     val semaphore = remember { Semaphore(1) }
     val mNsdManager = remember { context.getSystemService(Context.NSD_SERVICE) as NsdManager }
     val mResolverListener = object : NsdManager.ResolveListener {
@@ -191,7 +191,7 @@ private fun InitNsd(viewModel: HyliConnectViewModel, context: Context, UUID: Sta
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ConnectScreen(
-    viewModel: HyliConnectViewModel,
+    viewModel: HyLiConnectViewModel,
     navController: NavHostController,
     paddingValues: PaddingValues = PaddingValues(0.dp)
 ) {
@@ -207,7 +207,7 @@ fun ConnectScreen(
 
     LaunchedEffect(viewModel.applicationState.value) {
         try {
-            HyliConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
+            HyLiConnect.serviceStateMap["SocketService"] = if (ServiceUtils.isServiceWork(context, "xyz.hyli.connect.service.SocketService")) {
                 ServiceState("running", context.getString(R.string.state_service_running, context.getString(R.string.service_socket_service)))
             } else {
                 ServiceState("stopped", context.getString(R.string.state_service_stopped, context.getString(R.string.service_socket_service)))
@@ -255,42 +255,42 @@ fun ConnectScreen(
                         colors = when (viewModel.applicationState.value) {
                             "running" -> {
                                 CardColors(
-                                    containerColor = HyliConnectColorScheme().secondaryContainer,
-                                    contentColor = HyliConnectColorScheme().onSecondaryContainer,
-                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                    containerColor = HyLiConnectColorScheme().secondaryContainer,
+                                    contentColor = HyLiConnectColorScheme().onSecondaryContainer,
+                                    disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                                 )
                             }
                             "rebooting" -> {
                                 CardColors(
                                     containerColor = Color(0xFFdcb334),
-                                    contentColor = HyliConnectColorScheme().onError,
-                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                    contentColor = HyLiConnectColorScheme().onError,
+                                    disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                                 )
                             }
                             "error" -> {
                                 CardColors(
                                     containerColor = Color(0xFFdcb334),
-                                    contentColor = HyliConnectColorScheme().onError,
-                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                    contentColor = HyLiConnectColorScheme().onError,
+                                    disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                                 )
                             }
                             "stopped" -> {
                                 CardColors(
-                                    containerColor = HyliConnectColorScheme(dynamicColor = false).error,
-                                    contentColor = HyliConnectColorScheme(dynamicColor = false).onError,
-                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                    containerColor = HyLiConnectColorScheme(dynamicColor = false).error,
+                                    contentColor = HyLiConnectColorScheme(dynamicColor = false).onError,
+                                    disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                                 )
                             }
                             else -> {
                                 CardColors(
-                                    containerColor = HyliConnectColorScheme().secondaryContainer,
-                                    contentColor = HyliConnectColorScheme().onSecondaryContainer,
-                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                    containerColor = HyLiConnectColorScheme().secondaryContainer,
+                                    contentColor = HyLiConnectColorScheme().onSecondaryContainer,
+                                    disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                                 )
                             }
                         }
@@ -327,7 +327,7 @@ fun ConnectScreen(
                                             "stopped" -> { stringResource(id = R.string.state_application_stopped) }
                                             else -> { "" }
                                         },
-                                        style = HyliConnectTypography.titleLarge
+                                        style = HyLiConnectTypography.titleLarge
                                     )
                                     Icon(
                                         Icons.Default.Refresh,
@@ -337,7 +337,7 @@ fun ConnectScreen(
                                             .align(Alignment.CenterVertically)
                                             .clickable {
                                                 val map = viewModel.connectedDeviceMap.toMap()
-                                                HyliConnectViewModel().applicationState.value =
+                                                HyLiConnectViewModel().applicationState.value =
                                                     "rebooting"
                                                 viewModel.applicationState.value = "rebooting"
                                                 viewModel.localBroadcastManager.value?.sendBroadcast(
@@ -388,13 +388,13 @@ fun ConnectScreen(
                                 }
                                 if (viewModel.applicationState.value != "stopped") {
                                     if (viewModel.applicationState.value == "error") {
-                                        HyliConnect.serviceStateMap.forEach {
+                                        HyLiConnect.serviceStateMap.forEach {
                                             if (it.value.state == "error") {
                                                 it.value.message?.let { it1 ->
                                                     Text(
                                                         text = it1,
-                                                        style = HyliConnectTypography.bodySmall,
-                                                        color = HyliConnectColorScheme().onError
+                                                        style = HyLiConnectTypography.bodySmall,
+                                                        color = HyLiConnectColorScheme().onError
                                                     )
                                                 }
                                             }
@@ -451,17 +451,17 @@ fun ConnectScreen(
                                     }
                                     Text(
                                         text = UUID.value ?: "",
-                                        style = HyliConnectTypography.bodySmall,
-                                        color = HyliConnectColorScheme().outline
+                                        style = HyLiConnectTypography.bodySmall,
+                                        color = HyLiConnectColorScheme().outline
                                     )
                                 } else {
-                                    HyliConnect.serviceStateMap.forEach {
+                                    HyLiConnect.serviceStateMap.forEach {
                                         if (it.value.state != "running") {
                                             it.value.message?.let { it1 ->
                                                 Text(
                                                     text = it1,
-                                                    style = HyliConnectTypography.bodySmall,
-                                                    color = HyliConnectColorScheme().onError
+                                                    style = HyLiConnectTypography.bodySmall,
+                                                    color = HyLiConnectColorScheme().onError
                                                 )
                                             }
                                         }
@@ -496,9 +496,9 @@ fun ConnectScreen(
                                 .animateItemPlacement(animationSpec = tween(400)),
                             colors = CardColors(
                                 containerColor = Color(0xFFdcb334),
-                                contentColor = HyliConnectColorScheme().onError,
-                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                contentColor = HyLiConnectColorScheme().onError,
+                                disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                             )
                         ) {
                             Column(
@@ -519,7 +519,7 @@ fun ConnectScreen(
                                                     }
                                             } else if (it == viewModel.permissionShizuku) {
                                                 try {
-                                                    HyliConnect().initShizuku()
+                                                    HyLiConnect().initShizuku()
                                                 } catch (e: Exception) { e.printStackTrace() }
                                             }
                                         }
@@ -570,10 +570,10 @@ fun ConnectScreen(
                                 .padding(6.dp)
                                 .animateItemPlacement(animationSpec = tween(400)),
                             colors = CardColors(
-                                containerColor = HyliConnectColorScheme().secondaryContainer,
-                                contentColor = HyliConnectColorScheme().onSecondaryContainer,
-                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                containerColor = HyLiConnectColorScheme().secondaryContainer,
+                                contentColor = HyLiConnectColorScheme().onSecondaryContainer,
+                                disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                             )
                         ) {
                             Row(
@@ -590,7 +590,7 @@ fun ConnectScreen(
                                 )
                                 Text(
                                     text = stringResource(id = R.string.page_connect_no_device_connected),
-                                    style = HyliConnectTypography.titleMedium
+                                    style = HyLiConnectTypography.titleMedium
                                 )
                             }
                         }
@@ -634,7 +634,7 @@ private fun DeviceCard(
     deviceInfo: DeviceInfo,
     connected: Boolean = false,
     navController: NavHostController? = null,
-    viewModel: HyliConnectViewModel? = null
+    viewModel: HyLiConnectViewModel? = null
 ) {
     val currentSelect = viewModel?.currentSelect
     val visibility = remember { mutableStateOf(false) }
@@ -678,10 +678,10 @@ private fun DeviceCard(
                 }
                 .padding(6.dp),
             colors = CardColors(
-                containerColor = HyliConnectColorScheme().secondaryContainer,
-                contentColor = HyliConnectColorScheme().onSecondaryContainer,
-                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                containerColor = HyLiConnectColorScheme().secondaryContainer,
+                contentColor = HyLiConnectColorScheme().onSecondaryContainer,
+                disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
             )
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -704,7 +704,7 @@ private fun DeviceCard(
                                 }
                                 else -> { deviceInfo.nickname }
                             },
-                            style = HyliConnectTypography.titleMedium
+                            style = HyLiConnectTypography.titleMedium
                         )
                     }
                     FlowRow {
@@ -712,16 +712,16 @@ private fun DeviceCard(
                             Card(
                                 modifier = Modifier.padding(end = 6.dp, top = 4.dp),
                                 colors = CardColors(
-                                    containerColor = HyliConnectColorScheme().tertiaryContainer,
-                                    contentColor = HyliConnectColorScheme().onTertiaryContainer,
-                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                    containerColor = HyLiConnectColorScheme().tertiaryContainer,
+                                    contentColor = HyLiConnectColorScheme().onTertiaryContainer,
+                                    disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                                 )
                             ) {
                                 Text(
                                     text = deviceInfo.platform,
                                     modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
-                                    style = HyliConnectTypography.labelMedium
+                                    style = HyLiConnectTypography.labelMedium
                                 )
                             }
                         }
@@ -730,16 +730,16 @@ private fun DeviceCard(
                                 Card(
                                     modifier = Modifier.padding(end = 6.dp, top = 4.dp),
                                     colors = CardColors(
-                                        containerColor = HyliConnectColorScheme().tertiaryContainer,
-                                        contentColor = HyliConnectColorScheme().onTertiaryContainer,
-                                        disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                        disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                        containerColor = HyLiConnectColorScheme().tertiaryContainer,
+                                        contentColor = HyLiConnectColorScheme().onTertiaryContainer,
+                                        disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                        disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                                     )
                                 ) {
                                     Text(
                                         text = it,
                                         modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
-                                        style = HyliConnectTypography.labelMedium
+                                        style = HyLiConnectTypography.labelMedium
                                     )
                                 }
                             }
@@ -747,8 +747,8 @@ private fun DeviceCard(
                     }
                     Text(
                         text = deviceInfo.uuid,
-                        style = HyliConnectTypography.bodySmall,
-                        color = HyliConnectColorScheme().outline,
+                        style = HyLiConnectTypography.bodySmall,
+                        color = HyLiConnectColorScheme().outline,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -758,14 +758,14 @@ private fun DeviceCard(
     LaunchedEffect(deviceInfo) {
         visibility.value = true
         if (connected) {
-            while (HyliConnect.deviceInfoMap.containsKey(deviceInfo.uuid)) delay(500)
+            while (HyLiConnect.deviceInfoMap.containsKey(deviceInfo.uuid)) delay(500)
             visibility.value = false
             delay(400)
             viewModel?.connectedDeviceMap?.remove(deviceInfo.uuid)
         } else {
-            while (HyliConnect.deviceInfoMap.containsKey(deviceInfo.uuid).not()) delay(500)
+            while (HyLiConnect.deviceInfoMap.containsKey(deviceInfo.uuid).not()) delay(500)
             visibility.value = false
-            viewModel!!.connectedDeviceMap[deviceInfo.uuid] = HyliConnect.deviceInfoMap[deviceInfo.uuid]!!
+            viewModel!!.connectedDeviceMap[deviceInfo.uuid] = HyLiConnect.deviceInfoMap[deviceInfo.uuid]!!
             delay(350)
             viewModel?.nsdDeviceMap?.remove(deviceInfo.uuid)
         }
@@ -773,7 +773,7 @@ private fun DeviceCard(
 }
 
 @Composable
-private fun EmptyDeviceCard(viewModel: HyliConnectViewModel) {
+private fun EmptyDeviceCard(viewModel: HyLiConnectViewModel) {
     val visibility = remember { mutableStateOf(false) }
     val isIconVisible = remember { mutableStateOf(true) }
     val iconList = viewModel.platformMap.toList().map { it.second }.distinct()
@@ -804,10 +804,10 @@ private fun EmptyDeviceCard(viewModel: HyliConnectViewModel) {
                 .fillMaxWidth()
                 .padding(6.dp),
             colors = CardColors(
-                containerColor = HyliConnectColorScheme().secondaryContainer,
-                contentColor = HyliConnectColorScheme().onSecondaryContainer,
-                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                containerColor = HyLiConnectColorScheme().secondaryContainer,
+                contentColor = HyLiConnectColorScheme().onSecondaryContainer,
+                disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
             )
         ) {
             BoxWithConstraints {
@@ -839,50 +839,50 @@ private fun EmptyDeviceCard(viewModel: HyliConnectViewModel) {
                         Card(
                             modifier = Modifier.padding(end = 6.dp, top = 4.dp),
                             colors = CardColors(
-                                containerColor = HyliConnectColorScheme().tertiaryContainer,
-                                contentColor = HyliConnectColorScheme().onTertiaryContainer,
-                                disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                containerColor = HyLiConnectColorScheme().tertiaryContainer,
+                                contentColor = HyLiConnectColorScheme().onTertiaryContainer,
+                                disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                             )
                         ) {
-                            Text(text = "                           ", style = HyliConnectTypography.titleMedium)
+                            Text(text = "                           ", style = HyLiConnectTypography.titleMedium)
                         }
                         Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
                             Card(
                                 modifier = Modifier.padding(end = 6.dp, top = 4.dp),
                                 colors = CardColors(
-                                    containerColor = HyliConnectColorScheme().tertiaryContainer,
-                                    contentColor = HyliConnectColorScheme().onTertiaryContainer,
-                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                    containerColor = HyLiConnectColorScheme().tertiaryContainer,
+                                    contentColor = HyLiConnectColorScheme().onTertiaryContainer,
+                                    disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                                 )
                             ) {
                                 Text(
                                     text = "              ",
                                     modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
-                                    style = HyliConnectTypography.labelMedium
+                                    style = HyLiConnectTypography.labelMedium
                                 )
                             }
                             Card(
                                 modifier = Modifier.padding(end = 6.dp, top = 4.dp),
                                 colors = CardColors(
-                                    containerColor = HyliConnectColorScheme().tertiaryContainer,
-                                    contentColor = HyliConnectColorScheme().onTertiaryContainer,
-                                    disabledContainerColor = HyliConnectColorScheme().surfaceVariant,
-                                    disabledContentColor = HyliConnectColorScheme().onSurfaceVariant
+                                    containerColor = HyLiConnectColorScheme().tertiaryContainer,
+                                    contentColor = HyLiConnectColorScheme().onTertiaryContainer,
+                                    disabledContainerColor = HyLiConnectColorScheme().surfaceVariant,
+                                    disabledContentColor = HyLiConnectColorScheme().onSurfaceVariant
                                 )
                             ) {
                                 Text(
                                     text = "                      ",
                                     modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
-                                    style = HyliConnectTypography.labelMedium
+                                    style = HyLiConnectTypography.labelMedium
                                 )
                             }
                         }
                         Text(
                             text = " ",
-                            style = HyliConnectTypography.bodySmall,
-                            color = HyliConnectColorScheme().outline,
+                            style = HyLiConnectTypography.bodySmall,
+                            color = HyLiConnectColorScheme().outline,
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }

@@ -42,7 +42,7 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
-import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.HyLiConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.composeprefs3.PrefsScreen
 import xyz.hyli.connect.composeprefs3.prefs.DropDownPref
@@ -54,14 +54,14 @@ import xyz.hyli.connect.composeprefs3.prefs.TextPref
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.ui.icon.ExternalLink
 import xyz.hyli.connect.ui.icon.Github
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
-import xyz.hyli.connect.ui.theme.HyliConnectTypography
-import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectTypography
+import xyz.hyli.connect.ui.viewmodel.HyLiConnectViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SettingsScreen(
-    viewModel: HyliConnectViewModel,
+    viewModel: HyLiConnectViewModel,
     navController: NavHostController,
     paddingValues: PaddingValues = PaddingValues(
         0.dp
@@ -151,7 +151,7 @@ fun SettingsScreen(
                         entries = PreferencesDataStore.workingModeMap,
                         onValueChange = {
                             if (it.contains("Shizuku")) {
-                                HyliConnect.me.initShizuku()
+                                HyLiConnect.me.initShizuku()
                             }
                             if (!it.contains("Shizuku") && !it.contains("Root")) {
                                 MainScope().launch { PreferencesDataStore.function_app_streaming.reset() }
@@ -195,7 +195,7 @@ fun SettingsScreen(
                         AlertDialog(
                             modifier = Modifier.fillMaxWidth(0.9f),
                             onDismissRequest = { showResetDialog.value = false },
-                            title = { Text(stringResource(id = R.string.page_settings_reset_all_settings_confirm), style = HyliConnectTypography.titleLarge, modifier = Modifier.padding(16.dp)) },
+                            title = { Text(stringResource(id = R.string.page_settings_reset_all_settings_confirm), style = HyLiConnectTypography.titleLarge, modifier = Modifier.padding(16.dp)) },
                             confirmButton = {
                                 TextButton(
                                     modifier = Modifier.padding(end = 16.dp),
@@ -206,7 +206,7 @@ fun SettingsScreen(
                                         showResetDialog.value = false
                                     }
                                 ) {
-                                    Text(stringResource(id = R.string.composeprefs_confirm), style = HyliConnectTypography.bodyLarge)
+                                    Text(stringResource(id = R.string.composeprefs_confirm), style = HyLiConnectTypography.bodyLarge)
                                 }
                             },
                             dismissButton = {
@@ -214,11 +214,11 @@ fun SettingsScreen(
                                     modifier = Modifier.padding(end = 16.dp),
                                     onClick = { showResetDialog.value = false }
                                 ) {
-                                    Text(stringResource(id = R.string.composeprefs_cancel), style = HyliConnectTypography.bodyLarge)
+                                    Text(stringResource(id = R.string.composeprefs_cancel), style = HyLiConnectTypography.bodyLarge)
                                 }
                             },
                             properties = DialogProperties(usePlatformDefaultWidth = false),
-                            containerColor = HyliConnectColorScheme().background
+                            containerColor = HyLiConnectColorScheme().background
                         )
                     }
                 }
@@ -258,7 +258,7 @@ fun SettingsScreen(
                         Text(
                             text = stringResource(id = R.string.page_settings_version) + ": " + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")"
                         )
-                        Text(text = stringResource(id = R.string.author), style = HyliConnectTypography.bodyLarge)
+                        Text(text = stringResource(id = R.string.author), style = HyLiConnectTypography.bodyLarge)
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(
                             modifier = Modifier
@@ -298,7 +298,7 @@ fun SettingsScreen(
                                 contentDescription = null,
                                 modifier = Modifier.size(24.dp)
                             )
-                            Text(text = "Lyxot/HyliConnect", modifier = Modifier.padding(horizontal = 6.dp))
+                            Text(text = "Lyxot/HyLiConnect", modifier = Modifier.padding(horizontal = 6.dp))
                             Icon(
                                 ExternalLink,
                                 contentDescription = null,

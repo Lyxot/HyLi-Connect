@@ -82,7 +82,7 @@ private val DarkColors = darkColorScheme(
 )
 
 @Composable
-fun HyliConnectColorScheme(
+fun HyLiConnectColorScheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true
 ) = when {
@@ -95,12 +95,12 @@ fun HyliConnectColorScheme(
 }
 
 @Composable
-fun HyliConnectTheme(
+fun HyLiConnectTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val HyliConnectColorScheme = when {
+    val HyLiConnectColorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
@@ -112,15 +112,15 @@ fun HyliConnectTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-//            window.statusBarColor = HyliConnectColorScheme.primary.toArgb()
+//            window.statusBarColor = HyLiConnectColorScheme.primary.toArgb()
             window.statusBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }
 
     MaterialTheme(
-        colorScheme = HyliConnectColorScheme,
-        typography = HyliConnectTypography,
+        colorScheme = HyLiConnectColorScheme,
+        typography = HyLiConnectTypography,
         shapes = shapes,
         content = content
     )

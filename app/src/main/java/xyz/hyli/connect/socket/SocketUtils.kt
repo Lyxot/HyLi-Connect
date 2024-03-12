@@ -2,7 +2,7 @@ package xyz.hyli.connect.socket
 
 import android.util.Log
 import xyz.hyli.connect.BuildConfig
-import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.HyLiConnect
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.bean.MessageQueue
 import xyz.hyli.connect.bean.MessageReceiveListener
@@ -13,33 +13,33 @@ import xyz.hyli.connect.proto.SocketMessage
 
 object SocketUtils {
     fun closeConnection(ip: String) {
-        HyliConnect.socketMap[ip]?.close()
-        HyliConnect.deviceInfoMap.remove(HyliConnect.uuidMap[ip] ?: "")
-        HyliConnect.uuidMap.remove(ip)
-        HyliConnect.socketMap.remove(ip)
-        HyliConnect.inputStreamMap.remove(ip)
-        HyliConnect.outputStreamMap.remove(ip)
-        HyliConnect.sendMessageQueueMap.remove(ip)
-        HyliConnect.receiveMessageListenerMap.remove(ip)
-        HyliConnect.connectionMap.remove(ip)
+        HyLiConnect.socketMap[ip]?.close()
+        HyLiConnect.deviceInfoMap.remove(HyLiConnect.uuidMap[ip] ?: "")
+        HyLiConnect.uuidMap.remove(ip)
+        HyLiConnect.socketMap.remove(ip)
+        HyLiConnect.inputStreamMap.remove(ip)
+        HyLiConnect.outputStreamMap.remove(ip)
+        HyLiConnect.sendMessageQueueMap.remove(ip)
+        HyLiConnect.receiveMessageListenerMap.remove(ip)
+        HyLiConnect.connectionMap.remove(ip)
     }
     fun closeAllConnection() {
-        HyliConnect.socketMap.forEach {
+        HyLiConnect.socketMap.forEach {
             closeConnection(it.key)
         }
-        HyliConnect.socketMap.clear()
-        HyliConnect.deviceInfoMap.clear()
-        HyliConnect.uuidMap.clear()
-        HyliConnect.socketMap.clear()
-        HyliConnect.inputStreamMap.clear()
-        HyliConnect.outputStreamMap.clear()
-        HyliConnect.sendMessageQueueMap.clear()
-        HyliConnect.receiveMessageListenerMap.clear()
-        HyliConnect.connectionMap.clear()
+        HyLiConnect.socketMap.clear()
+        HyLiConnect.deviceInfoMap.clear()
+        HyLiConnect.uuidMap.clear()
+        HyLiConnect.socketMap.clear()
+        HyLiConnect.inputStreamMap.clear()
+        HyLiConnect.outputStreamMap.clear()
+        HyLiConnect.sendMessageQueueMap.clear()
+        HyLiConnect.receiveMessageListenerMap.clear()
+        HyLiConnect.connectionMap.clear()
     }
     fun acceptConnection(ip: String, deviceInfo: DeviceInfo) {
-        HyliConnect.uuidMap[ip] = deviceInfo.uuid
-        HyliConnect.deviceInfoMap[deviceInfo.uuid] = deviceInfo
+        HyLiConnect.uuidMap[ip] = deviceInfo.uuid
+        HyLiConnect.deviceInfoMap[deviceInfo.uuid] = deviceInfo
         val messageData = ConnectProto.ConnectResponse.newBuilder()
             .setSuccess(true)
             .setInfo(
@@ -112,10 +112,10 @@ object SocketUtils {
             .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
             .setSTATUS(SocketMessage.STATUS.SUCCESS)
             .setData(messageData.toByteString())
-        while (HyliConnect.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800) {
+        while (HyLiConnect.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800) {
             Thread.sleep(20)
         }
-        if (HyliConnect.socketMap[IPAddress] == null) {
+        if (HyLiConnect.socketMap[IPAddress] == null) {
             Log.e("SocketUtils", "Connect timeout")
             return
         }
@@ -136,7 +136,7 @@ object SocketUtils {
         onMessageSend: (() -> Unit) = {
         }
     ) {
-        HyliConnect.sendMessageQueueMap[ip]?.put(
+        HyLiConnect.sendMessageQueueMap[ip]?.put(
             MessageQueue(
                 messageBody,
                 dropTime,
@@ -157,7 +157,7 @@ object SocketUtils {
                 .build()
         }
         try {
-            message.writeDelimitedTo(HyliConnect.outputStreamMap[ip])
+            message.writeDelimitedTo(HyLiConnect.outputStreamMap[ip])
             onMessageSend()
             Log.i("SocketUtils", "Send message: $ip $message")
         } catch (e: Exception) {
@@ -173,8 +173,8 @@ object SocketUtils {
         unregisterAfterReceived: Boolean = false,
         onMessageReceive: (SocketMessage.Body) -> Unit
     ): MessageReceiveListener {
-        if (HyliConnect.receiveMessageListenerMap[ip] == null) {
-            HyliConnect.receiveMessageListenerMap[ip] = mutableSetOf()
+        if (HyLiConnect.receiveMessageListenerMap[ip] == null) {
+            HyLiConnect.receiveMessageListenerMap[ip] = mutableSetOf()
         }
         MessageReceiveListener(
             className,
@@ -183,7 +183,7 @@ object SocketUtils {
             onMessageReceive,
             unregisterAfterReceived
         ).let {
-            HyliConnect.receiveMessageListenerMap[ip]?.add(it)
+            HyLiConnect.receiveMessageListenerMap[ip]?.add(it)
             Log.i("SocketUtils", "Register receive message listener: $ip $className $type $command")
             return it
         }
@@ -197,7 +197,7 @@ object SocketUtils {
         unregisterAfterReceived: Boolean = false,
         onMessageReceive: (SocketMessage.Body) -> Unit
     ) {
-        HyliConnect.receiveMessageListenerMap[ip]?.remove(
+        HyLiConnect.receiveMessageListenerMap[ip]?.remove(
             MessageReceiveListener(
                 className,
                 type,
@@ -210,12 +210,12 @@ object SocketUtils {
     }
 
     fun unregisterReceiveMessageListener(ip: String, listener: MessageReceiveListener) {
-        HyliConnect.receiveMessageListenerMap[ip]?.remove(listener)
+        HyLiConnect.receiveMessageListenerMap[ip]?.remove(listener)
         Log.i("SocketUtils", "Unregister receive message listener: $ip ${listener.className} ${listener.type} ${listener.command}")
     }
 
     fun unregisterReceiveMessageListener(ip: String, className: String) {
-        HyliConnect.receiveMessageListenerMap[ip]?.filter { it.className == className }?.forEach {
+        HyLiConnect.receiveMessageListenerMap[ip]?.filter { it.className == className }?.forEach {
             unregisterReceiveMessageListener(ip, it)
         }
     }

@@ -40,14 +40,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.ks.chan.c2pinyin.LetterCase
 import org.ks.chan.c2pinyin.pinyin
-import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.HyLiConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.ApplicationInfo
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.proto.ApplicationProto
 import xyz.hyli.connect.proto.SocketMessage
 import xyz.hyli.connect.socket.SocketUtils
-import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
+import xyz.hyli.connect.ui.viewmodel.HyLiConnectViewModel
 import xyz.hyli.connect.utils.PackageUtils
 
 private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
@@ -55,7 +55,7 @@ private lateinit var connectedDeviceMap: MutableMap<String, DeviceInfo>
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DevicesScreen(
-    viewModel: HyliConnectViewModel,
+    viewModel: HyLiConnectViewModel,
     navController: NavHostController,
     paddingValues: PaddingValues = PaddingValues(0.dp)
 ) {
@@ -105,7 +105,7 @@ fun DevicesScreen(
                 }
             }
             items(connectedDeviceMap.values.toList()) { deviceInfo ->
-                val ip = HyliConnect.uuidMap.filterValues { it == deviceInfo.uuid }.keys.first()
+                val ip = HyLiConnect.uuidMap.filterValues { it == deviceInfo.uuid }.keys.first()
                 val applicationInfoList = remember { mutableStateListOf<ApplicationInfo>() }
                 LaunchedEffect(deviceInfo) {
                     SocketUtils.sendRequest(ip, SocketMessage.COMMAND.GET_APPLICATION_LIST)

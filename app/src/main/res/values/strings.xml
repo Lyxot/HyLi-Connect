@@ -6,8 +6,8 @@
     <string name="dialog_connect_request_title">Connection request</string>
     <string name="dialog_connect_request_message">%1$s (%2$s) request connection</string>
     <string name="channel_1_name">Foreground service notification</string>
-    <string name="channel_1_notification_title">Hyli Connect is running</string>
-    <string name="channel_1_notification_message">This notification is required to keep Hyli Connect running</string>
+    <string name="channel_1_notification_title">HyLi Connect is running</string>
+    <string name="channel_1_notification_message">This notification is required to keep HyLi Connect running</string>
     <string name="page_connect">Connect</string>
     <string name="page_devices">Devices</string>
     <string name="page_settings">Settings</string>

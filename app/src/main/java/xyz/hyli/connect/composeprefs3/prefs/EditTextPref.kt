@@ -33,8 +33,8 @@ import kotlinx.coroutines.launch
 import xyz.hyli.connect.R
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
 import xyz.hyli.connect.composeprefs3.ifNotNullThen
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
-import xyz.hyli.connect.ui.theme.HyliConnectTypography
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectTypography
 
 /**
  * Preference which shows a TextField in a Dialog
@@ -66,8 +66,8 @@ fun EditTextPref(
     onValueSaved: ((String) -> Unit) = {},
     onValueChange: ((String) -> Unit) = {},
     displayValueAtEnd: Boolean = false,
-    dialogBackgroundColor: Color = HyliConnectColorScheme().background,
-    textColor: Color = HyliConnectColorScheme().onBackground,
+    dialogBackgroundColor: Color = HyLiConnectColorScheme().background,
+    textColor: Color = HyLiConnectColorScheme().onBackground,
     enabled: Boolean = true,
 ) {
     var showDialog by rememberSaveable { mutableStateOf(false) }
@@ -159,7 +159,7 @@ fun EditTextPref(
                         showDialog = false
                     }
                 ) {
-                    Text(stringResource(id = R.string.composeprefs_save), style = HyliConnectTypography.bodyLarge)
+                    Text(stringResource(id = R.string.composeprefs_save), style = HyLiConnectTypography.bodyLarge)
                 }
             },
             dismissButton = {
@@ -167,7 +167,7 @@ fun EditTextPref(
                     modifier = Modifier.padding(end = 16.dp),
                     onClick = { showDialog = false }
                 ) {
-                    Text(stringResource(id = R.string.composeprefs_cancel), style = HyliConnectTypography.bodyLarge)
+                    Text(stringResource(id = R.string.composeprefs_cancel), style = HyLiConnectTypography.bodyLarge)
                 }
             },
             properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -182,14 +182,14 @@ fun DialogHeader(dialogTitle: String?, dialogMessage: String?) {
         dialogTitle.ifNotNullThen {
             Text(
                 text = dialogTitle!!,
-                style = HyliConnectTypography.titleLarge
+                style = HyLiConnectTypography.titleLarge
             )
         }?.invoke()
 
         dialogMessage.ifNotNullThen {
             Text(
                 text = dialogMessage!!,
-                style = HyliConnectTypography.bodyLarge
+                style = HyLiConnectTypography.bodyLarge
             )
         }?.invoke()
     }

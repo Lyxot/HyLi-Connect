@@ -7,7 +7,7 @@ import android.text.TextUtils
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import rikka.shizuku.Shizuku
-import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.HyLiConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import java.util.concurrent.CompletableFuture
@@ -34,7 +34,7 @@ object PermissionUtils {
             )
             false
         } else {
-            Shizuku.requestPermission(HyliConnect.SHIZUKU_CODE)
+            Shizuku.requestPermission(HyLiConnect.SHIZUKU_CODE)
 
             val result = shizukuPermissionFuture.get()
             shizukuPermissionFuture = CompletableFuture<Boolean>()

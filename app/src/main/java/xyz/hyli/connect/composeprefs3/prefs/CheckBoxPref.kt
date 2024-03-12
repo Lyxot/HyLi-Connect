@@ -14,7 +14,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
 
 /**
  * Simple preference with a trailing [Checkbox]
@@ -38,7 +38,7 @@ fun CheckBoxPref(
     summary: String? = null,
     defaultChecked: Boolean = false,
     onCheckedChange: ((Boolean) -> Unit)? = null,
-    textColor: Color = HyliConnectColorScheme().onBackground,
+    textColor: Color = HyLiConnectColorScheme().onBackground,
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null
 ) {
@@ -84,7 +84,7 @@ fun CheckBoxPref(
         Checkbox(
             checked = checked,
             enabled = enabled,
-            colors = CheckboxDefaults.colors(checkedColor = HyliConnectColorScheme().primary),
+            colors = CheckboxDefaults.colors(checkedColor = HyLiConnectColorScheme().primary),
             onCheckedChange = {
                 edit(it)
             }

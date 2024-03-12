@@ -34,11 +34,11 @@ import xyz.hyli.connect.R
 import xyz.hyli.connect.ui.pages.ConnectScreen
 import xyz.hyli.connect.ui.pages.DevicesScreen
 import xyz.hyli.connect.ui.pages.SettingsScreen
-import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
+import xyz.hyli.connect.ui.viewmodel.HyLiConnectViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostController) {
+fun CompactScreen(viewModel: HyLiConnectViewModel, navController: NavHostController) {
     val currentSelect = viewModel.currentSelect
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
         NavigationBar {
@@ -100,7 +100,7 @@ fun CompactScreen(viewModel: HyliConnectViewModel, navController: NavHostControl
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostController) {
+fun MediumScreen(viewModel: HyLiConnectViewModel, navController: NavHostController) {
     val currentSelect = viewModel.currentSelect
     Row(modifier = Modifier.fillMaxSize()) {
         NavigationRail {
@@ -171,7 +171,7 @@ fun MediumScreen(viewModel: HyliConnectViewModel, navController: NavHostControll
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun ExpandedScreen(viewModel: HyliConnectViewModel, navController: NavHostController) {
+fun ExpandedScreen(viewModel: HyLiConnectViewModel, navController: NavHostController) {
     val currentSelect = viewModel.currentSelect
     Row(modifier = Modifier.fillMaxSize()) {
         PermanentDrawerSheet {

@@ -34,8 +34,8 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.R
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
-import xyz.hyli.connect.ui.theme.HyliConnectTypography
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectTypography
 
 /**
  * Preference that shows a list of entries in a Dialog where multiple entries can be selected at one time.
@@ -63,8 +63,8 @@ fun MultiSelectListPref(
     defaultValue: Set<String> = setOf(),
     onValuesChange: ((Set<String>) -> Unit)? = null,
     displayValueAtEnd: Boolean = false,
-    dialogBackgroundColor: Color = HyliConnectColorScheme().surface,
-    textColor: Color = HyliConnectColorScheme().onBackground,
+    dialogBackgroundColor: Color = HyLiConnectColorScheme().surface,
+    textColor: Color = HyLiConnectColorScheme().onBackground,
     enabled: Boolean = true,
     entries: LinkedHashMap<String, String> = linkedMapOf(),
     icons: List<@Composable (() -> Unit)?> = List(entries.size) { null }
@@ -118,7 +118,7 @@ fun MultiSelectListPref(
                     Text(
                         modifier = Modifier.padding(vertical = 16.dp),
                         text = title,
-                        style = HyliConnectTypography.titleLarge
+                        style = HyLiConnectTypography.titleLarge
                     )
                     LazyColumn {
                         val entriesList = entries.toList()
@@ -139,11 +139,11 @@ fun MultiSelectListPref(
                                 Checkbox(
                                     checked = isSelected,
                                     onCheckedChange = { onSelectionChanged() },
-                                    colors = CheckboxDefaults.colors(checkedColor = HyliConnectColorScheme().primary)
+                                    colors = CheckboxDefaults.colors(checkedColor = HyLiConnectColorScheme().primary)
                                 )
                                 Text(
                                     text = current.second,
-                                    style = HyliConnectTypography.bodyMedium,
+                                    style = HyLiConnectTypography.bodyMedium,
                                     color = textColor
                                 )
                                 if (icons.isNotEmpty() && icons.size == entries.size) {
@@ -160,7 +160,7 @@ fun MultiSelectListPref(
                 TextButton(
                     onClick = { showDialog = false },
                 ) {
-                    Text(text = stringResource(id = R.string.composeprefs_select), style = HyliConnectTypography.bodyLarge)
+                    Text(text = stringResource(id = R.string.composeprefs_select), style = HyLiConnectTypography.bodyLarge)
                 }
             },
             containerColor = dialogBackgroundColor,

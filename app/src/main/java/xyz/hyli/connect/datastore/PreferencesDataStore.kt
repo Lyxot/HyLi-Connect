@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat.getString
 import kotlinx.coroutines.runBlocking
 import xyz.hyli.connect.BuildConfig
-import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.HyLiConnect
 import xyz.hyli.connect.R
 import java.util.UUID.randomUUID
 
@@ -56,8 +56,8 @@ object PreferencesDataStore : DataStoreOwner("preferences") {
         6 to "Web"
     )
     val workingModeMap = linkedMapOf(
-        0 to getString(HyliConnect().getContext(), R.string.working_mode_basic),
-        1 to getString(HyliConnect().getContext(), R.string.working_mode_shizuku),
-        2 to getString(HyliConnect().getContext(), R.string.working_mode_root),
+        0 to getString(HyLiConnect().getContext(), R.string.working_mode_basic),
+        1 to getString(HyLiConnect().getContext(), R.string.working_mode_shizuku),
+        2 to getString(HyLiConnect().getContext(), R.string.working_mode_root),
     )
 }

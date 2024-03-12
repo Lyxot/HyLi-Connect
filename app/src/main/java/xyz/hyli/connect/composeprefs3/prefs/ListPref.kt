@@ -36,8 +36,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.R
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
-import xyz.hyli.connect.ui.theme.HyliConnectTypography
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectTypography
 
 /**
  * Preference that shows a list of entries in a Dialog where a single entry can be selected at one time.
@@ -70,11 +70,11 @@ fun ListPref(
     onValueChange: ((String) -> Unit)? = null,
     useSelectedAsSummary: Boolean = false,
     displayValueAtEnd: Boolean = false,
-    dialogBackgroundColor: Color = HyliConnectColorScheme().surface,
+    dialogBackgroundColor: Color = HyLiConnectColorScheme().surface,
     contentColor: Color = contentColorFor(dialogBackgroundColor),
-    textColor: Color = HyliConnectColorScheme().onBackground,
-    selectionColor: Color = HyliConnectColorScheme().primary,
-    buttonColor: Color = HyliConnectColorScheme().primary,
+    textColor: Color = HyLiConnectColorScheme().onBackground,
+    selectionColor: Color = HyLiConnectColorScheme().primary,
+    buttonColor: Color = HyLiConnectColorScheme().primary,
     enabled: Boolean = true,
     entries: LinkedHashMap<Int, String> = linkedMapOf(),
     icons: List<@Composable (() -> Unit)?> = List(entries.size) { null }
@@ -125,7 +125,7 @@ fun ListPref(
                     Text(
                         modifier = Modifier.padding(vertical = 16.dp),
                         text = title,
-                        style = HyliConnectTypography.titleLarge
+                        style = HyLiConnectTypography.titleLarge
                     )
                     LazyColumn {
                         val entriesList = entries.toList()
@@ -151,7 +151,7 @@ fun ListPref(
                                 )
                                 Text(
                                     text = current.second,
-                                    style = HyliConnectTypography.bodyMedium,
+                                    style = HyLiConnectTypography.bodyMedium,
                                     color = textColor
                                 )
                                 if (icons.isNotEmpty() && icons.size == entries.size) {
@@ -168,7 +168,7 @@ fun ListPref(
                 TextButton(
                     onClick = { showDialog = false },
                 ) {
-                    Text(stringResource(id = R.string.composeprefs_cancel), style = HyliConnectTypography.bodyLarge, color = buttonColor)
+                    Text(stringResource(id = R.string.composeprefs_cancel), style = HyLiConnectTypography.bodyLarge, color = buttonColor)
                 }
             },
             containerColor = dialogBackgroundColor,

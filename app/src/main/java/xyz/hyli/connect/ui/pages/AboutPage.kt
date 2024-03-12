@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.R
-import xyz.hyli.connect.ui.theme.HyliConnectTheme
-import xyz.hyli.connect.ui.theme.HyliConnectTypography
+import xyz.hyli.connect.ui.theme.HyLiConnectTheme
+import xyz.hyli.connect.ui.theme.HyLiConnectTypography
 
 class AboutPage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +48,7 @@ class AboutPage : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
         setContent {
-            HyliConnectTheme {
+            HyLiConnectTheme {
                 Scaffold {
                     Column(modifier = Modifier.fillMaxSize().padding(it)) {
                         Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
@@ -107,7 +107,7 @@ class AboutPage : ComponentActivity() {
                                 )
                                 Text(
                                     text = stringResource(id = R.string.author),
-                                    style = HyliConnectTypography.bodyLarge
+                                    style = HyLiConnectTypography.bodyLarge
                                 )
                                 Text(
                                     text = stringResource(id = R.string.uri_homepage),
@@ -122,7 +122,7 @@ class AboutPage : ComponentActivity() {
                                                 }
                                             )
                                         },
-                                    style = HyliConnectTypography.bodyLarge
+                                    style = HyLiConnectTypography.bodyLarge
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 /* TODO: description */
@@ -141,7 +141,7 @@ class AboutPage : ComponentActivity() {
                                                 }
                                             )
                                         },
-                                    style = HyliConnectTypography.titleMedium
+                                    style = HyLiConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -156,7 +156,7 @@ class AboutPage : ComponentActivity() {
                                                 }
                                             )
                                         },
-                                    style = HyliConnectTypography.titleMedium
+                                    style = HyLiConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -165,7 +165,7 @@ class AboutPage : ComponentActivity() {
                                         .clickable {
                                             /* TODO: donate */
                                         },
-                                    style = HyliConnectTypography.titleMedium
+                                    style = HyLiConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -180,7 +180,7 @@ class AboutPage : ComponentActivity() {
                                                 }
                                             )
                                         },
-                                    style = HyliConnectTypography.titleMedium
+                                    style = HyLiConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -189,7 +189,7 @@ class AboutPage : ComponentActivity() {
                                         .clickable {
                                             /* TODO: change log */
                                         },
-                                    style = HyliConnectTypography.titleMedium
+                                    style = HyLiConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -204,7 +204,7 @@ class AboutPage : ComponentActivity() {
                                                 }
                                             )
                                         },
-                                    style = HyliConnectTypography.titleMedium
+                                    style = HyLiConnectTypography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -213,7 +213,7 @@ class AboutPage : ComponentActivity() {
                                         .clickable {
                                             /* TODO: license notice */
                                         },
-                                    style = HyliConnectTypography.titleMedium
+                                    style = HyLiConnectTypography.titleMedium
                                 )
                             }
                         }

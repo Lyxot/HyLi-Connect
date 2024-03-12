@@ -1,8 +1,8 @@
 JamalMulla/ComposePrefs3: [https://github.com/JamalMulla/ComposePrefs3](https://github.com/JamalMulla/ComposePrefs3)
 
 ## Modify
-* Replace `MaterialTheme.colorScheme` with `HyliConnectColorScheme()`
-* Replace `MaterialTheme.typography` with `HyliConnectTypography`
+* Replace `MaterialTheme.colorScheme` with `HyLiConnectColorScheme()`
+* Replace `MaterialTheme.typography` with `HyLiConnectTypography`
 * Remove `import androidx.compose.material3.MaterialTheme`
 * Remove TODO
 * Show the current value of `EditTextPref`, `ListPref`, `MultiSelectListPref`, `DropDownPref` (when `displayValueAtEnd = true`)

@@ -4,6 +4,6 @@ import de.robv.android.xposed.XposedBridge
 
 object XLog {
     fun d(s: Any) {
-        XposedBridge.log("[HyliConnect/D] $s")
+        XposedBridge.log("[HyLiConnect/D] $s")
     }
 }
