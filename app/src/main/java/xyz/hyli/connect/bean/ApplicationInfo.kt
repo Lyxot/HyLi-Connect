@@ -7,11 +7,5 @@ data class ApplicationInfo(
     val appName: String,
     val versionName: String,
     val mainActivity: String,
-    val icon: ApplicationIcon? = null
-)
-
-data class ApplicationIcon(
-    val width: Int,
-    val height: Int,
-    val data: ByteString
+    val icon: ByteString? = null
 )

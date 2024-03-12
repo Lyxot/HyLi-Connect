@@ -147,26 +147,24 @@ object MessageHandler {
                     SocketUtils.sendMessage(ip, responseBody)
                 }
                 SocketMessage.COMMAND.GET_APPLICATION_LIST -> {
-                    val appList = ApplicationProto.ApplicationList.newBuilder()
-                    PackageUtils.getAppList(HyliConnect().getContext(), true).forEach {
-                        appList.addApplications(
-                            ApplicationProto.ApplicationInfo.newBuilder()
-                                .setPackageName(it.packageName)
-                                .setAppName(it.appName)
-                                .setVersionName(it.versionName)
-                                .setMainActivity(it.mainActivity)
-                                .setIcon(
-                                    ApplicationProto.ApplicationIcon.newBuilder()
-                                        .setWidth(it.icon?.width ?: 0)
-                                        .setHeight(it.icon?.height ?: 0)
-                                        .setData(it.icon?.data)
-                                        .build()
-                                )
-                                .build()
-                        )
+                    PackageUtils.getPackageMap(HyliConnect().getContext().packageManager).forEach { (_, resolveInfo) ->
+                        PackageUtils.getAppInfo(HyliConnect().getContext().packageManager, resolveInfo, true).let { it ->
+                            SocketUtils.sendMessage(ip, SocketMessage.Body.newBuilder()
+                                .setType(SocketMessage.TYPE.RESPONSE)
+                                .setCmd(SocketMessage.COMMAND.SEND_APPLICATION_INFO)
+                                .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
+                                .setData(ApplicationProto.ApplicationInfo.newBuilder()
+                                    .setPackageName(it.packageName)
+                                    .setAppName(it.appName)
+                                    .setVersionName(it.versionName)
+                                    .setMainActivity(it.mainActivity)
+                                    .setIcon(it.icon)
+                                    .build()
+                                    .toByteString()
+                            ))
+                        }
                     }
-                    responseBody.setData(appList.build().toByteString())
-                    SocketUtils.sendMessage(ip, responseBody)
+                    SocketUtils.sendMessage(ip, responseBody.setCmd(SocketMessage.COMMAND.GET_APPLICATION_LIST_FINISHED))
                 }
                 else -> return
             }

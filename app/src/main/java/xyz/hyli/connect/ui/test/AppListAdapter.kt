@@ -25,7 +25,7 @@ class AppListAdapter(private val context: Context, private val appList: List<App
         // 获取应用的图标和名称
         val packageName = applicationInfo.packageName
         var appName = applicationInfo.appName
-        var appIcon: Drawable? = applicationInfo.icon?.data?.let {
+        var appIcon: Drawable? = applicationInfo.icon?.let {
             PackageUtils.bitmapToDrawable(context, PackageUtils.byteStringToBitmap(it))
         }
         //        Log.i("xyz.hyli.connect.ui.test.AppListAdapter", "packageName: " + packageName);
