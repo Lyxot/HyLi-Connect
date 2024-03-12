@@ -14,7 +14,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.socket.SocketUtils
-import xyz.hyli.connect.ui.theme.HyliConnectTheme
+import xyz.hyli.connect.ui.theme.HyLiConnectTheme
 
 class RequestConnectionActivity : ComponentActivity() {
     private lateinit var dialog: AlertDialog
@@ -33,7 +33,7 @@ class RequestConnectionActivity : ComponentActivity() {
         val server_port = intent.getIntExtra("server_port", 15732)
 
         setContent {
-            HyliConnectTheme {
+            HyLiConnectTheme {
                 if ((ip.isNullOrEmpty().not() && nickname.isNullOrEmpty().not() && uuid.isNullOrEmpty().not() && api_version != 0 && app_version != 0 && app_version_name.isNullOrEmpty().not() && platform.isNullOrEmpty().not()) &&
                     Settings.canDrawOverlays(this)
                 ) {

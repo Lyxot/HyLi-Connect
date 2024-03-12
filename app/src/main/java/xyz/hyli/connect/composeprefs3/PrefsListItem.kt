@@ -16,8 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
-import xyz.hyli.connect.ui.theme.HyliConnectTypography
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectTypography
 
 @Composable
 fun PrefsListItem(
@@ -27,12 +27,12 @@ fun PrefsListItem(
     icon: @Composable (() -> Unit)? = null,
     secondaryText: @Composable (() -> Unit)? = null,
     trailing: @Composable (() -> Unit)? = null,
-    textColor: Color = HyliConnectColorScheme().onBackground,
+    textColor: Color = HyLiConnectColorScheme().onBackground,
     minimalHeight: Boolean = false,
     text: @Composable () -> Unit,
     endText: @Composable (() -> Unit)? = null
 ) {
-    val typography = HyliConnectTypography
+    val typography = HyLiConnectTypography
 
     val styledText = applyTextStyle(
         typography.titleMedium,

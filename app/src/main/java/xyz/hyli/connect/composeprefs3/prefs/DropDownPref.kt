@@ -25,8 +25,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
-import xyz.hyli.connect.ui.theme.HyliConnectTypography
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectTypography
 
 /**
  * Preference that shows a list of entries in a DropDown
@@ -56,7 +56,7 @@ fun DropDownPref(
     useSelectedAsSummary: Boolean = false,
     displayValueAtEnd: Boolean = false,
     dropdownBackgroundColor: Color? = null,
-    textColor: Color = HyliConnectColorScheme().onBackground,
+    textColor: Color = HyLiConnectColorScheme().onBackground,
     enabled: Boolean = true,
     entries: LinkedHashMap<Int, String> = linkedMapOf(),
     icons: List<@Composable (() -> Unit)?> = List(entries.size) { null }
@@ -125,7 +125,7 @@ fun DropDownPref(
                         text = {
                             Text(
                                 text = item.second,
-                                style = HyliConnectTypography.bodyLarge
+                                style = HyLiConnectTypography.bodyLarge
                             )
                             if (icons.isNotEmpty() && icons.size == entries.size) {
                                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {

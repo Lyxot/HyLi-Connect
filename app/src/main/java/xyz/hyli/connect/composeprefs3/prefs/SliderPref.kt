@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
 import xyz.hyli.connect.composeprefs3.roundToDP
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
 
 // todo add decimal places as param?
 
@@ -56,7 +56,7 @@ fun SliderPref(
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     showValue: Boolean = false,
     steps: Int = 0,
-    textColor: Color = HyliConnectColorScheme().onBackground,
+    textColor: Color = HyLiConnectColorScheme().onBackground,
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
 ) {

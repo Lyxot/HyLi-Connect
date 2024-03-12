@@ -6,7 +6,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
-import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.HyLiConnect
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.proto.ApplicationProto
@@ -32,7 +32,7 @@ object MessageHandler {
 //        }
 
         MainScope().launch {
-            HyliConnect.receiveMessageListenerMap[ip]?.filter {
+            HyLiConnect.receiveMessageListenerMap[ip]?.filter {
                 it.type == body.type && it.command == body.cmd
             }?.forEach {
                 Log.i("MessageHandler", "Receive message listener found ${it.className} ${it.type} ${it.command} $message")
@@ -65,7 +65,7 @@ object MessageHandler {
             .setCmd(command)
             .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
 
-        if (HyliConnect.uuidMap.containsKey(ip).not()) {
+        if (HyLiConnect.uuidMap.containsKey(ip).not()) {
             when (command) {
                 SocketMessage.COMMAND.GET_INFO -> {
                     val responseData = InfoProto.Info.newBuilder()
@@ -81,7 +81,7 @@ object MessageHandler {
                     SocketUtils.sendMessage(ip, responseBody)
                 }
                 SocketMessage.COMMAND.CONNECT -> {
-                    HyliConnect().getContext().let {
+                    HyLiConnect().getContext().let {
                         val dataProto = ConnectProto.ConnectRequest.parseFrom(data)
                         it.startActivity(
                             Intent(it, RequestConnectionActivity::class.java)
@@ -105,13 +105,13 @@ object MessageHandler {
             when (command) {
                 SocketMessage.COMMAND.GET_INFO -> {
                     val clientList = ClientListProto.ClientList.newBuilder()
-                    HyliConnect.uuidMap.forEach {
+                    HyLiConnect.uuidMap.forEach {
                         clientList.addClients(
                             ClientListProto.Client.newBuilder()
                                 .setUuid(it.value)
                                 .setIp(it.key)
-                                .setConnectedPort(HyliConnect.deviceInfoMap[it.value]?.connectedPort ?: 0)
-                                .setServerPort(HyliConnect.deviceInfoMap[it.value]?.serverPort ?: 0)
+                                .setConnectedPort(HyLiConnect.deviceInfoMap[it.value]?.connectedPort ?: 0)
+                                .setServerPort(HyLiConnect.deviceInfoMap[it.value]?.serverPort ?: 0)
                                 .build()
                         )
                     }
@@ -133,13 +133,13 @@ object MessageHandler {
                 }
                 SocketMessage.COMMAND.GET_CLIENT_LIST -> {
                     val clientList = ClientListProto.ClientList.newBuilder()
-                    HyliConnect.uuidMap.forEach {
+                    HyLiConnect.uuidMap.forEach {
                         clientList.addClients(
                             ClientListProto.Client.newBuilder()
                                 .setUuid(it.value)
                                 .setIp(it.key)
-                                .setConnectedPort(HyliConnect.deviceInfoMap[it.value]?.connectedPort ?: 0)
-                                .setServerPort(HyliConnect.deviceInfoMap[it.value]?.serverPort ?: 0)
+                                .setConnectedPort(HyLiConnect.deviceInfoMap[it.value]?.connectedPort ?: 0)
+                                .setServerPort(HyLiConnect.deviceInfoMap[it.value]?.serverPort ?: 0)
                                 .build()
                         )
                     }
@@ -147,8 +147,8 @@ object MessageHandler {
                     SocketUtils.sendMessage(ip, responseBody)
                 }
                 SocketMessage.COMMAND.GET_APPLICATION_LIST -> {
-                    PackageUtils.getPackageMap(HyliConnect().getContext().packageManager).forEach { (_, resolveInfo) ->
-                        PackageUtils.getAppInfo(HyliConnect().getContext().packageManager, resolveInfo, true).let { it ->
+                    PackageUtils.getPackageMap(HyLiConnect().getContext().packageManager).forEach { (_, resolveInfo) ->
+                        PackageUtils.getAppInfo(HyLiConnect().getContext().packageManager, resolveInfo, true).let { it ->
                             SocketUtils.sendMessage(ip, SocketMessage.Body.newBuilder()
                                 .setType(SocketMessage.TYPE.RESPONSE)
                                 .setCmd(SocketMessage.COMMAND.SEND_APPLICATION_INFO)
@@ -186,7 +186,7 @@ object MessageHandler {
                 val dataProto = ConnectProto.ConnectResponse.parseFrom(data)
                 val success = dataProto.success
                 if (success) {
-                    HyliConnect.uuidMap[ip] = uuid
+                    HyLiConnect.uuidMap[ip] = uuid
                     val ip_address = ip.substring(1, ip.length).split(":")[0]
                     val port = ip.substring(1, ip.length).split(":").last().toInt()
                     val deviceInfo = DeviceInfo(
@@ -200,7 +200,7 @@ object MessageHandler {
                         port,
                         dataProto.info.serverPort
                     )
-                    HyliConnect.deviceInfoMap[uuid] = deviceInfo
+                    HyLiConnect.deviceInfoMap[uuid] = deviceInfo
                     SocketUtils.sendHeartbeat(ip)
                 } else {
                     SocketUtils.closeConnection(ip)
@@ -231,10 +231,10 @@ object MessageHandler {
         messageBody: SocketMessage.Body,
         broadcastManager: LocalBroadcastManager? = null
     ) {
-        HyliConnect.connectionMap[ip] = System.currentTimeMillis()
+        HyLiConnect.connectionMap[ip] = System.currentTimeMillis()
         Thread.sleep(3000)
         try {
-            if (System.currentTimeMillis() - HyliConnect.connectionMap[ip]!! >= 3000 && HyliConnect.socketMap.containsKey(ip)) {
+            if (System.currentTimeMillis() - HyLiConnect.connectionMap[ip]!! >= 3000 && HyLiConnect.socketMap.containsKey(ip)) {
                 SocketUtils.sendHeartbeat(ip)
             }
         } catch (e: Exception) {

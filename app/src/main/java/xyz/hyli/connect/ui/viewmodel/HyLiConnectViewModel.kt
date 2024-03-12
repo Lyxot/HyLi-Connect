@@ -16,22 +16,22 @@ import com.hjq.permissions.Permission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.HyLiConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.DeviceInfo
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.ui.icon.AndroidPhone
 import xyz.hyli.connect.ui.icon.Watch
 
-class HyliConnectViewModel : ViewModel() {
+class HyLiConnectViewModel : ViewModel() {
     init {
         viewModelScope.launch(context = Dispatchers.Main) {
             delay(500)
             while (true) {
                 try {
-                    HyliConnect.uuidMap.forEach {
-                        if (HyliConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not()) {
-                            connectedDeviceMap[it.value] = HyliConnect.deviceInfoMap[it.value]!!
+                    HyLiConnect.uuidMap.forEach {
+                        if (HyLiConnect.deviceInfoMap.containsKey(it.value) && connectedDeviceMap.containsKey(it.value).not()) {
+                            connectedDeviceMap[it.value] = HyLiConnect.deviceInfoMap[it.value]!!
                         }
                     }
                 } catch (_: Exception) { }
@@ -77,14 +77,14 @@ class HyliConnectViewModel : ViewModel() {
     fun updateApplicationState(): String {
         val serviceStateList: MutableList<String> = mutableListOf()
         serviceMap.keys.forEach {
-            if (HyliConnect.serviceStateMap.containsKey(it)) {
+            if (HyLiConnect.serviceStateMap.containsKey(it)) {
                 if (it == "NsdService" && PreferencesDataStore.nsd_service.getBlocking() == false) {
                     serviceStateList.add("running")
                 } else {
-                    serviceStateList.add(HyliConnect.serviceStateMap[it]!!.state)
+                    serviceStateList.add(HyLiConnect.serviceStateMap[it]!!.state)
                 }
             } else {
-//                HyliConnectState.serviceStateMap[it] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(serviceMap[it]!!)))
+//                HyLiConnectState.serviceStateMap[it] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(serviceMap[it]!!)))
                 serviceStateList.add("stopped")
             }
         }
@@ -113,8 +113,8 @@ class HyliConnectViewModel : ViewModel() {
     }
 }
 
-class HyliConnectViewModelFactory() : ViewModelProvider.Factory {
+class HyLiConnectViewModelFactory() : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return HyliConnectViewModel() as T
+        return HyLiConnectViewModel() as T
     }
 }

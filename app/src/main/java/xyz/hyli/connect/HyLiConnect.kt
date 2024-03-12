@@ -25,7 +25,7 @@ import java.net.Socket
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.ConcurrentHashMap
 
-open class HyliConnect : Application() {
+open class HyLiConnect : Application() {
     val isRunning = MutableLiveData(false)
     private var controlService: IControlService? = null
     private val onRequestPermissionResultListener =
@@ -74,7 +74,7 @@ open class HyliConnect : Application() {
         }
     }
     companion object {
-        lateinit var me: HyliConnect
+        lateinit var me: HyLiConnect
         const val SHIZUKU_CODE = 0x3CE9A
 
         // service name, state

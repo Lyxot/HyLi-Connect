@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
 
 /**
  * Simple divider used to separate individual preferences
@@ -18,7 +18,7 @@ import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
 @Composable
 fun Divider(
     modifier: Modifier = Modifier,
-    color: Color = HyliConnectColorScheme().onSurface.copy(alpha = DividerAlpha),
+    color: Color = HyLiConnectColorScheme().onSurface.copy(alpha = DividerAlpha),
     thickness: Dp = 1.dp,
     indent: Dp = 0.dp
 ) {

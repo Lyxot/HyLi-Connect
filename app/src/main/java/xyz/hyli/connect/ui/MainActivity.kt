@@ -23,18 +23,18 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
-import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.HyLiConnect
 import xyz.hyli.connect.datastore.PreferencesDataStore
 import xyz.hyli.connect.ui.navigation.CompactScreen
 import xyz.hyli.connect.ui.navigation.MediumScreen
-import xyz.hyli.connect.ui.theme.HyliConnectTheme
-import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModel
-import xyz.hyli.connect.ui.viewmodel.HyliConnectViewModelFactory
+import xyz.hyli.connect.ui.theme.HyLiConnectTheme
+import xyz.hyli.connect.ui.viewmodel.HyLiConnectViewModel
+import xyz.hyli.connect.ui.viewmodel.HyLiConnectViewModelFactory
 import xyz.hyli.connect.utils.PackageUtils
 
 class MainActivity : ComponentActivity() {
     private var appList: Deferred<List<String>>? = null
-    private lateinit var viewModel: HyliConnectViewModel
+    private lateinit var viewModel: HyLiConnectViewModel
     private lateinit var localBroadcastManager: LocalBroadcastManager
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class, DelicateCoroutinesApi::class)
@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
 
-        viewModel = ViewModelProvider(this, HyliConnectViewModelFactory()).get(HyliConnectViewModel::class.java)
+        viewModel = ViewModelProvider(this, HyLiConnectViewModelFactory()).get(HyLiConnectViewModel::class.java)
         localBroadcastManager = LocalBroadcastManager.getInstance(this)
         viewModel.localBroadcastManager.value = localBroadcastManager
 
@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            HyliConnectTheme {
+            HyLiConnectTheme {
                 val widthSizeClass = calculateWindowSizeClass(this).widthSizeClass
                 MainScreen(widthSizeClass, viewModel)
             }
@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun MainScreen(widthSizeClass: WindowWidthSizeClass, viewModel: HyliConnectViewModel) {
+private fun MainScreen(widthSizeClass: WindowWidthSizeClass, viewModel: HyLiConnectViewModel) {
     val navController = rememberNavController()
     when (widthSizeClass) {
         WindowWidthSizeClass.Compact -> { CompactScreen(viewModel, navController) }
@@ -71,7 +71,7 @@ private fun MainScreen(widthSizeClass: WindowWidthSizeClass, viewModel: HyliConn
         WindowWidthSizeClass.Expanded -> { MediumScreen(viewModel, navController) }
         else -> { CompactScreen(viewModel, navController) }
     }
-    LaunchedEffect(HyliConnect.serviceStateMap) {
+    LaunchedEffect(HyLiConnect.serviceStateMap) {
         viewModel.updateApplicationState()
     }
 }
@@ -79,5 +79,5 @@ private fun MainScreen(widthSizeClass: WindowWidthSizeClass, viewModel: HyliConn
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
-    MainScreen(WindowWidthSizeClass.Compact, HyliConnectViewModel())
+    MainScreen(WindowWidthSizeClass.Compact, HyLiConnectViewModel())
 }

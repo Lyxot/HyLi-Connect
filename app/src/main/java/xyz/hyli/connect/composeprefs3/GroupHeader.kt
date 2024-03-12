@@ -11,12 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
 
 @Composable
 fun GroupHeader(
     title: String,
-    color: Color = HyliConnectColorScheme().primary
+    color: Color = HyLiConnectColorScheme().primary
 ) {
     Box(
         Modifier

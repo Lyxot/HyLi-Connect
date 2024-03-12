@@ -22,7 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.BuildConfig
-import xyz.hyli.connect.HyliConnect
+import xyz.hyli.connect.HyLiConnect
 import xyz.hyli.connect.R
 import xyz.hyli.connect.bean.ServiceState
 import xyz.hyli.connect.datastore.PreferencesDataStore
@@ -100,7 +100,7 @@ class SocketService : Service() {
         startServer(serverPort)
         registerNsdService()
         checkConnection()
-        HyliConnect.serviceStateMap["SocketService"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_socket_service)))
+        HyLiConnect.serviceStateMap["SocketService"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_socket_service)))
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
@@ -123,7 +123,7 @@ class SocketService : Service() {
         }
     }
     private fun destroy(reboot: Boolean = false) {
-        if (reboot) HyliConnect.serviceStateMap["SocketService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_service)))
+        if (reboot) HyLiConnect.serviceStateMap["SocketService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_service)))
         checkConnectionJob.cancel()
         stopSocket()
         unregisterNsdService()
@@ -133,14 +133,14 @@ class SocketService : Service() {
     private fun startServer(port: Int) {
         val TAG = "SocketServer"
         if (serverSocket == null) {
-            HyliConnect.serviceStateMap["SocketServer"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_server)))
+            HyLiConnect.serviceStateMap["SocketServer"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_server)))
             serverPort = port
             if (NetworkUtils.isPortInUse(port)) {
                 Log.i(TAG, "Port $port is in use")
                 serverPort = NetworkUtils.getAvailablePort()
-                HyliConnect.serviceStateMap["SocketServer"] = ServiceState("error", getString(R.string.state_service_socket_server_port_in_use, port.toString(), serverPort.toString()))
+                HyLiConnect.serviceStateMap["SocketServer"] = ServiceState("error", getString(R.string.state_service_socket_server_port_in_use, port.toString(), serverPort.toString()))
             } else {
-                HyliConnect.serviceStateMap["SocketServer"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_socket_server)))
+                HyLiConnect.serviceStateMap["SocketServer"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_socket_server)))
             }
             GlobalScope.launch(context = Dispatchers.IO) {
                 serverSocket = ServerSocket(serverPort)
@@ -150,20 +150,20 @@ class SocketService : Service() {
                         val socket = serverSocket!!.accept()
                         val IPAddress = socket.remoteSocketAddress.toString()
                         Log.i(TAG, "Accept connection: $IPAddress")
-                        HyliConnect.socketMap[IPAddress] = socket
-                        HyliConnect.connectionMap[IPAddress] = System.currentTimeMillis()
+                        HyLiConnect.socketMap[IPAddress] = socket
+                        HyLiConnect.connectionMap[IPAddress] = System.currentTimeMillis()
                         GlobalScope.launch(context = Dispatchers.IO) {
                             try {
                                 val inputStream = socket.getInputStream()
                                 val outputStream = socket.getOutputStream()
 
-                                HyliConnect.inputStreamMap[IPAddress] = inputStream
-                                HyliConnect.outputStreamMap[IPAddress] = outputStream
-                                HyliConnect.sendMessageQueueMap[IPAddress] = LinkedBlockingQueue()
+                                HyLiConnect.inputStreamMap[IPAddress] = inputStream
+                                HyLiConnect.outputStreamMap[IPAddress] = outputStream
+                                HyLiConnect.sendMessageQueueMap[IPAddress] = LinkedBlockingQueue()
                                 GlobalScope.launch(context = Dispatchers.IO) {
-                                    while (HyliConnect.socketMap.containsKey(IPAddress)) {
+                                    while (HyLiConnect.socketMap.containsKey(IPAddress)) {
                                         try {
-                                            val mq = HyliConnect.sendMessageQueueMap[IPAddress]?.take()!!
+                                            val mq = HyLiConnect.sendMessageQueueMap[IPAddress]?.take()!!
                                             if (mq.dropTime != 0L && mq.dropTime < System.currentTimeMillis()) {
                                                 Log.i(TAG, "Drop message: $IPAddress ${mq.messageBody}")
                                             } else {
@@ -174,7 +174,7 @@ class SocketService : Service() {
                                                 )
                                             }
                                         } catch (e: Exception) {
-                                            if (!HyliConnect.socketMap.containsKey(IPAddress)) {
+                                            if (!HyLiConnect.socketMap.containsKey(IPAddress)) {
                                                 break
                                             }
                                         }
@@ -185,13 +185,13 @@ class SocketService : Service() {
                                 // Authorization timeout
                                 GlobalScope.launch(context = Dispatchers.IO) {
                                     Thread.sleep(30000)
-                                    if (HyliConnect.uuidMap.containsKey(IPAddress).not() && HyliConnect.socketMap.containsKey(IPAddress)) {
+                                    if (HyLiConnect.uuidMap.containsKey(IPAddress).not() && HyLiConnect.socketMap.containsKey(IPAddress)) {
                                         Log.i(TAG, "Authorization timeout: $IPAddress")
                                         SocketUtils.closeConnection(IPAddress)
                                     }
                                 }
 
-                                while (HyliConnect.socketMap.containsKey(IPAddress)) {
+                                while (HyLiConnect.socketMap.containsKey(IPAddress)) {
                                     try {
                                         val message = SocketMessage.Message.parseDelimitedFrom(inputStream)
                                         if (message != null) {
@@ -201,7 +201,7 @@ class SocketService : Service() {
                                             }
                                         }
                                     } catch (e: Exception) {
-                                        if (!HyliConnect.socketMap.containsKey(IPAddress)) {
+                                        if (!HyLiConnect.socketMap.containsKey(IPAddress)) {
                                             break
                                         }
                                     }
@@ -227,32 +227,32 @@ class SocketService : Service() {
     @OptIn(DelicateCoroutinesApi::class)
     private fun startClient(ip: String, port: Int) {
         val TAG = "SocketClient"
-        if (HyliConnect.socketMap["/$ip:$port"] != null) return
+        if (HyLiConnect.socketMap["/$ip:$port"] != null) return
         GlobalScope.launch(context = Dispatchers.IO) {
             val socket = Socket(ip, port)
             val IPAddress = socket.remoteSocketAddress.toString()
             Log.i(TAG, "Start client = $socket")
             Log.i(TAG, "Connect to: $IPAddress")
-            HyliConnect.socketMap[IPAddress] = socket
-            HyliConnect.connectionMap[IPAddress] = System.currentTimeMillis()
+            HyLiConnect.socketMap[IPAddress] = socket
+            HyLiConnect.connectionMap[IPAddress] = System.currentTimeMillis()
             try {
                 val inputStream = socket.getInputStream()
                 val outputStream = socket.getOutputStream()
 
-                HyliConnect.inputStreamMap[IPAddress] = inputStream
-                HyliConnect.outputStreamMap[IPAddress] = outputStream
-                HyliConnect.sendMessageQueueMap[IPAddress] = LinkedBlockingQueue()
+                HyLiConnect.inputStreamMap[IPAddress] = inputStream
+                HyLiConnect.outputStreamMap[IPAddress] = outputStream
+                HyLiConnect.sendMessageQueueMap[IPAddress] = LinkedBlockingQueue()
                 GlobalScope.launch(context = Dispatchers.IO) {
-                    while (HyliConnect.socketMap.containsKey(IPAddress)) {
+                    while (HyLiConnect.socketMap.containsKey(IPAddress)) {
                         try {
-                            val mq = HyliConnect.sendMessageQueueMap[IPAddress]?.take()!!
+                            val mq = HyLiConnect.sendMessageQueueMap[IPAddress]?.take()!!
                             if (mq.dropTime != 0L && mq.dropTime < System.currentTimeMillis()) {
                                 Log.i(TAG, "Drop message: $IPAddress ${mq.messageBody}")
                             } else {
                                 SocketUtils.sendQueueMessage(IPAddress, mq.messageBody, mq.onMessageSend)
                             }
                         } catch (e: Exception) {
-                            if (!HyliConnect.socketMap.containsKey(IPAddress)) {
+                            if (!HyLiConnect.socketMap.containsKey(IPAddress)) {
                                 break
                             }
                         }
@@ -261,7 +261,7 @@ class SocketService : Service() {
 
                 SocketUtils.sendHeartbeat(IPAddress)
 
-                while (HyliConnect.socketMap.containsKey(IPAddress)) {
+                while (HyLiConnect.socketMap.containsKey(IPAddress)) {
                     try {
                         val message = SocketMessage.Message.parseDelimitedFrom(inputStream)
                         if (message != null) {
@@ -271,7 +271,7 @@ class SocketService : Service() {
                             }
                         }
                     } catch (e: Exception) {
-                        if (!HyliConnect.socketMap.containsKey(IPAddress)) {
+                        if (!HyLiConnect.socketMap.containsKey(IPAddress)) {
                             break
                         }
                     }
@@ -286,7 +286,7 @@ class SocketService : Service() {
     }
     private fun stopSocket() {
         try {
-            HyliConnect.serviceStateMap["SocketServer"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_server)))
+            HyLiConnect.serviceStateMap["SocketServer"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_socket_server)))
             SocketUtils.closeAllConnection()
             serverSocket!!.close()
             serverSocket = null
@@ -300,7 +300,7 @@ class SocketService : Service() {
         if (::checkConnectionJob.isInitialized.not()) {
             checkConnectionJob = GlobalScope.launch(context = Dispatchers.Main) {
                 while (true) {
-                    HyliConnect.connectionMap.forEach { (ip, time) ->
+                    HyLiConnect.connectionMap.forEach { (ip, time) ->
                         if (System.currentTimeMillis() - time > 12000) {
                             SocketUtils.closeConnection(ip)
                             Log.i("SocketService", "Close connection: $ip (timeout)")
@@ -344,12 +344,12 @@ class SocketService : Service() {
         if (nsdRunning) {
             return
         }
-        HyliConnect.serviceStateMap["NsdService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_nsd_service)))
+        HyLiConnect.serviceStateMap["NsdService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_nsd_service)))
 
         val uuid = PreferencesDataStore.uuid.getBlocking()!!
         val nickname = PreferencesDataStore.nickname.getBlocking()!!
         val mNsdServiceInfo = NsdServiceInfo().apply {
-            serviceName = "HyliConnect@$uuid"
+            serviceName = "HyLiConnect@$uuid"
             serviceType = "_hyli-connect._tcp."
             port = serverPort
         }
@@ -387,14 +387,14 @@ class SocketService : Service() {
             }
         }
         mNsdManager.registerService(mNsdServiceInfo, NsdManager.PROTOCOL_DNS_SD, NsdRegistrationListener)
-        HyliConnect.serviceStateMap["NsdService"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_nsd_service)))
+        HyLiConnect.serviceStateMap["NsdService"] = ServiceState("running", getString(R.string.state_service_running, getString(R.string.service_nsd_service)))
     }
     private fun unregisterNsdService() {
         if (nsdRunning.not()) {
             return
         }
         mNsdManager.unregisterService(NsdRegistrationListener)
-        HyliConnect.serviceStateMap["NsdService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_nsd_service)))
+        HyLiConnect.serviceStateMap["NsdService"] = ServiceState("stopped", getString(R.string.state_service_stopped, getString(R.string.service_nsd_service)))
     }
     private fun restartNsdService() {
         if (nsdRunning) {

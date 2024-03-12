@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import xyz.hyli.connect.composeprefs3.PrefsListItem
 import xyz.hyli.connect.composeprefs3.ifNotNullThen
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
 
 /**
  * Simple Text with title and summary.
@@ -35,7 +35,7 @@ fun TextPref(
     darkenOnDisable: Boolean = false,
     minimalHeight: Boolean = false,
     onClick: () -> Unit = {},
-    textColor: Color = HyliConnectColorScheme().onBackground,
+    textColor: Color = HyLiConnectColorScheme().onBackground,
     enabled: Boolean = false,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null

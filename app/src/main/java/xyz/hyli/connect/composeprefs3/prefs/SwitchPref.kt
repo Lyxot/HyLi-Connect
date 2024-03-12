@@ -13,7 +13,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.launch
 import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
-import xyz.hyli.connect.ui.theme.HyliConnectColorScheme
+import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
 
 /**
  * Simple preference with a trailing [Switch]
@@ -36,7 +36,7 @@ fun SwitchPref(
     summary: String? = null,
     defaultChecked: Boolean = false, // only used if it doesn't already exist in the datastore
     onCheckedChange: ((Boolean) -> Unit)? = null,
-    textColor: Color = HyliConnectColorScheme().onBackground,
+    textColor: Color = HyLiConnectColorScheme().onBackground,
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null
 ) {
