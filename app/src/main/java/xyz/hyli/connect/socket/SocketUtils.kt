@@ -172,20 +172,21 @@ object SocketUtils {
         command: SocketMessage.COMMAND,
         unregisterAfterReceived: Boolean = false,
         onMessageReceive: (SocketMessage.Body) -> Unit
-    ) {
+    ): MessageReceiveListener {
         if (HyliConnect.receiveMessageListenerMap[ip] == null) {
             HyliConnect.receiveMessageListenerMap[ip] = mutableSetOf()
         }
-        HyliConnect.receiveMessageListenerMap[ip]?.add(
-            MessageReceiveListener(
-                className,
-                type,
-                command,
-                onMessageReceive,
-                unregisterAfterReceived
-            )
-        )
-        Log.i("SocketUtils", "Register receive message listener: $ip $className $type $command")
+        MessageReceiveListener(
+            className,
+            type,
+            command,
+            onMessageReceive,
+            unregisterAfterReceived
+        ).let {
+            HyliConnect.receiveMessageListenerMap[ip]?.add(it)
+            Log.i("SocketUtils", "Register receive message listener: $ip $className $type $command")
+            return it
+        }
     }
 
     fun unregisterReceiveMessageListener(

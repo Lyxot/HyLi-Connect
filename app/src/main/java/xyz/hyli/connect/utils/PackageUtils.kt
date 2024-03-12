@@ -2,7 +2,6 @@ package xyz.hyli.connect.utils
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Bitmap
@@ -11,59 +10,54 @@ import android.graphics.Canvas
 import android.graphics.PixelFormat
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.os.UserHandle
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.text.toLowerCase
 import com.google.protobuf.ByteString
 import com.google.protobuf.kotlin.toByteString
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.ks.chan.c2pinyin.LetterCase
 import org.ks.chan.c2pinyin.pinyin
 import xyz.hyli.connect.BuildConfig
 import xyz.hyli.connect.bean.ApplicationInfo
-import xyz.hyli.connect.bean.ApplicationIcon
 import java.util.concurrent.ConcurrentHashMap
 
 object PackageUtils {
-
-    // 获取应用列表
-    @OptIn(DelicateCoroutinesApi::class)
-    fun getAppList(context: Context, returnIcon: Boolean = false): List<ApplicationInfo> {
-        val packageManager = context.packageManager
-        val intent = Intent()
-        intent.action = Intent.ACTION_MAIN
-        intent.addCategory(Intent.CATEGORY_LAUNCHER)
-        val resolveInfos: List<ResolveInfo> = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-
-        val appMap = ConcurrentHashMap<String, ApplicationInfo>()
-        val set = mutableSetOf<String>()
-
-        for (info in resolveInfos) {
-            val packageName = info.activityInfo.packageName
-            if (packageName != BuildConfig.APPLICATION_ID) {
-                set.add(packageName)
-                GlobalScope.launch {
-                    val appName = info.loadLabel(packageManager).toString()
-                    val icon = info.loadIcon(packageManager)
-                    var iconByteArray: ApplicationIcon? = null
-                    if (returnIcon) iconByteArray = ApplicationIcon(icon.intrinsicWidth, icon.intrinsicHeight, drawableToByteString(icon))
-                    appMap[appName] = ApplicationInfo(
-                        packageName,
-                        appName,
-                        packageManager.getPackageInfo(packageName, 0).versionName,
-                        getMainActivityName(packageManager, packageName),
-                        iconByteArray
-                    )
-                    set.remove(packageName)
+    fun getPackageMap(packageManager: PackageManager): Map<String, ResolveInfo> = mutableMapOf<String, ResolveInfo>().let {
+        packageManager.queryIntentActivities(
+            Intent().apply {
+                action = Intent.ACTION_MAIN
+                addCategory(Intent.CATEGORY_LAUNCHER)
+            },
+            PackageManager.MATCH_ALL
+        ).forEach { resolveInfo ->
+            resolveInfo.activityInfo.packageName?.let { packageName ->
+                if (packageName != BuildConfig.APPLICATION_ID) {
+                    it[packageName] = resolveInfo
                 }
             }
         }
-        while (set.isNotEmpty()) {
-            Thread.sleep(20)
+        it
+    }
+
+    fun getAppInfo(packageManager: PackageManager, resolveInfo: ResolveInfo, returnIcon: Boolean = false): ApplicationInfo = ApplicationInfo(
+        resolveInfo.activityInfo.packageName,
+        resolveInfo.loadLabel(packageManager).toString(),
+        packageManager.getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
+        getMainActivityName(packageManager, resolveInfo.activityInfo.packageName),
+        if (returnIcon) {
+            drawableToByteString(resolveInfo.loadIcon(packageManager))
+        } else null
+    )
+
+    // 获取应用列表
+    fun getAppList(context: Context, returnIcon: Boolean = false, sortByName: Boolean = false): List<ApplicationInfo> {
+        val packageManager = context.packageManager
+
+        val resolveInfos = getPackageMap(packageManager)
+        val appMap = ConcurrentHashMap<String, ApplicationInfo>()
+
+        resolveInfos.forEach { (_, resolveInfo) ->
+            appMap[resolveInfo.loadLabel(packageManager).toString()] = getAppInfo(packageManager, resolveInfo, returnIcon)
         }
-        return appMap.toList().sortedBy { (value, _) -> value.pinyin(LetterCase.Lower).joinToString(" ").lowercase() }.toMap().toList().map { (_, key) -> key }
+        return if (sortByName) appMap.toList().sortedBy { (value, _) -> value.pinyin(LetterCase.Lower).joinToString(" ").lowercase() }.toMap().toList().map { (_, key) -> key }
+        else appMap.toList().map { (_, key) -> key }
     }
 
     // 获取主Activity
