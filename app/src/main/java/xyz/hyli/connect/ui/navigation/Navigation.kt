@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -41,7 +42,7 @@ import xyz.hyli.connect.ui.viewmodel.HyLiConnectViewModel
 fun CompactScreen(viewModel: HyLiConnectViewModel, navController: NavHostController) {
     val currentSelect = viewModel.currentSelect
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
-        NavigationBar {
+        NavigationBar(modifier = Modifier.navigationBarsPadding()) {
             NavigationBarItem(
                 icon = { Icon(Icons.Filled.SettingsEthernet, contentDescription = null) },
                 label = { Text(stringResource(id = R.string.page_connect)) },
