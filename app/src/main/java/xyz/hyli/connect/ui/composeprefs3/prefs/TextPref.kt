@@ -1,12 +1,12 @@
-package xyz.hyli.connect.composeprefs3.prefs
+package xyz.hyli.connect.ui.composeprefs3.prefs
 
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import xyz.hyli.connect.composeprefs3.PrefsListItem
-import xyz.hyli.connect.composeprefs3.ifNotNullThen
+import xyz.hyli.connect.ui.composeprefs3.PrefsListItem
+import xyz.hyli.connect.ui.composeprefs3.ifNotNullThen
 import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
 
 /**

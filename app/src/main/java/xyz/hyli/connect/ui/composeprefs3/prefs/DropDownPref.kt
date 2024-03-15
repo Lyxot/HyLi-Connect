@@ -1,4 +1,4 @@
-package xyz.hyli.connect.composeprefs3.prefs
+package xyz.hyli.connect.ui.composeprefs3.prefs
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import kotlinx.coroutines.launch
-import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
+import xyz.hyli.connect.ui.composeprefs3.LocalPrefsDataStore
 import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
 import xyz.hyli.connect.ui.theme.HyLiConnectTypography
 
