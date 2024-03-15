@@ -1,4 +1,4 @@
-package xyz.hyli.connect.composeprefs3
+package xyz.hyli.connect.ui.composeprefs3
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

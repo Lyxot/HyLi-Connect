@@ -1,4 +1,4 @@
-package xyz.hyli.connect.composeprefs3.prefs
+package xyz.hyli.connect.ui.composeprefs3.prefs
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -24,8 +24,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
-import xyz.hyli.connect.composeprefs3.roundToDP
+import xyz.hyli.connect.ui.composeprefs3.LocalPrefsDataStore
+import xyz.hyli.connect.ui.composeprefs3.roundToDP
 import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
 
 // todo add decimal places as param?

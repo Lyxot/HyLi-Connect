@@ -1,8 +1,7 @@
-package xyz.hyli.connect.composeprefs3.prefs
+package xyz.hyli.connect.ui.composeprefs3.prefs
 
 import android.util.Log
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -13,30 +12,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.launch
-import xyz.hyli.connect.composeprefs3.LocalPrefsDataStore
+import xyz.hyli.connect.ui.composeprefs3.LocalPrefsDataStore
 import xyz.hyli.connect.ui.theme.HyLiConnectColorScheme
 
 /**
- * Simple preference with a trailing [Checkbox]
+ * Simple preference with a trailing [Switch]
  *
  * @param key Key used to identify this Pref in the DataStore
  * @param title Main text which describes the Pref
  * @param modifier Modifier applied to the Text aspect of this Pref
  * @param summary Used to give some more information about what this Pref is for
- * @param defaultChecked If the checkbox should be checked by default. Only used if a value for this [key] doesn't already exist in the DataStore
+ * @param defaultChecked If the switch should be checked by default. Only used if a value for this [key] doesn't already exist in the DataStore
  * @param onCheckedChange Will be called with the new state when the state changes
  * @param textColor Text colour of the [title] and [summary]
  * @param enabled If false, this Pref cannot be checked/unchecked
  * @param leadingIcon Icon which is positioned at the start of the Pref
  */
-
 @Composable
-fun CheckBoxPref(
+fun SwitchPref(
     key: String,
     title: String,
     modifier: Modifier = Modifier,
     summary: String? = null,
-    defaultChecked: Boolean = false,
+    defaultChecked: Boolean = false, // only used if it doesn't already exist in the datastore
     onCheckedChange: ((Boolean) -> Unit)? = null,
     textColor: Color = HyLiConnectColorScheme().onBackground,
     enabled: Boolean = true,
@@ -49,7 +47,7 @@ fun CheckBoxPref(
     val prefs by remember { datastore.data }.collectAsState(initial = null)
 
     var checked = defaultChecked
-    prefs?.get(selectionKey)?.also { checked = it }
+    prefs?.get(selectionKey)?.also { checked = it } // starting value if it exists in datastore
 
     fun edit(newState: Boolean) = run {
         scope.launch {
@@ -60,10 +58,7 @@ fun CheckBoxPref(
                 checked = newState
                 onCheckedChange?.invoke(newState)
             } catch (e: Exception) {
-                Log.e(
-                    "CheckBoxPref",
-                    "Could not write pref $key to database. ${e.printStackTrace()}"
-                )
+                Log.e("SwitchPref", "Could not write pref $key to database. ${e.printStackTrace()}")
             }
         }
     }
@@ -73,18 +68,17 @@ fun CheckBoxPref(
         modifier = modifier,
         textColor = textColor,
         summary = summary,
+        darkenOnDisable = true,
         leadingIcon = leadingIcon,
         enabled = enabled,
-        darkenOnDisable = true,
         onClick = {
             checked = !checked
             edit(checked)
         }
     ) {
-        Checkbox(
+        Switch(
             checked = checked,
             enabled = enabled,
-            colors = CheckboxDefaults.colors(checkedColor = HyLiConnectColorScheme().primary),
             onCheckedChange = {
                 edit(it)
             }
