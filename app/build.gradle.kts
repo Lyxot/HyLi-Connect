@@ -96,6 +96,7 @@ android {
         }
     }
     buildTypes {
+        // CI TEST
         release {
             isShrinkResources = true
             isMinifyEnabled = true

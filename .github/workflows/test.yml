@@ -24,10 +24,19 @@ jobs:
     strategy:
       fail-fast: false  # Allow tests to continue on other devices if they fail on one device.
       matrix:
-        os: [ubuntu-latest]
-        api-level: [26, 30, 32, 34]
-        target: [google_apis]
-        arch: [x86]
+        include:
+          # - api-level: 26
+          #   os: ubuntu-latest
+          #   target: google_apis
+          #   arch: x86_64
+          - api-level: 30
+            os: ubuntu-latest
+            target: default
+            arch: x86_64
+          - api-level: 34
+            os: ubuntu-latest
+            target: aosp_atd
+            arch: x86_64
     steps:
       - uses: actions/checkout@v4
         with:
@@ -51,13 +60,29 @@ jobs:
           cache-overwrite-existing: true
           cache-read-only: false
           add-job-summary: 'on-failure'
-      - name: Prepare for building
+      - name: Retrieve version
         run: |
           git fetch
-          echo VERSION=$(echo $(git rev-parse --short=7 HEAD)) >> $GITHUB_ENV
-          echo CODE=$(git rev-list --count HEAD refs/remotes/origin/canary) >> $GITHUB_ENV
+          if [ ${{ github.ref_type == 'tag' || startsWith(github.ref_name, 'release') }} == true ]; then
+            export version=$(git describe --tags --abbrev=0 | sed 's/v//')
+          else
+            export version=$(echo $(git rev-parse --short=7 HEAD))
+          fi
+          echo VERSION=$version >> $GITHUB_ENV
+          echo VERSION=$version
+
+          export code=$(git rev-list --count HEAD refs/remotes/origin/canary)
+          echo CODE=$code >> $GITHUB_ENV
+          echo CODE=$code
+
+          echo BRANCH=$(git branch --show-current) >> $GITHUB_ENV
+      - name: Prepare for building
+        id: prepare
+        run: |
           chmod +x gradlew
           base64 --decode <<< "${{ secrets.RELEASE_KEY }}" > "${{ env.ANDROID_KEYSTORE_FILE }}"
+          grep -q '[^[:space:]]' "${{ env.ANDROID_KEYSTORE_FILE }}" && echo release_key_exists=true >> $GITHUB_ENV || echo release_key_exists=false >> $GITHUB_ENV
+          sed -i '/\/\/ CI TEST/{n;s/release/debug/g;}' app/build.gradle.kts
       - name: AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -69,7 +94,7 @@ jobs:
 
       - name: create AVD && Generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@main
+        uses: reactivecircus/android-emulator-runner@v2.30.1
         with:
           avd-name: test-${{ matrix.api-level }}-${{ matrix.target }}-${{ matrix.arch }}
           api-level: ${{ matrix.api-level }}
@@ -80,11 +105,11 @@ jobs:
           target: ${{ matrix.target }}
           arch: ${{ matrix.arch }}
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          channel: canary
+          channel: stable
           script: echo "Generated AVD snapshot for caching."
 
       - name: run tests
-        uses: reactivecircus/android-emulator-runner@main
+        uses: reactivecircus/android-emulator-runner@v2.30.1
         env:
           VERSION: ${{ env.VERSION }}
           CODE: ${{ env.CODE }}
@@ -101,7 +126,7 @@ jobs:
           target: ${{ matrix.target }}
           arch: ${{ matrix.arch }}
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          channel: canary
+          channel: stable
           script: ./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.notPackage=com.kevalpatel2106.benchmark.macro
 
       - name: Upload test results Artifact
