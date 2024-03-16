@@ -1,6 +1,7 @@
 import com.google.protobuf.gradle.proto
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
+import java.util.Locale
 
 plugins {
     id("com.android.application")
@@ -88,6 +89,13 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+    }
+    defaultConfig {
+        buildConfigField("String", "RELEASE_CHANNEL", "\"${branch.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(
+                Locale.getDefault()
+            ) else it.toString()
+        }}\"")
     }
     android.applicationVariants.all {
         outputs.all {
