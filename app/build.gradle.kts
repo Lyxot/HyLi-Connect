@@ -100,7 +100,7 @@ android {
     android.applicationVariants.all {
         outputs.all {
             if (this is com.android.build.gradle.internal.api.ApkVariantOutputImpl) {
-                this.outputFileName = "HyLi-Connect_$versionName($versionCode).apk"
+                this.outputFileName = "HyLi-Connect_$versionName($versionCode)_$branch.apk"
             }
         }
     }
