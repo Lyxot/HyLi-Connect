@@ -77,6 +77,23 @@ jobs:
         with:
           name: mappings
           path: app/build/outputs/mapping/release/
+      - name: Generate summary
+        env:
+          release_key_exists: ${{ env.release_key_exists }}
+        if: success() && env.release_key_exists == 'true'
+        run: |
+          brew install gnu-sed
+          echo "|Channel|Filename|SHA256|" >> $GITHUB_STEP_SUMMARY
+          echo "|:--------:|:--------:|:----------|" >> $GITHUB_STEP_SUMMARY
+          filename=$(ls app/build/outputs/apk/release/*.apk)
+          sha=$(shasum -a 256 $filename | gsed 's/ .*//')
+          channel=$(echo $filename | gsed 's/.*_//g' | gsed 's/.apk//')
+          filename=$(basename $filename)
+          echo "APK_FILENAME=$filename" >> $GITHUB_OUTPUT
+          echo "SHA256=$sha" >> $GITHUB_OUTPUT
+          echo "CHANNEL=$channel" >> $GITHUB_OUTPUT
+          echo "|$(echo $channel | gsed 's/./\u&/')|$filename|\`$sha\`|\n\n" >> $GITHUB_STEP_SUMMARY
+          echo "BUILD_SUCCESS=true" >> $GITHUB_OUTPUT
       - name: Setup Debug Session
         if: success() != true
         uses: mxschmitt/action-tmate@v3
