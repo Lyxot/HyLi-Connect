@@ -70,7 +70,7 @@ android {
             storePassword = "androiddebug"
             keyAlias = "key0"
             keyPassword = "androiddebug"
-            enableV1Signing = true
+            enableV1Signing = false
             enableV2Signing = true
             enableV3Signing = true
             enableV4Signing = true
@@ -88,7 +88,7 @@ android {
                     keyAlias = "key0"
                     keyPassword = "androiddebug"
                 }
-                enableV1Signing = true
+                enableV1Signing = false
                 enableV2Signing = true
                 enableV3Signing = true
                 enableV4Signing = true
