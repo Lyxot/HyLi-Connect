@@ -6,6 +6,10 @@ on:
   push:
     branches-ignore:
       - website
+  pull_request_target:
+    types: [opened, synchronize]
+    branches-ignore:
+      - website
 
 jobs:
   build:
