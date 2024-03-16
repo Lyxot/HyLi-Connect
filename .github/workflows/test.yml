@@ -60,22 +60,6 @@ jobs:
           cache-overwrite-existing: true
           cache-read-only: false
           add-job-summary: 'on-failure'
-      - name: Retrieve version
-        run: |
-          git fetch
-          if [ ${{ github.ref_type == 'tag' || startsWith(github.ref_name, 'release') }} == true ]; then
-            export version=$(git describe --tags --abbrev=0 | sed 's/v//')
-          else
-            export version=$(echo $(git rev-parse --short=7 HEAD))
-          fi
-          echo VERSION=$version >> $GITHUB_ENV
-          echo VERSION=$version
-
-          export code=$(git rev-list --count HEAD refs/remotes/origin/canary)
-          echo CODE=$code >> $GITHUB_ENV
-          echo CODE=$code
-
-          echo BRANCH=$(git branch --show-current) >> $GITHUB_ENV
       - name: Prepare for building
         id: prepare
         run: |
@@ -83,6 +67,12 @@ jobs:
           base64 --decode <<< "${{ secrets.RELEASE_KEY }}" > "${{ env.ANDROID_KEYSTORE_FILE }}"
           grep -q '[^[:space:]]' "${{ env.ANDROID_KEYSTORE_FILE }}" && echo release_key_exists=true >> $GITHUB_ENV || echo release_key_exists=false >> $GITHUB_ENV
           sed -i '/\/\/ CI TEST/{n;s/release/debug/g;}' app/build.gradle.kts
+      - name: Cache dict.txt
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/dict.txt
+          key: ${{ runner.os }}-dict.txt
       - name: AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -111,8 +101,6 @@ jobs:
       - name: run tests
         uses: reactivecircus/android-emulator-runner@v2.30.1
         env:
-          VERSION: ${{ env.VERSION }}
-          CODE: ${{ env.CODE }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
           RELEASE_KEY_STORE_PASSWORD: ${{ secrets.RELEASE_KEY_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}

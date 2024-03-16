@@ -8,6 +8,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.protobuf")
     id("io.gitlab.arturbosch.detekt")
+    id("org.lsposed.lsplugin.jgit") version "1.1"
 }
 
 if (!File("${rootDir}/app/dict.txt").exists()) {
@@ -16,24 +17,9 @@ if (!File("${rootDir}/app/dict.txt").exists()) {
     proc.waitFor()
 }
 
-val commitCount = if (System.getenv("CI") != null) {
-    System.getenv("CODE")?.toInt() ?: 0
-} else {
-    try {
-        var cmd = "git branch --show-current"
-        var proc = Runtime.getRuntime().exec(cmd)
-        proc.waitFor()
-        cmd = "git rev-list --count HEAD refs/remotes/origin/" + proc.inputStream.bufferedReader().readText().trim()
-        proc = Runtime.getRuntime().exec(cmd)
-        proc.waitFor()
-        proc.inputStream.bufferedReader().readText().trim().toInt()
-    } catch (e: Exception) {
-        val cmd = "git rev-list --count HEAD refs/remotes/origin/canary"
-        val proc = Runtime.getRuntime().exec(cmd)
-        proc.waitFor()
-        proc.inputStream.bufferedReader().readText().trim().toInt()
+val branch = jgit.repo()?.raw?.branch.let {
+        if (it == "release" || it == "dev") it else "canary"
     }
-}
 
 android {
     namespace = "xyz.hyli.connect"
@@ -44,14 +30,13 @@ android {
         minSdk = 26
         targetSdk = 33
         val majorCode = 1
-        versionCode = majorCode * 10000 + commitCount
-        versionName = if (System.getenv("VERSION") != null) {
-            System.getenv("VERSION")
+        versionCode = majorCode * 10000 + (jgit.repo()?.commitCount("refs/remotes/origin/$branch") ?: 0)
+        val latestTag = jgit.repo()?.latestTag ?: "1.0.0"
+        val commitId = jgit.repo()?.raw?.resolve("HEAD")?.name?.take(7) ?: "canary"
+        versionName = if (branch == "release") {
+            latestTag
         } else {
-            val cmd = "git rev-parse --short=7 HEAD"
-            val proc = Runtime.getRuntime().exec(cmd)
-            proc.waitFor()
-            proc.inputStream.bufferedReader().readText().trim()
+            latestTag + "_" + commitId
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -75,24 +60,22 @@ android {
             enableV3Signing = true
             enableV4Signing = true
         }
-        if (System.getenv("CI") != null) {
-            create("release") {
-                if (System.getenv("release_key_exists").equals("true")) {
-                    storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
-                    storePassword = System.getenv("RELEASE_KEY_STORE_PASSWORD")
-                    keyAlias = System.getenv("RELEASE_KEY_ALIAS")
-                    keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
-                } else {
-                    storeFile = file("debug-key.jks")
-                    storePassword = "androiddebug"
-                    keyAlias = "key0"
-                    keyPassword = "androiddebug"
-                }
-                enableV1Signing = false
-                enableV2Signing = true
-                enableV3Signing = true
-                enableV4Signing = true
+        create("release") {
+            if (System.getenv("release_key_exists") == "true") {
+                storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
+                storePassword = System.getenv("RELEASE_KEY_STORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            } else {
+                storeFile = file("debug-key.jks")
+                storePassword = "androiddebug"
+                keyAlias = "key0"
+                keyPassword = "androiddebug"
             }
+            enableV1Signing = false
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true
         }
     }
     buildTypes {
