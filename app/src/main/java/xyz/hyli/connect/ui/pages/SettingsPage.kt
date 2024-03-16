@@ -256,7 +256,7 @@ fun SettingsScreen(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = stringResource(id = R.string.page_settings_version) + ": " + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")"
+                            text = "${stringResource(id = R.string.page_settings_version)}: ${BuildConfig.VERSION_NAME} | ${BuildConfig.RELEASE_CHANNEL}"
                         )
                         Text(text = stringResource(id = R.string.author), style = HyLiConnectTypography.bodyLarge)
                         Spacer(modifier = Modifier.height(12.dp))
