@@ -4,8 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    target-branch: "canary"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
+    target-branch: "canary"
