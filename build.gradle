@@ -3,7 +3,7 @@ buildscript {
     ext.debug = gradle.startParameter.taskNames.any {
         it.contains('debug') || it.contains('Debug')
     }
-    ext.kotlin_version = '1.9.22'
+    ext.kotlin_version = '1.9.23'
     ext.protobuf_version = '0.9.4'
     ext.booster_version = '5.0.0-beta7'
     repositories {
