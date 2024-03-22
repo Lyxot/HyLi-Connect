@@ -12,7 +12,7 @@
     <string name="page_connect_available_devices">附近的设备</string>
     <string name="page_connect_connected_devices">已连接的设备</string>
     <string name="dialog_connect_request_accept">接受</string>
-    <string name="dialog_connect_request_reject_countdown">拒绝 (%1$d)</string>
+    <string name="dialog_connect_request_reject_countdown">拒绝</string>
     <string name="page_connect_this_device">本机</string>
     <string name="page_connect_nickname">昵称</string>
     <string name="state_service_running">%1$s正在运行。</string>
