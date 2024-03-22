@@ -179,7 +179,7 @@ object MessageHandler {
         val command = messageBody.cmd
         val data = messageBody.data
         val uuid = messageBody.uuid
-        if (data.isEmpty || uuid.isNullOrEmpty()) return
+        if (uuid.isNullOrEmpty()) return
 
         when (command) {
             SocketMessage.COMMAND.CONNECT -> {
