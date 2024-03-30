@@ -24,6 +24,7 @@ import java.io.OutputStream
 import java.net.Socket
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 open class HyLiConnect : Application() {
     val isRunning = MutableLiveData(false)
@@ -76,6 +77,7 @@ open class HyLiConnect : Application() {
     companion object {
         lateinit var me: HyLiConnect
         const val SHIZUKU_CODE = 0x3CE9A
+        val messageIdCounter = AtomicInteger(1)
 
         // service name, state
         lateinit var serviceStateMap: ConcurrentHashMap<String, ServiceState>

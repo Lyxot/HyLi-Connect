@@ -14,9 +14,10 @@ message Message {
 message Body {
   TYPE type = 1;
   COMMAND cmd = 2;
-  STATUS STATUS = 3;
+  STATUS status = 3;
   string uuid = 4;
   bytes data = 5;
+  int32 id = 6;
 }
 
 message Header {

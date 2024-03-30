@@ -59,11 +59,13 @@ object MessageHandler {
         val command = messageBody.cmd
         val data = messageBody.data
         val uuid = messageBody.uuid
+        val id = messageBody.id
         if (uuid.isNullOrEmpty()) return
         val responseBody = SocketMessage.Body.newBuilder()
             .setType(SocketMessage.TYPE.RESPONSE)
             .setCmd(command)
             .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
+            .setId(id)
 
         if (HyLiConnect.uuidMap.containsKey(ip).not()) {
             when (command) {
