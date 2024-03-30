@@ -150,7 +150,7 @@ object MessageHandler {
                 }
                 SocketMessage.COMMAND.GET_APPLICATION_LIST -> {
                     PackageUtils.getPackageMap(HyLiConnect().getContext().packageManager).forEach { (_, resolveInfo) ->
-                        PackageUtils.getAppInfo(HyLiConnect().getContext().packageManager, resolveInfo, true).let { it ->
+                        PackageUtils.getAppInfo(HyLiConnect().getContext().packageManager, resolveInfo, true).let {
                             SocketUtils.sendMessage(ip, SocketMessage.Body.newBuilder()
                                 .setType(SocketMessage.TYPE.RESPONSE)
                                 .setCmd(SocketMessage.COMMAND.SEND_APPLICATION_INFO)
@@ -162,8 +162,9 @@ object MessageHandler {
                                     .setMainActivity(it.mainActivity)
                                     .setIcon(it.icon)
                                     .build()
-                                    .toByteString()
-                            ))
+                                    .toByteString())
+                                .setId(id)
+                            )
                         }
                     }
                     SocketUtils.sendMessage(ip, responseBody.setCmd(SocketMessage.COMMAND.GET_APPLICATION_LIST_FINISHED))
