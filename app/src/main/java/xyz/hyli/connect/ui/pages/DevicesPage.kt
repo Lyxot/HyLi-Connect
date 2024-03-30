@@ -108,12 +108,14 @@ fun DevicesScreen(
                 val ip = HyLiConnect.uuidMap.filterValues { it == deviceInfo.uuid }.keys.first()
                 val applicationInfoList = remember { mutableStateListOf<ApplicationInfo>() }
                 LaunchedEffect(deviceInfo) {
-                    SocketUtils.sendRequest(ip, SocketMessage.COMMAND.GET_APPLICATION_LIST)
+                    val messageId = SocketUtils.sendRequest(ip, SocketMessage.COMMAND.GET_APPLICATION_LIST)
                     SocketUtils.registerReceiveMessageListener(
                         ip,
                         "DevicesPage",
                         SocketMessage.TYPE.RESPONSE,
-                        SocketMessage.COMMAND.SEND_APPLICATION_INFO) { messageBody ->
+                        SocketMessage.COMMAND.SEND_APPLICATION_INFO,
+                        messageId
+                    ) { messageBody ->
                         ApplicationProto.ApplicationInfo.parseFrom(messageBody.data).let {
                             applicationInfoList.add(ApplicationInfo(
                                 it.packageName,
@@ -129,6 +131,7 @@ fun DevicesScreen(
                             "DevicesPage",
                             SocketMessage.TYPE.RESPONSE,
                             SocketMessage.COMMAND.GET_APPLICATION_LIST_FINISHED,
+                            messageId,
                             true
                         ) {
                             MainScope().launch {
