@@ -1,3 +1,4 @@
+import com.google.protobuf.gradle.id
 import com.google.protobuf.gradle.proto
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
@@ -131,7 +132,9 @@ android {
         generateProtoTasks {
             all().forEach { task ->
                 task.builtins {
-                    register("java")
+                    id("java") {
+                        option("lite")
+                    }
                 }
             }
         }

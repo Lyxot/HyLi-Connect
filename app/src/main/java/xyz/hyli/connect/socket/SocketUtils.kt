@@ -58,7 +58,7 @@ object SocketUtils {
             .setType(SocketMessage.TYPE.RESPONSE)
             .setCmd(SocketMessage.COMMAND.CONNECT)
             .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
-            .setSTATUS(SocketMessage.STATUS.SUCCESS)
+            .setStatus(SocketMessage.STATUS.SUCCESS)
             .setData(messageData.toByteString())
         sendMessage(ip, messageBody)
     }
@@ -70,7 +70,7 @@ object SocketUtils {
             .setType(SocketMessage.TYPE.RESPONSE)
             .setCmd(SocketMessage.COMMAND.CONNECT)
             .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
-            .setSTATUS(SocketMessage.STATUS.FAILED)
+            .setStatus(SocketMessage.STATUS.FAILED)
             .setData(messageData.toByteString())
         sendMessage(
             ip,
@@ -86,13 +86,13 @@ object SocketUtils {
             .setType(SocketMessage.TYPE.HEARTBEAT)
         sendMessage(ip, messageBody)
     }
-    fun sendRequest(ip: String, command: SocketMessage.COMMAND) {
+    fun sendRequest(ip: String, command: SocketMessage.COMMAND): Int {
         val messageBody = SocketMessage.Body.newBuilder()
             .setType(SocketMessage.TYPE.REQUEST)
             .setCmd(command)
             .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
-            .setSTATUS(SocketMessage.STATUS.SUCCESS)
-        sendMessage(ip, messageBody)
+            .setStatus(SocketMessage.STATUS.SUCCESS)
+        return sendMessage(ip, messageBody)
     }
     fun connectRequest(ip: String, port: Int) {
         val t = System.currentTimeMillis()
@@ -110,7 +110,7 @@ object SocketUtils {
             .setType(SocketMessage.TYPE.REQUEST)
             .setCmd(SocketMessage.COMMAND.CONNECT)
             .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
-            .setSTATUS(SocketMessage.STATUS.SUCCESS)
+            .setStatus(SocketMessage.STATUS.SUCCESS)
             .setData(messageData.toByteString())
         while (HyLiConnect.socketMap[IPAddress] == null && System.currentTimeMillis() - t < 4800) {
             Thread.sleep(20)
@@ -126,8 +126,16 @@ object SocketUtils {
             .setType(SocketMessage.TYPE.REQUEST)
             .setCmd(SocketMessage.COMMAND.DISCONNECT)
             .setUuid(PreferencesDataStore.uuid.getBlocking()!!)
-            .setSTATUS(SocketMessage.STATUS.SUCCESS)
+            .setStatus(SocketMessage.STATUS.SUCCESS)
         sendMessage(ip, messageBody, onMessageSend = { closeConnection(ip) })
+    }
+    private fun generateMessageId(): Int {
+        HyLiConnect.messageIdCounter.incrementAndGet().let {
+            if (it >= Int.MAX_VALUE) {
+                HyLiConnect.messageIdCounter.set(0)
+            }
+            return it
+        }
     }
     fun sendMessage(
         ip: String,
@@ -135,14 +143,18 @@ object SocketUtils {
         dropTime: Long = 0,
         onMessageSend: (() -> Unit) = {
         }
-    ) {
-        HyLiConnect.sendMessageQueueMap[ip]?.put(
-            MessageQueue(
-                messageBody,
-                dropTime,
-                onMessageSend
-            )
-        )
+    ): Int {
+        (if (messageBody.id == 0 && messageBody.type != SocketMessage.TYPE.HEARTBEAT) generateMessageId() else messageBody.id)
+            .let {
+                HyLiConnect.sendMessageQueueMap[ip]?.put(
+                    MessageQueue(
+                        messageBody.setId(it),
+                        dropTime,
+                        onMessageSend
+                    )
+                )
+                return it
+        }
     }
     fun sendQueueMessage(ip: String, messageBody: SocketMessage.Body.Builder, onMessageSend: (() -> Unit) = { }) {
         var message: SocketMessage.Message
@@ -170,6 +182,7 @@ object SocketUtils {
         className: String,
         type: SocketMessage.TYPE,
         command: SocketMessage.COMMAND,
+        id: Int = -1,
         unregisterAfterReceived: Boolean = false,
         onMessageReceive: (SocketMessage.Body) -> Unit
     ): MessageReceiveListener {
@@ -180,6 +193,7 @@ object SocketUtils {
             className,
             type,
             command,
+            id,
             onMessageReceive,
             unregisterAfterReceived
         ).let {
@@ -194,14 +208,17 @@ object SocketUtils {
         className: String,
         type: SocketMessage.TYPE,
         command: SocketMessage.COMMAND,
+        id: Int = -1,
         unregisterAfterReceived: Boolean = false,
         onMessageReceive: (SocketMessage.Body) -> Unit
     ) {
-        HyLiConnect.receiveMessageListenerMap[ip]?.remove(
+        unregisterReceiveMessageListener(
+            ip,
             MessageReceiveListener(
                 className,
                 type,
                 command,
+                id,
                 onMessageReceive,
                 unregisterAfterReceived
             )
@@ -216,6 +233,12 @@ object SocketUtils {
 
     fun unregisterReceiveMessageListener(ip: String, className: String) {
         HyLiConnect.receiveMessageListenerMap[ip]?.filter { it.className == className }?.forEach {
+            unregisterReceiveMessageListener(ip, it)
+        }
+    }
+    fun unregisterReceiveMessageListener(ip: String, id: Int) {
+        if (id == -1) return
+        HyLiConnect.receiveMessageListenerMap[ip]?.filter { it.id == id }?.forEach {
             unregisterReceiveMessageListener(ip, it)
         }
     }

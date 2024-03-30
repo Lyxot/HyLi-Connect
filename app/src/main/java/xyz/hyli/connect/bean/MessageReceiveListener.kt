@@ -6,6 +6,7 @@ data class MessageReceiveListener(
     val className: String,
     val type: SocketMessage.TYPE,
     val command: SocketMessage.COMMAND,
+    val id: Int,
     val onMessageReceive: (SocketMessage.Body) -> Unit,
     val unregisterAfterReceived: Boolean = false
 )
