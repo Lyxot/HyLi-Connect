@@ -11,7 +11,7 @@ import java.util.UUID.randomUUID
 
 object PreferencesDataStore : DataStoreOwner("preferences") {
     val last_run_version_code by intPreference(0)
-    val uuid by stringPreference(randomUUID().toString())
+    val uuid by stringPreference(randomUUID().toString(), true)
     val nickname by stringPreference(Build.BRAND + " " + Build.MODEL)
     val platform by intPreference(0)
     val server_port by intPreference(15732)
