@@ -3,3 +3,4 @@ DylanCaiCoding/DataStoreKTX: [https://github.com/DylanCaiCoding/DataStoreKTX](ht
 ## Modify
 * Add `getBlocking()` method
 * Add `reset()` method
+* Add cache for `get()` method
