@@ -15,8 +15,10 @@ operator fun <V> Preferences.get(preference: DataStorePreference<V>) = this[pref
 open class DataStorePreference<V>(
     private val dataStore: DataStore<Preferences>,
     val key: Preferences.Key<V>,
-    open val default: V?
+    open val default: V?,
+    open val cacheValue: Boolean
 ) {
+    private var cache: V? = null
 
     suspend fun set(block: suspend V?.(Preferences) -> V?): Preferences =
         dataStore.edit { preferences ->
@@ -28,18 +30,28 @@ open class DataStorePreference<V>(
             }
         }
 
-    suspend fun set(value: V?): Preferences = set { value }
+    suspend fun set(value: V?): Preferences =
+        if (cacheValue) {
+            cache = value
+            set { value }
+        } else set { value }
 
     fun asFlow(fallback: V? = default): Flow<V?> =
         dataStore.data.map { it[key] ?: fallback }
 
     fun asLiveData(fallback: V? = default): LiveData<V?> = asFlow(fallback).asLiveData()
 
-    suspend fun get(fallback: V? = default): V? = asFlow(fallback).first()
+    suspend fun get(fallback: V? = default): V? =
+        if (cacheValue) cache ?: asFlow(fallback).first().also { cache = it }
+        else asFlow(fallback).first()
 
     suspend fun getOrDefault(): V = get() ?: throw IllegalStateException("No default value")
 
     fun getBlocking(fallback: V? = default): V? = runBlocking { get(fallback) }
 
     suspend fun reset() = set(default)
+
+    fun resetCache() {
+        cache = null
+    }
 }
