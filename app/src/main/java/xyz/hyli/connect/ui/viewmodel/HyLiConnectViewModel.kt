@@ -99,7 +99,7 @@ class HyLiConnectViewModel : ViewModel() {
     }
     fun getRequiredPermissions(): Set<List<String>> {
         val nativePermissionSet = mutableSetOf<List<String>>()
-        nativePermissionSet.add(permissionOverlay)
+//        nativePermissionSet.add(permissionOverlay)
         if (PreferencesDataStore.function_notification_forward.getBlocking() == true) nativePermissionSet.add(permissionNotificationListener)
         return nativePermissionSet
     }
