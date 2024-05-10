@@ -3,7 +3,7 @@ buildscript {
     ext.debug = gradle.startParameter.taskNames.any {
         it.contains('debug') || it.contains('Debug')
     }
-    ext.kotlin_version = '1.9.23'
+    ext.kotlin_version = '1.9.24'
     ext.protobuf_version = '0.9.4'
     ext.booster_version = '5.0.0-rc1'
     repositories {
@@ -31,7 +31,7 @@ buildscript {
 plugins {
     id 'com.android.application' version '8.4.0' apply false
     id 'com.android.library' version '8.4.0' apply false
-    id 'org.jetbrains.kotlin.android' version '1.9.23' apply false
+    id 'org.jetbrains.kotlin.android' version '1.9.24' apply false
     id 'io.gitlab.arturbosch.detekt' version '1.23.6'
 }
 
