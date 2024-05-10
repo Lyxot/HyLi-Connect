@@ -5,6 +5,21 @@ updates:
     schedule:
       interval: "daily"
     target-branch: "canary"
+    groups:
+      android-gradle-plugin:
+        patterns:
+          - "com.android.library"
+          - "com.android.application"
+          - "com.android.tools.build:gradle"
+      detekt:
+        patterns:
+          - "io.gitlab.arturbosch.detekt"
+          - "io.gitlab.arturbosch.detekt:detekt-formatting"
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin.android"
+          - "org.jetbrains.kotlin:kotlin-gradle-plugin"
+          - "org.jetbrains.kotlin:kotlin-bom"
 
   - package-ecosystem: "github-actions"
     directory: "/"
