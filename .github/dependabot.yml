@@ -20,6 +20,7 @@ updates:
           - "org.jetbrains.kotlin.android"
           - "org.jetbrains.kotlin:kotlin-gradle-plugin"
           - "org.jetbrains.kotlin:kotlin-bom"
+          - "org.jetbrains.kotlin.plugin.compose"
 
   - package-ecosystem: "github-actions"
     directory: "/"
