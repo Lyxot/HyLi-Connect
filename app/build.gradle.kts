@@ -124,6 +124,13 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    kotlin {
+        sourceSets.all {
+            languageSettings {
+                languageVersion = "2.0"
+            }
+        }
+    }
     protobuf {
         protoc {
             artifact = "com.google.protobuf:protoc:4.26.1"
