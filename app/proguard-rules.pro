@@ -89,3 +89,5 @@
 -dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 -keep class com.hjq.permissions.** {*;}
+
+-dontwarn android.app.ActivityThread
