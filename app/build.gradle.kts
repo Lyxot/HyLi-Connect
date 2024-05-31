@@ -1,17 +1,14 @@
 import com.google.protobuf.gradle.id
 import com.google.protobuf.gradle.proto
-import io.gitlab.arturbosch.detekt.Detekt
-import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import java.util.Locale
 
 plugins {
-    id("com.android.application")
-    id("com.didiglobal.booster")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.protobuf")
-    id("io.gitlab.arturbosch.detekt")
-    id("org.lsposed.lsplugin.jgit") version "1.1"
+    alias(libs.plugins.agp.app)
+    id(libs.plugins.booster.get().pluginId)
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.compose.compiler)
+    id(libs.plugins.protobuf.get().pluginId)
+    alias(libs.plugins.jgit)
 }
 
 if (!File("${rootDir}/app/dict.txt").exists()) {
@@ -111,7 +108,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
     buildFeatures {
         compose = true
@@ -124,6 +121,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
     kotlin {
         sourceSets.all {
             languageSettings {
@@ -133,7 +134,7 @@ android {
     }
     protobuf {
         protoc {
-            artifact = "com.google.protobuf:protoc:4.26.1"
+            artifact = libs.protobuf.protoc.get().toString()
         }
         generateProtoTasks {
             all().forEach { task ->
@@ -149,76 +150,42 @@ android {
         getByName("main") {
             proto {
                 srcDir("src/main/proto")
+                include("**/*.proto")
             }
         }
-    }
-    detekt {
-        buildUponDefaultConfig = true
-        allRules = false
-        config.setFrom("$rootDir/.idea/detekt.yml")
-//        baseline = file("$rootDir/.idea/detekt-baseline.xml")
-    }
-    tasks.withType<Detekt>().configureEach {
-        jvmTarget = "17"
-        reports {
-            xml.required = true
-            html.required = true
-            txt.required = true
-            sarif.required = true
-            md.required = true
-        }
-        basePath = rootDir.absolutePath
-    }
-    tasks.withType<Detekt>().configureEach {
-        jvmTarget = "17"
-    }
-    tasks.withType<DetektCreateBaselineTask>().configureEach {
-        jvmTarget = "17"
     }
 }
 
 dependencies {
-//    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.5")
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.0"))
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.activity:activity-compose:1.9.0")
-    implementation(platform("androidx.compose:compose-bom:2024.05.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3-window-size-class-android:1.2.1")
-    implementation("androidx.navigation:navigation-compose:2.7.7")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.05.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.7")
-    implementation("androidx.compose.material3:material3:1.2.1")
-    implementation("androidx.compose.material:material-icons-extended:1.6.7")
-    api("androidx.datastore:datastore-preferences:1.1.1")
-    implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.49")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.startup:startup-runtime:1.1.1")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    implementation("com.github.getActivity:XXPermissions:18.6")
-    implementation("com.github.1552980358:C2Pinyin:3.0.0")
-
-    val protobuf_version = "4.26.1"
-    implementation("com.google.protobuf:protobuf-java:$protobuf_version")
-    implementation("com.google.protobuf:protobuf-kotlin:$protobuf_version")
-    implementation("com.google.protobuf:protoc:$protobuf_version")
-
-    val accompanist_version = "0.34.0"
-    implementation("com.google.accompanist:accompanist-adaptive:$accompanist_version")
-    implementation("com.google.accompanist:accompanist-navigation-animation:$accompanist_version")
-
-    val shizuku_version = "13.1.5"
-    implementation("dev.rikka.shizuku:api:$shizuku_version")
-    implementation("dev.rikka.shizuku:provider:$shizuku_version")
-
-    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
+    implementation(libs.core.ktx)
+    implementation(platform(libs.kotlin.bom))
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.navigation.compose)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.material)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.material3.window.size)
+    implementation(libs.androidx.startup.runtime)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.fastjson2.kotlin)
+    implementation(libs.xxpermissions)
+    implementation(libs.c2pinyin)
+    implementation(libs.protobuf.java)
+    implementation(libs.protobuf.kotlin)
+    implementation(libs.protobuf.protoc)
+    implementation(libs.accompanist.adaptive)
+    implementation(libs.accompanist.navigation.animation)
+    implementation(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
+    implementation(libs.hiddenapibypass)
     compileOnly(files("libs/XposedBridgeAPI-89.jar"))
 }

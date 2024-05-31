@@ -1,0 +1,85 @@
+[versions]
+agp = "8.4.1"
+kotlin = "2.0.0"
+protobuf-plugin = "0.9.4"
+booster = "5.0.0-rc1"
+jgit = "1.1"
+core-ktx = "1.13.1"
+lifecycle = "2.8.0"
+datastore = "1.1.1"
+activity-compose = "1.9.0"
+compose-bom = "2024.05.00"
+fastjson2 = "2.0.49"
+material = "1.12.0"
+material3 = "1.2.1"
+material-icons-extended = "1.6.7"
+navigation-compose = "2.7.7"
+startup-runtime = "1.1.1"
+ui-test-manifest = "1.6.7"
+kotlinx-coroutines = "1.8.1"
+c2pinyin = "3.0.0"
+hiddenapibypass = "4.3"
+xxpermissions = "18.6"
+protobuf = "4.26.1"
+accompanist = "0.34.0"
+shizuku = "13.1.5"
+
+[plugins]
+agp-app = { id = "com.android.application", version.ref = "agp" }
+agp-lib = { id = "com.android.library", version.ref = "agp" }
+booster = { id = "com.didiglobal.booster" }
+kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+protobuf = { id = "com.google.protobuf" }
+jgit = { id = "org.lsposed.lsplugin.jgit", version.ref = "jgit" }
+
+[libraries]
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material-icons-extended" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class-android", version.ref = "material3" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
+androidx-startup-runtime = { group = "androidx.startup", name = "startup-runtime", version.ref = "startup-runtime" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "ui-test-manifest" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlin" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+protobuf-gradle-plugin = { group = "com.google.protobuf", name = "protobuf-gradle-plugin", version.ref = "protobuf-plugin" }
+booster-gradle-plugin = { group = "com.didiglobal.booster", name = "booster-gradle-plugin", version.ref = "booster" }
+booster-transform-thread = { group = "com.didiglobal.booster", name = "booster-transform-thread", version.ref = "booster" }
+booster-transform-activity-thread = { group = "com.didiglobal.booster", name = "booster-transform-activity-thread", version.ref = "booster" }
+booster-transform-finalizer-watchdog-daemon = { group = "com.didiglobal.booster", name = "booster-transform-finalizer-watchdog-daemon", version.ref = "booster" }
+booster-transform-res-check = { group = "com.didiglobal.booster", name = "booster-transform-res-check", version.ref = "booster" }
+booster-transform-toast = { group = "com.didiglobal.booster", name = "booster-transform-toast", version.ref = "booster" }
+booster-transform-media-player = { group = "com.didiglobal.booster", name = "booster-transform-media-player", version.ref = "booster" }
+gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+fastjson2-kotlin = { group = "com.alibaba.fastjson2", name = "fastjson2-kotlin", version.ref = "fastjson2" }
+c2pinyin = { group = "com.github.1552980358", name = "C2Pinyin", version.ref = "c2pinyin" }
+hiddenapibypass = { group = "org.lsposed.hiddenapibypass", name = "hiddenapibypass", version.ref = "hiddenapibypass" }
+xxpermissions = { group = "com.github.getActivity", name = "XXPermissions", version.ref = "xxpermissions" }
+protobuf-java = { group = "com.google.protobuf", name = "protobuf-java", version.ref = "protobuf" }
+protobuf-kotlin = { group = "com.google.protobuf", name = "protobuf-kotlin", version.ref = "protobuf" }
+protobuf-protoc = { group = "com.google.protobuf", name = "protoc", version.ref = "protobuf" }
+accompanist-adaptive = { group = "com.google.accompanist", name = "accompanist-adaptive", version.ref = "accompanist" }
+accompanist-navigation-animation = { group = "com.google.accompanist", name = "accompanist-navigation-animation", version.ref = "accompanist" }
+shizuku-api = { group = "dev.rikka.shizuku", name = "api", version.ref = "shizuku" }
+shizuku-provider = { group = "dev.rikka.shizuku", name = "provider", version.ref = "shizuku" }
+
+[bundles]
+booster = [
+    "booster-transform-thread",
+    "booster-transform-activity-thread",
+    "booster-transform-finalizer-watchdog-daemon",
+    "booster-transform-res-check",
+    "booster-transform-toast",
+    "booster-transform-media-player"
+]
