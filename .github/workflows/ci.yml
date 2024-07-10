@@ -174,7 +174,7 @@ jobs:
 
       - name: create AVD && Generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2.31.0
+        uses: reactivecircus/android-emulator-runner@v2.32.0
         with:
           avd-name: test-${{ matrix.api-level }}-${{ matrix.target }}-${{ matrix.arch }}
           api-level: ${{ matrix.api-level }}
@@ -189,7 +189,7 @@ jobs:
           script: echo "Generated AVD snapshot for caching."
 
       - name: run tests
-        uses: reactivecircus/android-emulator-runner@v2.31.0
+        uses: reactivecircus/android-emulator-runner@v2.32.0
         env:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
           RELEASE_KEY_STORE_PASSWORD: ${{ secrets.RELEASE_KEY_STORE_PASSWORD }}
