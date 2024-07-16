@@ -2,7 +2,7 @@
 agp = "8.5.1"
 kotlin = "2.0.0"
 protobuf-plugin = "0.9.4"
-booster = "5.0.0-rc1"
+booster = "5.0.0-rc2"
 jgit = "1.1"
 core-ktx = "1.13.1"
 lifecycle = "2.8.3"
